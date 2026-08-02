@@ -1,0 +1,238 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  KITCHEN
+}
+
+enum RestaurantStatus {
+  SETUP
+  LIVE
+  PAUSED
+  CLOSED
+  TEMPORARILY_BUSY
+}
+
+enum FoodType {
+  VEG
+  NON_VEG
+  EGG
+}
+
+enum OrderStatus {
+  RECEIVED
+  ACCEPTED
+  PREPARING
+  READY
+  SERVED
+  COMPLETED
+  CANCELLED
+}
+
+enum RequestType {
+  CALL_WAITER
+  REQUEST_BILL
+}
+
+enum RequestStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+model Restaurant {
+  id             String          @id @default(cuid())
+  name           String
+  slug           String          @unique
+  logoUrl        String?
+  currency       String           @default("INR")
+  serviceEnabled Boolean          @default(true)
+  status         RestaurantStatus @default(SETUP)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  
+  // Branding & Profile
+  coverImage      String?
+  brandColor      String?          @default("#000000")
+  phone           String?
+  address         String?
+  googleReviewUrl String?
+  upiQrUrl        String?
+  cuisine         String?
+  isVegOnly       Boolean          @default(false)
+  instagramUrl    String?
+  facebookUrl     String?
+  websiteUrl      String?
+
+  settings        Json             @default("{}")
+  users           User[]
+  tables         Table[]
+  categories     Category[]
+  menuItems      MenuItem[]
+  orders         Order[]
+  customers      Customer[]
+  upsellRules    UpsellRule[]
+  waiterRequests WaiterRequest[]
+  tableScans     TableScan[]
+}
+
+model User {
+  id           String     @id @default(cuid())
+  restaurantId String
+  email        String
+  name         String
+  passwordHash String
+  role         UserRole
+  active       Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, email])
+  @@index([restaurantId, role])
+}
+
+model Table {
+  id           String     @id @default(cuid())
+  restaurantId String
+  number       Int
+  label        String?
+  active       Boolean    @default(true)
+  qrToken      String     @unique @default(cuid())
+  createdAt    DateTime   @default(now())
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  orders       Order[]
+  requests     WaiterRequest[]
+  tableScans   TableScan[]
+
+  @@unique([restaurantId, number])
+}
+
+model Category {
+  id           String     @id @default(cuid())
+  restaurantId String
+  name         String
+  sortOrder    Int        @default(0)
+  active       Boolean    @default(true)
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  items        MenuItem[]
+
+  @@unique([restaurantId, name])
+  @@index([restaurantId, sortOrder])
+}
+
+model MenuItem {
+  id             String       @id @default(cuid())
+  restaurantId   String
+  categoryId     String
+  name           String
+  description    String?
+  imageUrl       String?
+  pricePaise     Int
+  foodType       FoodType
+  spicyLevel     Int          @default(0)
+  available      Boolean      @default(true)
+  active         Boolean      @default(true)
+  preparationMin Int          @default(12)
+  sortOrder      Int          @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  restaurant     Restaurant   @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  category       Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  orderItems     OrderItem[]
+  triggerRules   UpsellRule[] @relation("UpsellTrigger")
+  suggestedBy    UpsellRule[] @relation("UpsellSuggestion")
+
+  @@index([restaurantId, categoryId, available])
+}
+
+model Customer {
+  id           String     @id @default(cuid())
+  restaurantId String
+  phone        String?
+  displayName  String?
+  createdAt    DateTime   @default(now())
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  orders       Order[]
+
+  @@index([restaurantId, phone])
+}
+
+model Order {
+  id               String       @id @default(cuid())
+  restaurantId     String
+  tableId          String
+  customerId       String?
+  orderNumber      Int
+  status           OrderStatus  @default(RECEIVED)
+  subtotalPaise    Int
+  instructions     String?
+  estimatedReadyAt DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  restaurant       Restaurant   @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  table            Table        @relation(fields: [tableId], references: [id])
+  customer         Customer?    @relation(fields: [customerId], references: [id])
+  items            OrderItem[]
+
+  @@unique([restaurantId, orderNumber])
+  @@index([restaurantId, status, createdAt])
+}
+
+model OrderItem {
+  id            String   @id @default(cuid())
+  orderId       String
+  menuItemId    String
+  nameSnapshot  String
+  pricePaise    Int
+  quantity      Int
+  instructions  String?
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem      MenuItem @relation(fields: [menuItemId], references: [id])
+
+  @@index([menuItemId])
+}
+
+model UpsellRule {
+  id                    String     @id @default(cuid())
+  restaurantId          String
+  triggerMenuItemId     String
+  recommendedMenuItemId String
+  active                Boolean    @default(true)
+  priority              Int        @default(0)
+  restaurant            Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  triggerMenuItem       MenuItem   @relation("UpsellTrigger", fields: [triggerMenuItemId], references: [id])
+  recommendedMenuItem   MenuItem   @relation("UpsellSuggestion", fields: [recommendedMenuItemId], references: [id])
+
+  @@unique([restaurantId, triggerMenuItemId, recommendedMenuItemId])
+  @@index([restaurantId, active, priority])
+}
+
+model WaiterRequest {
+  id           String        @id @default(cuid())
+  restaurantId String
+  tableId      String
+  type         RequestType
+  status       RequestStatus @default(OPEN)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  restaurant   Restaurant    @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  table        Table         @relation(fields: [tableId], references: [id])
+
+  @@index([restaurantId, status, createdAt])
+}
+
+model TableScan {
+  id           String     @id @default(uuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  tableId      String
+  table        Table      @relation(fields: [tableId], references: [id])
+  createdAt    DateTime   @default(now())
+}
