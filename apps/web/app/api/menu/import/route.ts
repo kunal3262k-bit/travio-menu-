@@ -79,7 +79,7 @@ Rules:
 5. Keep Category names clean and standard (e.g. Starters, Main Course, Breads, Beverages).`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.5-flash",
       contents: [
         {
           role: "user",
