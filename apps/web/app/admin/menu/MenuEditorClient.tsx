@@ -196,13 +196,13 @@ export default function MenuEditorClient({ initialCategories }: { initialCategor
           <h2 className="text-xl font-bold text-purple-900 flex items-center gap-2">
             ✨ 45-Second AI Menu Import
           </h2>
-          <p className="text-purple-700 mt-1">Upload a photo of your printed menu and let AI do the data entry.</p>
+          <p className="text-purple-700 mt-1">Upload a photo or PDF of your printed menu and let AI do the data entry.</p>
         </div>
         
         <div className="relative">
           <input 
             type="file" 
-            accept="image/*"
+            accept="image/*,application/pdf"
             id="ai-upload"
             onChange={handleAiImport}
             disabled={isAiExtracting}
@@ -215,10 +215,10 @@ export default function MenuEditorClient({ initialCategories }: { initialCategor
             {isAiExtracting ? (
               <>
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Analyzing Image...
+                Analyzing File...
               </>
             ) : (
-              "+ Upload Menu Image"
+              "+ Upload Menu (Image/PDF)"
             )}
           </label>
         </div>
