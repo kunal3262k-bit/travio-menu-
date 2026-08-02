@@ -32,11 +32,15 @@ export function CustomerMenu({ restaurant }: { restaurant: RestaurantView }) {
   const [cart, setCart] = useState<Record<string, CartLine>>({});
   const [notice, setNotice] = useState<string | null>(null);
   const [orderNumber, setOrderNumber] = useState<number | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [idempotencyKey, setIdempotencyKey] = useState(() => Math.random().toString(36).substring(2) + Date.now().toString(36));
   const items = restaurant.categories.flatMap((category) => category.items);
   const itemById = new Map(items.map((item) => [item.id, item]));
   const cartLines = Object.values(cart);
 
   const subtotal = cartLines.reduce((total, line) => total + line.item.pricePaise * line.quantity, 0);
+  const gst = Math.round(subtotal * 0.05);
+  const total = subtotal + gst;
   const recommendations = selectUpsellRecommendations(
     cartLines.map((line) => ({ menuItemId: line.item.id })),
     restaurant.upsellRules
@@ -60,10 +64,46 @@ export function CustomerMenu({ restaurant }: { restaurant: RestaurantView }) {
     window.setTimeout(() => setNotice(null), 2800);
   }
 
-  function placeDemoOrder() {
-    if (cartLines.length === 0) return;
-    setOrderNumber(1043);
-    showNotice("Order #1043 sent to kitchen. Estimated wait: 18-22 min.");
+  async function placeRealOrder() {
+    if (cartLines.length === 0 || isSubmitting) return;
+    setIsSubmitting(true);
+    
+    try {
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          restaurantSlug: restaurant.slug,
+          tableNumber: restaurant.tableNumber,
+          idempotencyKey,
+          items: cartLines.map((line) => ({
+            menuItemId: line.item.id,
+            quantity: line.quantity,
+            instructions: line.instructions
+          }))
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to place order");
+      }
+      
+      import("socket.io-client").then(({ io }) => {
+        const socket = io();
+        socket.emit("new_order", { restaurantId: data.order.restaurantId, orderId: data.order.id });
+      });
+
+      setOrderNumber(data.order.orderNumber);
+      showNotice(`Order #${data.order.orderNumber} sent to kitchen.`);
+      setCart({}); // Clear cart on success
+      setIdempotencyKey(Math.random().toString(36).substring(2) + Date.now().toString(36)); // Rotate key for next possible order
+    } catch (error: any) {
+      alert(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   const estimatedWait = useMemo(() => (cartLines.length ? "18-22 min" : "Add items to estimate"), [cartLines.length]);
@@ -145,10 +185,13 @@ export function CustomerMenu({ restaurant }: { restaurant: RestaurantView }) {
           <CartPanel
             cartLines={cartLines}
             subtotal={subtotal}
+            gst={gst}
+            total={total}
             estimatedWait={estimatedWait}
             recommendations={recommendations}
             addItem={(item) => updateQuantity(item, 1)}
-            onPlaceOrder={placeDemoOrder}
+            onPlaceOrder={placeRealOrder}
+            isSubmitting={isSubmitting}
             orderNumber={orderNumber}
           />
         </aside>
@@ -158,10 +201,13 @@ export function CustomerMenu({ restaurant }: { restaurant: RestaurantView }) {
         <CartPanel
           cartLines={cartLines}
           subtotal={subtotal}
+          gst={gst}
+          total={total}
           estimatedWait={estimatedWait}
           recommendations={recommendations}
           addItem={(item) => updateQuantity(item, 1)}
-          onPlaceOrder={placeDemoOrder}
+          onPlaceOrder={placeRealOrder}
+          isSubmitting={isSubmitting}
           orderNumber={orderNumber}
           compact
         />
@@ -173,6 +219,8 @@ export function CustomerMenu({ restaurant }: { restaurant: RestaurantView }) {
 function CartPanel({
   cartLines,
   subtotal,
+  gst,
+  total,
   estimatedWait,
   recommendations,
   addItem,
@@ -182,10 +230,13 @@ function CartPanel({
 }: {
   cartLines: CartLine[];
   subtotal: number;
+  gst: number;
+  total: number;
   estimatedWait: string;
   recommendations: MenuItem[];
   addItem: (item: MenuItem) => void;
   onPlaceOrder: () => void;
+  isSubmitting?: boolean;
   orderNumber: number | null;
   compact?: boolean;
 }) {
@@ -219,17 +270,27 @@ function CartPanel({
           </div>
         </div>
       )}
-      <div className="mt-4 flex items-center justify-between border-t border-stone-200 pt-4">
-        <span className="font-semibold">Subtotal</span>
-        <span className="text-lg font-semibold">{formatMoney(subtotal)}</span>
+      <div className="mt-4 border-t border-stone-200 pt-4 space-y-2 text-sm">
+        <div className="flex items-center justify-between text-stone-600">
+          <span>Subtotal</span>
+          <span>{formatMoney(subtotal)}</span>
+        </div>
+        <div className="flex items-center justify-between text-stone-600">
+          <span>Taxes (5% GST)</span>
+          <span>{formatMoney(gst)}</span>
+        </div>
+        <div className="flex items-center justify-between font-bold text-lg pt-2 border-t border-stone-100 mt-2">
+          <span>Total</span>
+          <span>{formatMoney(total)}</span>
+        </div>
       </div>
       {orderNumber && (
         <div className="mt-4 rounded-lg bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-900">
           Order #{orderNumber} received. Status: Preparing.
         </div>
       )}
-      <Button className="mt-4 w-full" disabled={cartLines.length === 0} onClick={onPlaceOrder}>
-        {orderNumber ? "Order Sent" : "Place Order"}
+      <Button className="mt-4 w-full" disabled={cartLines.length === 0 || isSubmitting} onClick={onPlaceOrder}>
+        {isSubmitting ? "Sending..." : (orderNumber ? "Order Sent" : "Place Order")}
       </Button>
     </div>
   );

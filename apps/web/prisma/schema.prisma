@@ -10,6 +10,7 @@ datasource db {
 enum UserRole {
   ADMIN
   KITCHEN
+  WAITER
 }
 
 enum RestaurantStatus {
@@ -172,8 +173,11 @@ model Order {
   orderNumber      Int
   status           OrderStatus  @default(RECEIVED)
   subtotalPaise    Int
+  taxPaise         Int          @default(0)
+  totalPaise       Int          @default(0)
   instructions     String?
   estimatedReadyAt DateTime?
+  idempotencyKey   String?
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
   restaurant       Restaurant   @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
@@ -182,6 +186,7 @@ model Order {
   items            OrderItem[]
 
   @@unique([restaurantId, orderNumber])
+  @@unique([restaurantId, idempotencyKey])
   @@index([restaurantId, status, createdAt])
 }
 

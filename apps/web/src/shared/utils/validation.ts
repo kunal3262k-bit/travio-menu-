@@ -12,7 +12,8 @@ export const createOrderSchema = z.object({
   customerName: z.string().max(80).optional(),
   customerPhone: z.string().max(20).optional(),
   instructions: z.string().max(240).optional(),
-  items: z.array(orderItemInputSchema).min(1).max(40)
+  items: z.array(orderItemInputSchema).min(1).max(40),
+  idempotencyKey: z.string().optional()
 });
 
 export const updateOrderStatusSchema = z.object({

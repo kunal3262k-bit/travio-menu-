@@ -8,6 +8,9 @@ export default async function AdminDashboardPage() {
   const session = await getServerSession(authOptions);
   if (!session) redirect("/login");
 
+  if (session.user.role === "WAITER") redirect("/admin/waiter");
+  if (session.user.role === "KITCHEN") redirect("/admin/kitchen");
+
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);
 

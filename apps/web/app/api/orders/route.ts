@@ -39,8 +39,29 @@ export async function POST(request: NextRequest) {
     return total + (item?.pricePaise ?? 0) * line.quantity;
   }, 0);
 
+  // Apply 5% Restaurant GST (2.5% CGST + 2.5% SGST)
+  const taxPaise = Math.round(subtotalPaise * 0.05);
+  const totalPaise = subtotalPaise + taxPaise;
+
   const longestPrep = Math.max(...menuItems.map((item) => item.preparationMin), 12);
   const estimatedReadyAt = new Date(Date.now() + longestPrep * 60_000);
+
+  // Idempotency check: If this exact key was already sent, return the existing order
+  if (parsed.data.idempotencyKey) {
+    const existingOrder = await prisma.order.findUnique({
+      where: {
+        restaurantId_idempotencyKey: {
+          restaurantId: context.restaurant.id,
+          idempotencyKey: parsed.data.idempotencyKey
+        }
+      },
+      include: { items: true, table: true }
+    });
+
+    if (existingOrder) {
+      return NextResponse.json({ order: existingOrder }, { status: 200 }); // 200 OK means it already existed
+    }
+  }
 
   const order = await prisma.$transaction(async (tx) => {
     const lastOrder = await tx.order.findFirst({
@@ -67,8 +88,11 @@ export async function POST(request: NextRequest) {
         customerId: customer?.id,
         orderNumber: (lastOrder?.orderNumber ?? 0) + 1,
         subtotalPaise,
+        taxPaise,
+        totalPaise,
         instructions: parsed.data.instructions,
         estimatedReadyAt,
+        idempotencyKey: parsed.data.idempotencyKey,
         items: {
           create: parsed.data.items.map((line) => {
             const item = menuById.get(line.menuItemId)!;

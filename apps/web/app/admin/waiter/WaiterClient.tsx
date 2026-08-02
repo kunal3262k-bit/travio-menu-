@@ -41,6 +41,13 @@ export default function WaiterClient({
     if (type === "REQUEST_BILL") {
       const socket = io();
       socket.emit("bill_confirmed", { tableId, restaurantId });
+      
+      // Auto-close all open orders for this table when bill is generated
+      await fetch(`/api/tables/clear`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tableId })
+      });
     }
 
     await fetch(`/api/waiter-requests`, {

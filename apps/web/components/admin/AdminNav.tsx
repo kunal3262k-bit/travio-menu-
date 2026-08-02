@@ -29,7 +29,7 @@ const navItems = [
   { href: "/admin/health", label: "Health", icon: Activity },
 ];
 
-export function AdminNav({ restaurantName }: { restaurantName: string }) {
+export function AdminNav({ restaurantName, userRole }: { restaurantName: string, userRole?: string }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -37,6 +37,12 @@ export function AdminNav({ restaurantName }: { restaurantName: string }) {
     if (item.exact) return pathname === item.href;
     return pathname.startsWith(item.href);
   }
+
+  const filteredNavItems = navItems.filter(item => {
+    if (userRole === "WAITER") return item.href === "/admin/waiter";
+    if (userRole === "KITCHEN") return item.href === "/admin/kitchen";
+    return true; // ADMIN sees all
+  });
 
   return (
     <>
@@ -78,7 +84,7 @@ export function AdminNav({ restaurantName }: { restaurantName: string }) {
         </div>
 
         <nav className="flex-1 py-4 space-y-1 px-3 overflow-y-auto">
-          {navItems.map((item) => {
+          {filteredNavItems.map((item) => {
             const active = isActive(item);
             return (
               <Link

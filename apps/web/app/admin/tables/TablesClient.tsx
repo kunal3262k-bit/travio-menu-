@@ -150,6 +150,22 @@ export default function TablesClient({ restaurant, initialTables }: { restaurant
                       Print QR
                     </button>
                     <button 
+                      onClick={async () => {
+                        if (confirm(`Force clear all active orders for Table ${table.number}? Use this if payment was made in cash or system is stuck.`)) {
+                          const res = await fetch("/api/tables/clear", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ tableId: table.id })
+                          });
+                          if (res.ok) alert("Table cleared successfully.");
+                          else alert("Failed to clear table.");
+                        }
+                      }}
+                      className="text-orange-600 font-bold text-sm hover:underline ml-3"
+                    >
+                      Force Clear
+                    </button>
+                    <button 
                       onClick={() => handleDelete(table.id)}
                       className="text-red-600 font-bold text-sm hover:underline"
                     >
