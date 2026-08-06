@@ -9,6 +9,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
+    // Ensure table exists and has an active session
+    const table = await prisma.table.findUnique({
+      where: { id: tableId }
+    });
+
+    if (table && !table.currentSessionId) {
+      const { randomUUID } = require('crypto');
+      await prisma.table.update({
+        where: { id: tableId },
+        data: { currentSessionId: randomUUID() }
+      });
+    }
+
     await prisma.tableScan.create({
       data: {
         restaurantId,

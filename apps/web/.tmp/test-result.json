@@ -1,0 +1,75 @@
+{
+  "categories": [
+    {
+      "categoryName": "STARTERS",
+      "items": [
+        {
+          "name": "Paneer Tikka",
+          "price": 250,
+          "isVeg": true,
+          "confidence": 0.88,
+          "needsReview": false
+        },
+        {
+          "name": "Chicken Wings",
+          "price": 320,
+          "isVeg": false,
+          "confidence": 0.88,
+          "needsReview": false
+        },
+        {
+          "name": "Crispy Corn",
+          "price": 180,
+          "isVeg": true,
+          "confidence": 0.88,
+          "needsReview": false
+        }
+      ]
+    },
+    {
+      "categoryName": "MAIN COURSE",
+      "items": [
+        {
+          "name": "Butter Chicken",
+          "price": 420,
+          "isVeg": false,
+          "confidence": 0.88,
+          "needsReview": false
+        },
+        {
+          "name": "Dal Makhani",
+          "price": 290,
+          "isVeg": true,
+          "confidence": 0.88,
+          "needsReview": false
+        },
+        {
+          "name": "Paneer Butter Masala",
+          "price": 350,
+          "isVeg": true,
+          "confidence": 0.88,
+          "needsReview": false
+        }
+      ]
+    },
+    {
+      "categoryName": "BREADS",
+      "items": [
+        {
+          "name": "Butter Naan",
+          "price": 60,
+          "isVeg": true,
+          "confidence": 0.88,
+          "needsReview": false
+        },
+        {
+          "name": "Garlic Naan",
+          "price": 80,
+          "isVeg": true,
+          "confidence": 0.88,
+          "needsReview": false
+        }
+      ]
+    }
+  ]
+}

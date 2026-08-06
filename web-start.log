@@ -1,0 +1,14 @@
+
+> web@0.1.0 start
+> set NODE_ENV=production&& tsx server.ts
+
+ ⚠ "next start" does not work with "output: standalone" configuration. Use "node .next/standalone/server.js" instead.
+> Ready on http://0.0.0.0:3001
+(node:22736) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ⨯ TypeError: Cannot read properties of undefined (reading 'length')
+    at <unknown> (C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\apps\web\.next\server\app\(auth)\login\page.js:291:47)
+    at Object.<anonymous> (C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\apps\web\.next\server\app\(auth)\login\page.js:294:3)
+ ⨯ TypeError: Cannot read properties of undefined (reading 'length')
+    at <unknown> (C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\apps\web\.next\server\app\admin\page.js:617:47)
+    at Object.<anonymous> (C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\apps\web\.next\server\app\admin\page.js:620:3)

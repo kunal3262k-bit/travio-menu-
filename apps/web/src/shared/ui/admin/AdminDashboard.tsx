@@ -19,7 +19,7 @@ export function AdminDashboard() {
   return (
     <main className="min-h-svh bg-[#f8f4ed]">
       <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-stone-300 bg-white px-5 py-6 lg:block">
-        <h1 className="text-2xl font-semibold">DineFlow</h1>
+        <h1 className="text-2xl font-semibold">SwiftTab</h1>
         <nav className="mt-8 space-y-1 text-sm font-semibold text-stone-700">
           {["Dashboard", "Tables", "Menu", "Orders", "Customers", "Analytics", "Settings"].map((item) => (
             <a key={item} className="block rounded-lg px-3 py-2 hover:bg-stone-100" href={`#${item.toLowerCase()}`}>{item}</a>

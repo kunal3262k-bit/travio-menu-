@@ -26,9 +26,9 @@ export async function POST(req: Request) {
       for (let cIdx = 0; cIdx < categories.length; cIdx++) {
         const cat = categories[cIdx];
         
-        // Ensure category name is unique within the payload if they left default names
-        const baseName = cat.categoryName || "Unnamed Category";
-        const uniqueName = cIdx === 0 ? baseName : `${baseName} ${cIdx + 1}`;
+        const rawName = (cat.categoryName || "Category").trim();
+        const existingCount = categories.slice(0, cIdx).filter(c => (c.categoryName || "Category").trim() === rawName).length;
+        const uniqueName = existingCount > 0 ? `${rawName} ${existingCount + 1}` : rawName;
 
         // 1. Create Category
         const category = await tx.category.create({

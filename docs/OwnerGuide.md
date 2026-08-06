@@ -1,6 +1,6 @@
-# DineFlow Restaurant Owner Guide
+# SwiftTab Restaurant Owner Guide
 
-Welcome to DineFlow! This guide covers everything you need to know to manage your restaurant using the Admin Dashboard.
+Welcome to SwiftTab! This guide covers everything you need to know to manage your restaurant using the Admin Dashboard.
 
 ## 1. Initial Setup
 1. Log in to your Admin Dashboard.

@@ -16,7 +16,7 @@ export default async function SetupQRPage() {
 
   if (!restaurant) return null;
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = process.env.APP_URL || 'http://localhost:3001';
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">

@@ -1,6 +1,6 @@
-# DineFlow QR Placement Guide
+# SwiftTab QR Placement Guide
 
-Setting up your QR codes correctly is the most important step for a successful DineFlow launch.
+Setting up your QR codes correctly is the most important step for a successful SwiftTab launch.
 
 ## 1. Generating QRs
 1. Go to **Setup > Tables** in your Admin Dashboard.

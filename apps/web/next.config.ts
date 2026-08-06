@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["paying-victory-sagging.ngrok-free.dev", "localhost:3001"],
   output: "standalone",
   images: {
     remotePatterns: [

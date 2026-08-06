@@ -1,6 +1,6 @@
-# DineFlow Troubleshooting Guide
+# SwiftTab Troubleshooting Guide
 
-If you experience any issues with DineFlow, follow these steps to resolve them quickly.
+If you experience any issues with SwiftTab, follow these steps to resolve them quickly.
 
 ## 1. Kitchen is not receiving orders
 - **Check Wi-Fi**: Ensure the kitchen tablet is connected to the internet.
@@ -21,4 +21,4 @@ If you experience any issues with DineFlow, follow these steps to resolve them q
 - The customer may have opened the menu before you marked it sold out. If they try to place the order, the system will reject it.
 
 ## Need Help?
-If these steps don't solve your issue, please contact your DineFlow account manager directly on WhatsApp.
+If these steps don't solve your issue, please contact your SwiftTab account manager directly on WhatsApp.

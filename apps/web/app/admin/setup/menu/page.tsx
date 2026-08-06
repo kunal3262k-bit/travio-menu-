@@ -9,6 +9,7 @@ type ExtractedItem = {
   name: string;
   price: number;
   isVeg: boolean | null;
+  needsReview?: boolean;
 };
 
 type ExtractedCategory = {
@@ -29,23 +30,69 @@ export default function SetupMenuPage() {
   const [showEditor, setShowEditor] = useState(false);
   const [error, setError] = useState("");
 
+  const compressClientImage = (file: File): Promise<Blob> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let { width, height } = img;
+        const maxDim = 1000;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(
+          (blob) => resolve(blob || file),
+          "image/jpeg",
+          0.8
+        );
+      };
+      img.onerror = () => resolve(file);
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
     setAnalyzing(true);
     setError("");
-    const formData = new FormData();
-    formData.append("image", e.target.files[0]);
-
     try {
+      const compressedBlob = await compressClientImage(e.target.files[0]);
+      const formData = new FormData();
+      formData.append("image", compressedBlob, "menu.jpg");
+
       const res = await fetch("/api/menu/import", { method: "POST", body: formData });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.message || "Import failed");
+      if (!res.ok) throw new Error(json.error || json.message || "Import failed");
       
       const parsedData = (json.data?.categories || []).map((c: any) => ({
         id: genId(),
-        categoryName: c.categoryName || "Unnamed",
-        items: (c.items || []).map((i: any) => ({ ...i, id: genId() }))
+        categoryName: c.categoryName || c.name || "Appetizers",
+        items: (c.items || []).map((i: any) => {
+          const p = Number(i.price);
+          const conf = Number(i.confidence || 1.0);
+          return {
+            ...i,
+            id: genId(),
+            name: i.name || "Special Dish",
+            price: isNaN(p) || p <= 0 ? 150 : p,
+            isVeg: typeof i.isVeg === "boolean" ? i.isVeg : true,
+            needsReview: i.needsReview || conf < 0.85
+          };
+        })
       }));
+      if (parsedData.length === 0 || parsedData.every((c: any) => c.items.length === 0)) {
+        throw new Error("No menu items could be detected. Please upload a clearer, well-lit photo of your menu.");
+      }
       setCategories(parsedData);
       setShowEditor(true);
     } catch (err: any) {
@@ -56,7 +103,7 @@ export default function SetupMenuPage() {
   };
 
   const addManualCategory = () => {
-    setCategories([...categories, { id: genId(), categoryName: "", items: [{ id: genId(), name: "", price: 0, isVeg: null }] }]);
+    setCategories([...categories, { id: genId(), categoryName: "", items: [{ id: genId(), name: "", price: 0, isVeg: null, needsReview: false }] }]);
     setShowEditor(true);
   };
 
@@ -109,7 +156,7 @@ export default function SetupMenuPage() {
         <div className="flex flex-col sm:flex-row gap-4">
           <label className={`cursor-pointer inline-flex items-center justify-center bg-black text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors ${analyzing ? "opacity-50 pointer-events-none" : ""}`}>
             {analyzing ? "Analyzing Image..." : "📷 Upload Menu Photo"}
-            <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handleImageUpload} disabled={analyzing} />
+            <input type="file" accept="image/*,.pdf,application/pdf" capture="environment" className="hidden" onChange={handleImageUpload} disabled={analyzing} />
           </label>
           <button onClick={addManualCategory} disabled={analyzing} className="bg-white border border-gray-300 text-black px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors">
             ✏️ Create Manually
@@ -150,12 +197,17 @@ export default function SetupMenuPage() {
 
           <div className="space-y-3">
             {cat.items.map((item, iIdx) => (
-              <div key={item.id} className="flex items-center gap-3 bg-gray-50 p-3 rounded-lg">
+              <div key={item.id} className={`flex items-center gap-3 p-3 rounded-lg border ${item.needsReview ? "bg-amber-50 border-amber-300" : "bg-gray-50 border-transparent"}`}>
+                {item.needsReview && (
+                  <span className="bg-amber-200 text-amber-900 text-xs px-2 py-0.5 rounded font-bold whitespace-nowrap" title="Low OCR confidence score - please verify price">
+                    ⚠️ Check Price
+                  </span>
+                )}
                 <input
                   value={item.name}
                   onChange={(e) => { const c = [...categories]; c[cIdx].items[iIdx].name = e.target.value; setCategories(c); }}
                   placeholder="Item Name"
-                  className="flex-1 bg-transparent border-b border-gray-200 focus:border-black px-1 py-1 text-sm outline-none"
+                  className="flex-1 bg-transparent border-b border-gray-200 focus:border-black px-1 py-1 text-sm outline-none font-medium"
                 />
                 <div className="relative">
                   <span className="absolute left-2 top-1.5 text-gray-400 text-sm">₹</span>

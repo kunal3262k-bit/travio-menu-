@@ -4,9 +4,9 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
   try {
-    const { email, password, restaurantName } = await req.json();
+    const { email, password, restaurantName, ownerName, phone } = await req.json();
 
-    if (!email || !password || !restaurantName) {
+    if (!email || !password || !restaurantName || !ownerName || !phone) {
       return NextResponse.json(
         { message: "Missing required fields" },
         { status: 400 }
@@ -45,6 +45,7 @@ export async function POST(req: Request) {
         data: {
           name: restaurantName,
           slug,
+          phone, // Save the phone number
           status: "SETUP",
           tables: {
             create: Array.from({ length: 10 }).map((_, i) => ({
@@ -59,7 +60,7 @@ export async function POST(req: Request) {
         data: {
           email,
           passwordHash,
-          name: "Admin", // Default name
+          name: ownerName, // Use the provided owner name
           role: "ADMIN",
           restaurantId: restaurant.id
         }

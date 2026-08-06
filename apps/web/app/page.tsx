@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { CheckCircle2, PlayCircle, Utensils, Zap, Users, TrendingUp } from "lucide-react";
+import DemoModal from "./components/DemoModal";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
       <nav className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
-        <div className="text-2xl font-black tracking-tighter text-emerald-950">DineFlow</div>
+        <div className="text-2xl font-black tracking-tighter text-emerald-950">SwiftTab</div>
         <div className="flex items-center gap-6">
           <Link href="/login" className="text-sm font-semibold text-gray-600 hover:text-emerald-900">Restaurant Login</Link>
           <Link href="/register" className="text-sm font-semibold bg-emerald-900 text-white px-5 py-2.5 rounded-lg hover:bg-emerald-800 transition">Get Started</Link>
@@ -26,9 +27,7 @@ export default function Home() {
           <Link href="/register" className="w-full sm:w-auto px-8 py-4 bg-emerald-900 text-white rounded-xl font-bold text-lg hover:bg-emerald-800 transition shadow-xl shadow-emerald-900/20">
             Start Free Trial
           </Link>
-          <button className="w-full sm:w-auto px-8 py-4 bg-gray-100 text-gray-900 rounded-xl font-bold text-lg hover:bg-gray-200 transition flex items-center justify-center gap-2">
-            <PlayCircle className="w-5 h-5" /> Watch Demo
-          </button>
+          <DemoModal />
         </div>
       </section>
 
@@ -59,7 +58,7 @@ export default function Home() {
             </div>
           </div>
           <div className="bg-emerald-900 p-8 rounded-3xl text-white shadow-2xl">
-            <h3 className="text-2xl font-bold mb-6">The DineFlow Solution</h3>
+            <h3 className="text-2xl font-bold mb-6">The SwiftTab Solution</h3>
             <ul className="space-y-4">
               <li className="flex gap-3 items-center text-lg"><CheckCircle2 className="text-emerald-400" /> Instant ordering, zero wait time</li>
               <li className="flex gap-3 items-center text-lg"><CheckCircle2 className="text-emerald-400" /> Beautiful digital menus that sell</li>
@@ -99,9 +98,15 @@ export default function Home() {
         
         <div className="bg-white text-slate-900 max-w-md mx-auto p-8 rounded-3xl shadow-2xl">
           <h3 className="text-2xl font-bold mb-2">Pro Plan</h3>
-          <div className="flex justify-center items-baseline mb-6">
-            <span className="text-5xl font-black">₹999</span>
-            <span className="text-gray-500 font-semibold">/month</span>
+          <div className="flex flex-col items-center justify-center mb-6">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-2xl font-bold text-gray-400 line-through decoration-red-500 decoration-2">₹2999</span>
+              <span className="text-sm font-bold text-emerald-600 bg-emerald-100 px-2 py-1 rounded-full uppercase tracking-wider">Early Adopter Offer</span>
+            </div>
+            <div className="flex items-baseline">
+              <span className="text-5xl font-black">₹999</span>
+              <span className="text-gray-500 font-semibold ml-1">/month</span>
+            </div>
           </div>
           <ul className="space-y-4 text-left mb-8">
             <li className="flex gap-3"><CheckCircle2 className="text-emerald-500" /> Unlimited Orders</li>
@@ -111,14 +116,14 @@ export default function Home() {
             <li className="flex gap-3"><CheckCircle2 className="text-emerald-500" /> Kitchen & Admin Dashboards</li>
           </ul>
           <Link href="/register" className="block w-full py-4 bg-emerald-900 text-white rounded-xl font-bold text-lg hover:bg-emerald-800 transition text-center">
-            Start 14-Day Free Trial
+            Start 7-Day Free Trial
           </Link>
         </div>
       </section>
 
       {/* FAQ & Footer Placeholder */}
       <footer className="bg-white py-12 px-6 text-center border-t">
-        <p className="text-gray-500 font-semibold">© 2026 DineFlow. Built for Indian Restaurants.</p>
+        <p className="text-gray-500 font-semibold">© 2026 SwiftTab. Built for Indian Restaurants.</p>
       </footer>
     </div>
   );

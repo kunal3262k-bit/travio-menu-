@@ -25,15 +25,44 @@ import { io } from "socket.io-client";
 export default function CustomerMenu({
   restaurant,
   table,
-  categories
+  categories,
+  openOrdersCount = 0
 }: {
   restaurant: any;
   table: any;
   categories: Category[];
+  openOrdersCount?: number;
 }) {
   const router = useRouter();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCallingWaiter, setIsCallingWaiter] = useState(false);
+  const [waiterCalled, setWaiterCalled] = useState(false);
+
+  const handleCallWaiter = async () => {
+    setIsCallingWaiter(true);
+    try {
+      await fetch("/api/waiter-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          restaurantSlug: restaurant.slug,
+          tableNumber: table.number,
+          type: "CALL_WAITER"
+        })
+      });
+      
+      const socket = io();
+      socket.emit("call_waiter", { restaurantId: restaurant.id, tableId: table.id });
+      
+      setWaiterCalled(true);
+      setTimeout(() => setWaiterCalled(false), 30000); // Allow calling again after 30s
+    } catch (err) {
+      alert("Failed to call waiter. Please try again.");
+    } finally {
+      setIsCallingWaiter(false);
+    }
+  };
 
   const formatPrice = (paise: number) => `₹${(paise / 100).toFixed(2)}`;
 
@@ -97,7 +126,6 @@ export default function CustomerMenu({
       // Clear cart
       setCart([]);
       
-      // Redirect to Order Tracking Page
       router.push(`/${restaurant.slug}/t/${table.number}/order/${order.id}`);
       
     } catch (err) {
@@ -109,10 +137,35 @@ export default function CustomerMenu({
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
+      {/* Active Orders Banner */}
+      {openOrdersCount > 0 && cart.length === 0 && (
+        <div 
+          onClick={() => router.push(`/${restaurant.slug}/t/${table.number}/payment`)}
+          className="bg-emerald-600 text-white px-4 py-3 flex justify-between items-center cursor-pointer hover:bg-emerald-700 transition-colors sticky top-0 z-20"
+        >
+          <div className="font-bold text-sm flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+            You have {openOrdersCount} active {openOrdersCount === 1 ? "order" : "orders"}
+          </div>
+          <div className="font-bold text-sm bg-black/20 px-3 py-1 rounded-full">
+            View / Pay Bill →
+          </div>
+        </div>
+      )}
+
       {/* Header */}
-      <header className="bg-white px-4 py-6 shadow-sm sticky top-0 z-10">
-        <h1 className="text-2xl font-bold">{restaurant.name}</h1>
-        <p className="text-gray-500 text-sm font-medium">Table {table.number}</p>
+      <header className={`bg-white px-4 py-6 shadow-sm sticky ${openOrdersCount > 0 && cart.length === 0 ? "top-[48px]" : "top-0"} z-10 flex justify-between items-center`}>
+        <div>
+          <h1 className="text-2xl font-bold">{restaurant.name}</h1>
+          <p className="text-gray-500 text-sm font-medium">Table {table.number}</p>
+        </div>
+        <button 
+          onClick={handleCallWaiter}
+          disabled={isCallingWaiter || waiterCalled}
+          className="bg-gray-100 text-black px-4 py-2 rounded-lg font-bold text-sm shadow-sm active:scale-95 transition-transform disabled:opacity-50"
+        >
+          {waiterCalled ? "Waiter Notified" : "Call Waiter 🛎️"}
+        </button>
       </header>
 
       {/* Menu Categories */}
@@ -121,7 +174,9 @@ export default function CustomerMenu({
           <div key={cat.id} className="space-y-4">
             <h2 className="text-xl font-bold border-b pb-2">{cat.name}</h2>
             <div className="space-y-4">
-              {cat.items.map((item) => (
+              {cat.items.map((item) => {
+                const cartItem = cart.find((c) => c.id === item.id);
+                return (
                 <div key={item.id} className="bg-white border rounded-lg p-4 flex gap-4 shadow-sm">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
@@ -143,15 +198,24 @@ export default function CustomerMenu({
                       </div>
                     )}
                     
-                    <button 
-                      onClick={() => addToCart(item)}
-                      className="mt-2 bg-black text-white px-4 py-1.5 rounded-md text-sm font-bold shadow-sm active:scale-95 transition-transform"
-                    >
-                      ADD +
-                    </button>
+                    {cartItem ? (
+                      <div className="mt-2 flex items-center gap-2 bg-black text-white px-2 py-1 rounded-md text-sm font-bold shadow-sm">
+                        <button onClick={() => updateQuantity(item.id, -1)} className="px-2 font-black hover:text-emerald-400 text-base">-</button>
+                        <span className="px-1 text-sm font-black">{cartItem.quantity}</span>
+                        <button onClick={() => updateQuantity(item.id, 1)} className="px-2 font-black hover:text-emerald-400 text-base">+</button>
+                      </div>
+                    ) : (
+                      <button 
+                        onClick={() => addToCart(item)}
+                        className="mt-2 bg-black text-white px-4 py-1.5 rounded-md text-sm font-bold shadow-sm active:scale-95 transition-transform"
+                      >
+                        ADD +
+                      </button>
+                    )}
                   </div>
                 </div>
-              ))}
+              );
+              })}
             </div>
           </div>
         ))}

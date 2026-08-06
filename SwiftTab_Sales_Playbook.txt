@@ -1,0 +1,109 @@
+SwiftTab Sales Playbook
+=========================
+
+Restaurant owners are incredibly busy, often stressed, and pitched to constantly. The golden rule of restaurant sales is: Be brief, focus on their pain (time/money), and show, don't just tell.
+
+Here are the exact scripts you should use when contacting your list of 493 leads.
+
+--------------------------------------------------
+
+📞 Strategy 1: The Cold Call (The "Send the Video" Approach)
+*Do not try to explain the whole software over the phone. The only goal of the cold call is to get permission to send them your 50-second cinematic demo video.*
+
+You: "Hi, is the owner or manager around?"
+
+(If Yes / When they get on the line)
+
+You: "Hi, I know you're super busy so I'll be quick. I'm a local software developer here in Delhi. I noticed you guys get really busy during peak hours, so I built a system that lets your customers order directly from their phones by scanning a QR code on the table."
+
+You: "It cuts waiter turnaround times in half and pushes orders straight to your kitchen. I have a quick 50-second video showing exactly how it works. Can I WhatsApp the video to you real quick just to see if you like the concept?"
+
+* Why this works: You aren't asking for a meeting or their money. You are just asking to send a 50-second video on WhatsApp. It's very low friction.
+
+
+🇮🇳 Hindi Version (Cold Call)
+-----------------------------
+You: "Hello, kya owner ya manager se baat ho sakti hai?"
+
+(When they get on the line)
+
+You: "Hi, mujhe pata hai aap busy honge toh main seedhe point par aata hoon. Main Delhi se ek software developer hoon. Maine dekha hai ki weekends par yahan kaafi bheed hoti hai, toh maine ek system banaya hai jisse customers table par rakhe QR code ko scan karke seedhe apne phone se order kar sakte hain."
+
+You: "Isse waiter ka time bachata hai aur order seedha kitchen mein chala jaata hai. Mere paas ek chota sa 50-second ka video hai jo dikhata hai yeh kaise kaam karta hai. Kya main aapko WhatsApp par bhej doon, bas ek baar dekhne ke liye?"
+
+--------------------------------------------------
+
+🚶 Strategy 2: The Walk-In (The "Physical Demo" Approach)
+*The most effective way to sell restaurant software is in person, during their "dead hours" (usually between 3:30 PM and 5:00 PM).*
+
+Preparation: 
+1. Print a physical QR code on a nice piece of cardstock. 
+2. Have your phone (acting as the customer) and a tablet (acting as the kitchen) ready.
+
+The Pitch:
+"Hi, are you the owner? I'm [Your Name], a local developer. I've built something that is going to save you a lot of money on staffing and increase your table turnover during busy nights. Do you have 60 seconds? I just want to show you."
+
+(Place the QR code on the counter)
+
+"Scan this with your phone. Notice how there's no app to download? Your customer just sees your menu immediately. Go ahead, tap the Wagyu Burger and hit order."
+
+(Hold up the Kitchen Tablet)
+
+"Look here—the exact second you hit order, it pops up on the kitchen tablet. No waiters running back and forth, no miswritten tickets. Your waiters can focus on hospitality, while the software handles the ordering."
+
+The Close: "I'm looking for 3 flagship restaurants in this area to launch this with for a massive discount. I'll set up your entire menu for free using our AI. Can we pilot this on just 3 of your tables next week?"
+
+
+🇮🇳 Hindi Version (The Walk-In)
+------------------------------
+The Pitch:
+"Hello, aap owner hain? Mera naam [Your Name] hai. Maine ek aisi cheez banayi hai jo busy nights mein aapka staff cost bachaayegi aur tables jaldi free karne mein madad karegi. Kya aapke paas 60 seconds hain? Main bas dikhana chahta hoon."
+
+(Place the QR code on the counter)
+
+"Apne phone se isko scan kijiye. Dekhiye, koi app download nahi karni padti. Customer ko menu turant dikh jaata hai. Aap khud ek item select karke 'order' dabaiye."
+
+(Hold up the Kitchen Tablet)
+
+"Ab yahan dekhiye—jaise hi order dabaya, woh turant kitchen ki is screen par aa gaya. Waiter ko aage-peeche nahi bhagna padega aur koi galat order nahi likha jayega. Aapka staff customers ko serve karne par dhyan dega, aur software order le lega."
+
+The Close: "Main is area mein 3 aache restaurants dhoondh raha hoon jinke saath hum isko start kar sakein, woh bhi kaafi discount par. Main aapka poora menu free mein AI ke through set up kar dunga. Kya hum isko agle hafte aapki bas 3 tables par test karke dekh sakte hain?"
+
+--------------------------------------------------
+
+🛡️ Handling Objections
+-------------------------
+
+Objection 1: "We already have enough waiters." / "Humare paas kaafi waiters hain."
+Your Response: "That's great! SwiftTab isn't meant to replace your best staff—it's meant to take the robotic order-taking off their plate so they can focus on hospitality, upselling drinks, and making sure the customers are actually happy."
+Hindi: "Bahut badhiya sir! SwiftTab ka kaam aapke staff ko nikalna nahi hai. Iska kaam hai unko order likhne ke stress se bachana, taaki woh customers ki service par zyada dhyan de sakein aur drinks ya desserts upsell kar sakein."
+
+Objection 2: "My customers aren't tech-savvy, they like physical menus." / "Humare customers ko physical menu hi pasand hai."
+Your Response: "I completely understand. You don't have to remove physical menus. Think of SwiftTab as an addition. Give physical menus to those who want them, but leave the QR code on the table. Most people under 40 will default to the QR code."
+Hindi: "Main samajh raha hoon. Aapko apne printed menus hatane ki zaroorat nahi hai. Jo physical menu maangega usko wahi dijiye, par table par QR code bhi rakhne dijiye. Aap hairan honge ki aaj-kal young log directly phone se order karna zyada pasand karte hain."
+
+Objection 3: "We use Zomato/Swiggy for POS, we don't need another system." / "Hum already Zomato/Swiggy use karte hain."
+Your Response: "Those are great for delivery, but they charge massive commissions and they don't help your dine-in efficiency. SwiftTab is strictly to make your dine-in experience faster."
+Hindi: "Sir, Zomato/Swiggy delivery ke liye bahut aache hain, par unki commission bahut zyada hoti hai. SwiftTab strictly aapke 'dine-in' customers (jo yahan baith kar khate hain) ke liye hai, taaki service tez ho aur aap weekends par zyada log attend kar sakein."
+
+--------------------------------------------------
+
+📧 The WhatsApp Follow-Up Template (Landing Page Link)
+*(Use this immediately after you get off a successful cold call)*
+
+"Hi [Name], it was great speaking with you briefly! 
+
+As promised, here is the link to our platform: [Your Website Link]
+
+When you open it, just click the *Watch Demo* button at the top to see the quick 50-second video of how the ordering system works. Also, as you'll see on the site, we are currently offering a massive early-adopter discount of ₹999/month for the first few restaurants in your area.
+
+Let me know what you think! I’d love to come by tomorrow at 4 PM to let you test it out on my phone for 2 minutes. Does that time work?"
+
+🇮🇳 Hindi Version (WhatsApp Follow-Up)
+"Hello [Name] sir, aapse baat karke aacha laga! 
+
+Jaisa maine bataya tha, yeh raha humari website ka link: [Your Website Link]
+
+Aap isko open karke sabse upar *Watch Demo* button par click kijiyega. Wahan ek 50-second ka chota sa video hai jisme aap dekh sakte hain ki yeh ordering system kaise kaam karta hai. Aur jaisa aap website par dekhenge, is area ke pehle kuch restaurants ke liye humari special early-adopter price sirf ₹999/month hai.
+
+Isko dekh kar batayiega aapko kaisa laga! Main kal shaam 4 baje aapse milne aa sakta hoon taaki aap khud mere phone par isko 2 minute try karke dekh sakein. Batayiega agar yeh time theek rahega toh."

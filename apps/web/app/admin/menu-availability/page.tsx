@@ -6,13 +6,14 @@ import AvailabilityClient from "./AvailabilityClient";
 
 export default async function MenuAvailabilityPage() {
   const session = await getServerSession(authOptions);
-  if (!session) redirect("/login");
+  if (!session || !session.user) redirect("/login");
 
   const categories = await prisma.category.findMany({
     where: { restaurantId: session.user.restaurantId },
     orderBy: { sortOrder: 'asc' },
     include: {
       items: {
+        where: { active: true },
         orderBy: { sortOrder: 'asc' }
       }
     }

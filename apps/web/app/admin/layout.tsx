@@ -25,7 +25,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   return (
     <div className="min-h-screen bg-gray-50">
       {!isSetup && <AdminNav restaurantName={restaurant.name} userRole={session.user.role} />}
-      <main className={!isSetup ? "lg:ml-64 pt-14 lg:pt-0" : ""}>
+      <main className={!isSetup ? "lg:ml-64 pt-14 lg:pt-0 print:ml-0 print:pt-0" : ""}>
         {children}
       </main>
       {restaurant && <AdminNotifications restaurantId={restaurant.id} />}

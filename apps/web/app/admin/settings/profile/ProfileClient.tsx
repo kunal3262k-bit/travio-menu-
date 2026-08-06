@@ -9,6 +9,7 @@ export default function ProfileClient({ restaurant }: { restaurant: any }) {
     name: restaurant.name || "",
     cuisine: restaurant.cuisine || "",
     address: restaurant.address || "",
+    gstNumber: restaurant.gstNumber || "",
     phone: restaurant.phone || "",
     instagramUrl: restaurant.instagramUrl || "",
     facebookUrl: restaurant.facebookUrl || "",
@@ -75,22 +76,34 @@ export default function ProfileClient({ restaurant }: { restaurant: any }) {
         </label>
       </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label className="text-sm font-bold">GSTIN / GST Number</label>
+          <input 
+            type="text" 
+            value={formData.gstNumber} 
+            onChange={e => setFormData({...formData, gstNumber: e.target.value.toUpperCase()})}
+            placeholder="e.g. 07AAAAA0000A1Z5"
+            className="w-full border p-2 rounded-lg uppercase"
+          />
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-bold">Phone Number</label>
+          <input 
+            type="text" 
+            value={formData.phone} 
+            onChange={e => setFormData({...formData, phone: e.target.value})}
+            className="w-full border p-2 rounded-lg"
+          />
+        </div>
+      </div>
+
       <div className="space-y-2">
         <label className="text-sm font-bold">Address</label>
         <textarea 
           value={formData.address} 
           onChange={e => setFormData({...formData, address: e.target.value})}
           className="w-full border p-2 rounded-lg min-h-[80px]"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-bold">Phone Number</label>
-        <input 
-          type="text" 
-          value={formData.phone} 
-          onChange={e => setFormData({...formData, phone: e.target.value})}
-          className="w-full border p-2 rounded-lg"
         />
       </div>
 

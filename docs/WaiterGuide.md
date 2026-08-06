@@ -1,4 +1,4 @@
-# DineFlow Waiter Guide
+# SwiftTab Waiter Guide
 
 This guide is for the floor staff operating the Waiter Dashboard.
 

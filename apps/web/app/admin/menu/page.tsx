@@ -6,7 +6,7 @@ import MenuEditorClient from "./MenuEditorClient";
 
 export default async function MenuEditorPage() {
   const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== "ADMIN") redirect("/login");
+  if (!session || !session.user || session.user.role !== "ADMIN") redirect("/login");
 
   const categories = await prisma.category.findMany({
     where: { restaurantId: session.user.restaurantId, active: true },

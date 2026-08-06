@@ -15,7 +15,9 @@ import {
   LogOut,
   Menu,
   X,
-  BookOpen
+  BookOpen,
+  MessageSquare,
+  ClipboardList
 } from "lucide-react";
 
 const navItems = [
@@ -23,8 +25,10 @@ const navItems = [
   { href: "/admin/kitchen", label: "Kitchen", icon: ChefHat },
   { href: "/admin/waiter", label: "Waiter", icon: Bell },
   { href: "/admin/tables", label: "Tables", icon: Grid3X3 },
+  { href: "/admin/orders/history", label: "Order History", icon: ClipboardList },
   { href: "/admin/menu", label: "Menu Editor", icon: BookOpen },
   { href: "/admin/menu-availability", label: "86 Items", icon: UtensilsCrossed },
+  { href: "/admin/feedback", label: "Feedback", icon: MessageSquare },
   { href: "/admin/settings", label: "Settings", icon: Settings },
   { href: "/admin/health", label: "Health", icon: Activity },
 ];
@@ -71,7 +75,7 @@ export function AdminNav({ restaurantName, userRole }: { restaurantName: string,
       >
         <div className="flex items-center justify-between p-5 border-b border-gray-800">
           <div>
-            <h2 className="text-lg font-bold tracking-tight">DineFlow</h2>
+            <h2 className="text-lg font-bold tracking-tight">SwiftTab</h2>
             <p className="text-xs text-gray-400 truncate max-w-[160px]">{restaurantName}</p>
           </div>
           <button

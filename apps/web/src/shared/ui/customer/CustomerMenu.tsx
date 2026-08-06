@@ -226,6 +226,7 @@ function CartPanel({
   addItem,
   onPlaceOrder,
   orderNumber,
+  isSubmitting,
   compact
 }: {
   cartLines: CartLine[];

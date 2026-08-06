@@ -18,12 +18,18 @@ export default async function PaymentPage({
 
   if (!restaurant || restaurant.tables.length === 0) return notFound();
 
-  // Find all open orders for this table
+  // Find all open unpaid orders for this table session (with 6-hour fallback for pre-migration orders)
+  const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
   const openOrders = await prisma.order.findMany({
     where: {
       restaurantId: restaurant.id,
       tableId: restaurant.tables[0].id,
-      status: { notIn: ["COMPLETED", "CANCELLED"] }
+      paymentStatus: { not: "PAID" },
+      status: { not: "CANCELLED" },
+      OR: [
+        { tableSessionId: restaurant.tables[0].currentSessionId ?? "NONE_ACTIVE" },
+        { tableSessionId: null, createdAt: { gte: sixHoursAgo } }
+      ]
     },
     include: { items: true }
   });

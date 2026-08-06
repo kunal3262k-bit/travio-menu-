@@ -3,12 +3,42 @@
 import { useState, useEffect } from "react";
 import { io } from "socket.io-client";
 import { useRouter } from "next/navigation";
+import { useNotificationSound } from "@/lib/sound";
 
 export default function OrderStatusClient({ order }: { order: any }) {
   const router = useRouter();
   const [status, setStatus] = useState(order.status);
   const [isRequestingBill, setIsRequestingBill] = useState(false);
   const [billRequested, setBillRequested] = useState(false);
+  const [isCallingWaiter, setIsCallingWaiter] = useState(false);
+  const [waiterCalled, setWaiterCalled] = useState(false);
+  const { isSoundEnabled, playSound, unlockSound } = useNotificationSound();
+
+  const handleCallWaiter = async () => {
+    setIsCallingWaiter(true);
+    try {
+      await fetch("/api/waiter-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          restaurantSlug: order.restaurant.slug,
+          tableNumber: order.table.number,
+          type: "CALL_WAITER"
+        })
+      });
+      
+      const socket = io();
+      socket.emit("call_waiter", { restaurantId: order.restaurantId, tableId: order.tableId });
+      void playSound("waiter");
+      
+      setWaiterCalled(true);
+      setTimeout(() => setWaiterCalled(false), 30000);
+    } catch (err) {
+      alert("Failed to call waiter. Please try again.");
+    } finally {
+      setIsCallingWaiter(false);
+    }
+  };
 
   useEffect(() => {
     const socket = io();
@@ -17,13 +47,14 @@ export default function OrderStatusClient({ order }: { order: any }) {
     socket.on("order_status_changed", (data) => {
       if (data.orderId === order.id) {
         setStatus(data.status);
+        void playSound("status");
       }
     });
 
     return () => {
       socket.disconnect();
     };
-  }, [order.id]);
+  }, [order.id, playSound]);
 
   const requestBill = () => {
     setIsRequestingBill(true);
@@ -33,6 +64,7 @@ export default function OrderStatusClient({ order }: { order: any }) {
       tableId: order.tableId, 
       orderId: order.id 
     });
+    void playSound("payment");
     setBillRequested(true);
     setIsRequestingBill(false);
     
@@ -59,6 +91,14 @@ export default function OrderStatusClient({ order }: { order: any }) {
       <div className="text-center">
         <p className="text-sm font-medium text-gray-500 uppercase tracking-widest">Order #{order.orderNumber}</p>
         <h2 className="text-xl font-bold mt-2">{getStatusText()}</h2>
+        {!isSoundEnabled && (
+          <button
+            onClick={unlockSound}
+            className="mt-4 rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-xs font-bold text-amber-800"
+          >
+            Enable status sounds
+          </button>
+        )}
       </div>
 
       <div className="space-y-4">
@@ -85,13 +125,23 @@ export default function OrderStatusClient({ order }: { order: any }) {
           + Order More Food
         </button>
 
-        <button 
-          onClick={requestBill}
-          disabled={isRequestingBill || billRequested}
-          className="w-full bg-black text-white py-3 rounded-lg font-bold hover:bg-gray-800 disabled:opacity-50"
-        >
-          {billRequested ? "Bill Requested" : "Request Bill"}
-        </button>
+        <div className="flex gap-4">
+          <button 
+            onClick={handleCallWaiter}
+            disabled={isCallingWaiter || waiterCalled}
+            className="w-1/2 bg-gray-100 text-black py-3 rounded-lg font-bold hover:bg-gray-200 disabled:opacity-50"
+          >
+            {waiterCalled ? "Waiter Notified" : "Call Waiter 🛎️"}
+          </button>
+          
+          <button 
+            onClick={requestBill}
+            disabled={isRequestingBill || billRequested}
+            className="w-1/2 bg-black text-white py-3 rounded-lg font-bold hover:bg-gray-800 disabled:opacity-50"
+          >
+            {billRequested ? "Bill Requested" : "Request Bill 🧾"}
+          </button>
+        </div>
       </div>
     </div>
   );

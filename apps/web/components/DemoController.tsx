@@ -59,7 +59,7 @@ export function DemoController() {
         </a>
       </div>
       
-      <p className="text-xs text-gray-500 mt-4 text-center">Login with demo@dineflow.com / demo123</p>
+      <p className="text-xs text-gray-500 mt-4 text-center">Login with demo@swifttab.com / demo123</p>
     </div>
   );
 }

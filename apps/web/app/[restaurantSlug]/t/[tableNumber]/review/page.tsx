@@ -23,6 +23,7 @@ export default async function ReviewPage({
         <ReviewClient 
           restaurantName={restaurant.name} 
           googleReviewUrl={googleReviewUrl || ""} 
+          restaurantSlug={restaurantSlug}
         />
         <div className="mt-8 text-center">
           <a href={`/${restaurantSlug}/t/${tableNumber}`} className="text-emerald-700 font-medium hover:underline">

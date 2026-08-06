@@ -28,7 +28,7 @@ export async function POST(req: Request) {
         users: {
           create: {
             name: "Demo Owner",
-            email: "demo@dineflow.com",
+            email: "demo@swifttab.com",
             passwordHash: hashedPassword,
             role: UserRole.ADMIN
           }

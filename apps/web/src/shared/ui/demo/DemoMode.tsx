@@ -116,7 +116,7 @@ export function DemoMode() {
       <header className="sticky top-0 z-30 border-b border-stone-300/80 bg-[#f8f4ed]/95 px-4 py-3 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
           <Link href="/" className="focus-ring rounded-md text-sm font-semibold tracking-wide text-emerald-900">
-            DineFlow
+            SwiftTab
           </Link>
           <div className="flex items-center gap-2">
             <Button variant="ghost" onClick={resetDemo}>

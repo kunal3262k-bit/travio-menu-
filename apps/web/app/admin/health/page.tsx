@@ -41,7 +41,7 @@ export default async function HealthDashboardPage() {
 
         <div className="bg-white border rounded-xl p-6 shadow-sm flex items-center justify-between">
           <div>
-            <p className="text-gray-500 font-bold mb-1">DineFlow Version</p>
+            <p className="text-gray-500 font-bold mb-1">SwiftTab Version</p>
             <p className="font-bold">v1.4.0 (Phase 4A)</p>
           </div>
           <div className="bg-gray-100 px-3 py-1 rounded-md text-xs font-bold text-gray-500">PROD</div>

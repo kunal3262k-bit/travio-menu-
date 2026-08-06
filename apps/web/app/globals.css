@@ -23,7 +23,7 @@ body {
   margin: 0;
   background: hsl(var(--background));
   color: hsl(var(--foreground));
-  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  font-family: Arial, Helvetica, system-ui, -apple-system, sans-serif;
 }
 
 button,
@@ -55,4 +55,32 @@ select {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--muted));
+}
+
+@media print {
+  /* Set page size to standard 80mm thermal receipt roll */
+  @page {
+    size: 80mm auto;
+    margin: 0;
+  }
+
+  /* Hide all elements on the page by default */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Only show elements inside .print-container */
+  .print-container, .print-container * {
+    visibility: visible;
+  }
+
+  /* Reset positioning so it prints from the top left */
+  .print-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80mm; /* strictly enforce thermal width */
+    margin: 0;
+    padding: 0;
+  }
 }

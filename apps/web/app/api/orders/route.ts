@@ -63,12 +63,44 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  // 5 AM Business-Day Cutoff calculation for dailyOrderNumber
+  const now = new Date();
+  const startOfDay = new Date(now);
+  if (now.getHours() < 5) {
+    startOfDay.setDate(startOfDay.getDate() - 1);
+  }
+  startOfDay.setHours(5, 0, 0, 0);
+
   const order = await prisma.$transaction(async (tx) => {
     const lastOrder = await tx.order.findFirst({
       where: { restaurantId: context.restaurant.id },
       orderBy: { orderNumber: "desc" },
       select: { orderNumber: true }
     });
+
+    const lastDailyOrder = await tx.order.findFirst({
+      where: {
+        restaurantId: context.restaurant.id,
+        createdAt: { gte: startOfDay }
+      },
+      orderBy: { dailyOrderNumber: "desc" },
+      select: { dailyOrderNumber: true }
+    });
+
+    const dailyOrderNumber = (lastDailyOrder?.dailyOrderNumber ?? 0) + 1;
+    
+    // NOTE: invoiceNumber is NO LONGER assigned at creation to prevent gaps from cancelled orders.
+    // It is assigned atomically in a separate route ONLY when the bill is fully PAID.
+
+    let currentSessionId = context.table.currentSessionId;
+    if (!currentSessionId) {
+      const { randomUUID } = require('crypto');
+      currentSessionId = randomUUID();
+      await tx.table.update({
+        where: { id: context.table.id },
+        data: { currentSessionId }
+      });
+    }
 
     const customer =
       parsed.data.customerName || parsed.data.customerPhone
@@ -87,6 +119,8 @@ export async function POST(request: NextRequest) {
         tableId: context.table.id,
         customerId: customer?.id,
         orderNumber: (lastOrder?.orderNumber ?? 0) + 1,
+        dailyOrderNumber,
+        tableSessionId: currentSessionId,
         subtotalPaise,
         taxPaise,
         totalPaise,

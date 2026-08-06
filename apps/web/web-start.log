@@ -1,0 +1,33 @@
+
+> web@0.1.0 start
+> set NODE_ENV=production&& tsx server.ts
+
+ ⚠ "next start" does not work with "output: standalone" configuration. Use "node .next/standalone/server.js" instead.
+> Ready on http://0.0.0.0:3001
+(node:612) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Socket davS7iXuaBDt1GPrAAAB joined room kitchen_cms91iz3t0000va38f3b7bnyr
+Socket davS7iXuaBDt1GPrAAAB joined room waiter_cms91iz3t0000va38f3b7bnyr
+Socket davS7iXuaBDt1GPrAAAB joined room admin_cms91iz3t0000va38f3b7bnyr
+Socket 4uvUls8OkSUasireAAAD joined room kitchen_cms91iz3t0000va38f3b7bnyr
+Socket KdkD1yhFshhZKKNjAAAH joined room kitchen_cms91iz3t0000va38f3b7bnyr
+Socket KdkD1yhFshhZKKNjAAAH joined room waiter_cms91iz3t0000va38f3b7bnyr
+Socket KdkD1yhFshhZKKNjAAAH joined room admin_cms91iz3t0000va38f3b7bnyr
+Socket iaaIuGuXMHFtyfFXAAAJ joined room kitchen_cms91iz3t0000va38f3b7bnyr
+Socket kc_ijgsrWuk3DK3GAAAN joined room kitchen_cms91iz3t0000va38f3b7bnyr
+Socket SDIYC-BItxTBeF6nAAAP joined room kitchen_cms91iz3t0000va38f3b7bnyr
+Socket eJ9ThfL6vmYZoCzyAAAR joined room waiter_cms91iz3t0000va38f3b7bnyr
+Socket uyc8ErzoZJpxXSxoAAAT joined room kitchen_cms91iz3t0000va38f3b7bnyr
+Socket uyc8ErzoZJpxXSxoAAAT joined room waiter_cms91iz3t0000va38f3b7bnyr
+Socket uyc8ErzoZJpxXSxoAAAT joined room admin_cms91iz3t0000va38f3b7bnyr
+Socket ddBki1dwVxhGbwLoAAAV joined room waiter_cms91iz3t0000va38f3b7bnyr
+Socket PbgEimuppeHQi0okAAAX joined room kitchen_cms91iz3t0000va38f3b7bnyr
+Socket hw32IiL5wbRCH4QMAAAZ joined room kitchen_cms91iz3t0000va38f3b7bnyr
+Socket hw32IiL5wbRCH4QMAAAZ joined room waiter_cms91iz3t0000va38f3b7bnyr
+Socket hw32IiL5wbRCH4QMAAAZ joined room admin_cms91iz3t0000va38f3b7bnyr
+Socket zQOi5Bt_IUV5WcqRAAAd joined room waiter_cms91iz3t0000va38f3b7bnyr
+Socket LLkOAAythzf45QTpAAAf joined room waiter_cms91iz3t0000va38f3b7bnyr
+Socket oSYyVj52tu01FkDXAAAh joined room kitchen_cms91iz3t0000va38f3b7bnyr
+Socket aWndq52rdqw0fUWkAAAj joined room kitchen_cms91iz3t0000va38f3b7bnyr
+Socket aWndq52rdqw0fUWkAAAj joined room waiter_cms91iz3t0000va38f3b7bnyr
+Socket aWndq52rdqw0fUWkAAAj joined room admin_cms91iz3t0000va38f3b7bnyr

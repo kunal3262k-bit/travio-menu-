@@ -6,7 +6,7 @@ import OperationsClient from "./OperationsClient";
 
 export default async function OperationsSettingsPage() {
   const session = await getServerSession(authOptions);
-  if (!session) redirect("/login");
+  if (!session || !session.user) redirect("/login");
 
   const restaurant = await prisma.restaurant.findUnique({
     where: { id: session.user.restaurantId }

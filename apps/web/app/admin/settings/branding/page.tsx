@@ -6,7 +6,7 @@ import BrandingClient from "./BrandingClient";
 
 export default async function BrandingSettingsPage() {
   const session = await getServerSession(authOptions);
-  if (!session) redirect("/login");
+  if (!session || !session.user) redirect("/login");
 
   const restaurant = await prisma.restaurant.findUnique({
     where: { id: session.user.restaurantId }

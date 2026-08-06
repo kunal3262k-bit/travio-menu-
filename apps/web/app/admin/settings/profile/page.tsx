@@ -6,7 +6,7 @@ import ProfileClient from "./ProfileClient";
 
 export default async function ProfileSettingsPage() {
   const session = await getServerSession(authOptions);
-  if (!session) redirect("/login");
+  if (!session || !session.user) redirect("/login");
 
   const restaurant = await prisma.restaurant.findUnique({
     where: { id: session.user.restaurantId }

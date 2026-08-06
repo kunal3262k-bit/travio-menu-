@@ -2,43 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { io } from "socket.io-client";
+import { useNotificationSound } from "@/lib/sound";
+import ThermalReceiptPrint from "../components/ThermalReceiptPrint";
 
-export default function KitchenClient({ initialOrders, restaurantId }: { initialOrders: any[], restaurantId: string }) {
+export default function KitchenClient({ initialOrders, restaurantId, restaurant }: { initialOrders: any[], restaurantId: string, restaurant?: any }) {
   const [orders, setOrders] = useState(initialOrders);
   const [unacknowledged, setUnacknowledged] = useState<string[]>([]);
-  const [isAudioEnabled, setIsAudioEnabled] = useState(false);
+  const [printingOrder, setPrintingOrder] = useState<any>(null);
+  const { isSoundEnabled, playSound, unlockSound } = useNotificationSound();
 
   const playPingSound = () => {
-    try {
-      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioContext) return;
-      const ctx = new AudioContext();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(880, ctx.currentTime); // A5
-      osc.frequency.setValueAtTime(1318.5, ctx.currentTime + 0.1); // E6
-      
-      gain.gain.setValueAtTime(0, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(1, ctx.currentTime + 0.05);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-      
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.5);
-    } catch (e) {
-      console.warn("Audio play failed");
-    }
+    void playSound("order");
   };
-
-  useEffect(() => {
-    // Attempt to enable audio on any user interaction
-    const enableAudio = () => setIsAudioEnabled(true);
-    window.addEventListener("click", enableAudio, { once: true });
-    return () => window.removeEventListener("click", enableAudio);
-  }, []);
 
   useEffect(() => {
     const socket = io();
@@ -63,7 +38,7 @@ export default function KitchenClient({ initialOrders, restaurantId }: { initial
     return () => {
       socket.disconnect();
     };
-  }, [restaurantId]);
+  }, [restaurantId, playSound]);
 
   const updateStatus = async (orderId: string, status: string) => {
     // Optimistic update
@@ -80,9 +55,9 @@ export default function KitchenClient({ initialOrders, restaurantId }: { initial
       // We don't necessarily need to reload here because our optimistic update worked,
       // and the server route we hit should emit the event to the customer.
       // Wait, we need the API route to emit the socket event! But we can't emit from the API route easily.
-      // So the client emits it here!
+      const currentOrder = orders.find(o => o.id === orderId);
       const socket = io();
-      socket.emit("order_status_updated", { orderId, status, restaurantId });
+      socket.emit("order_status_updated", { orderId, status, restaurantId, tableId: currentOrder?.tableId || currentOrder?.table?.id });
     } catch (err) {
       alert("Failed to update status");
       window.location.reload();
@@ -110,8 +85,8 @@ export default function KitchenClient({ initialOrders, restaurantId }: { initial
 
   return (
     <>
-      {!isAudioEnabled && (
-        <div className="bg-blue-900 text-blue-100 p-4 rounded-xl mb-6 text-center font-bold animate-pulse cursor-pointer border border-blue-500" onClick={() => setIsAudioEnabled(true)}>
+      {!isSoundEnabled && (
+        <div className="bg-blue-900 text-blue-100 p-4 rounded-xl mb-6 text-center font-bold animate-pulse cursor-pointer border border-blue-500" onClick={unlockSound}>
           Click anywhere to enable order sound alerts 🔔
         </div>
       )}
@@ -126,8 +101,12 @@ export default function KitchenClient({ initialOrders, restaurantId }: { initial
           <div key={order.id} className={`rounded-xl p-6 ${cardClasses} flex flex-col`}>
           <div className="flex justify-between items-start mb-4">
             <div>
-              <h3 className="text-2xl font-black">Table {order.table.number}</h3>
-              <p className="text-sm text-gray-400">Order #{order.orderNumber}</p>
+              <h3 className="text-2xl font-black">
+                {order.sessionType === "CAR"
+                  ? `🚗 ${order.carColor || ""} ${order.carBrand || ""} — ${order.customerName || "Car Customer"}`
+                  : `Table ${order.table?.number || ""}`}
+              </h3>
+              <p className="text-sm text-gray-400">Order #{order.dailyOrderNumber || order.orderNumber}</p>
             </div>
             <div className="bg-white/10 px-3 py-1 rounded-full text-sm font-bold uppercase tracking-wider">
               {isUnack ? "NEW!" : order.status}
@@ -189,16 +168,48 @@ export default function KitchenClient({ initialOrders, restaurantId }: { initial
             )}
             {order.status === "READY" && (
               <button 
-                onClick={() => updateStatus(order.id, "COMPLETED")}
-                className="col-span-2 bg-gray-700 hover:bg-gray-600 text-white py-4 rounded-lg font-bold text-xl transition-colors"
+                onClick={() => updateStatus(order.id, "SERVED")}
+                className="col-span-2 bg-green-700 hover:bg-green-600 text-white py-4 rounded-lg font-bold text-xl transition-colors"
               >
-                Finish Order
+                Mark as Served
               </button>
             )}
+
+            <button
+              onClick={() => setPrintingOrder({
+                orderNumber: order.dailyOrderNumber || order.orderNumber,
+                sessionType: order.sessionType,
+                tableNumber: order.table?.number,
+                carBrand: order.carBrand,
+                carColor: order.carColor,
+                carLicensePlate: order.carLicensePlate,
+                customerName: order.customerName,
+                createdAt: order.createdAt,
+                paymentMethod: order.paymentMethod,
+                paymentStatus: order.paymentStatus,
+                subtotalPaise: order.subtotalPaise,
+                taxPaise: order.taxPaise,
+                totalPaise: order.totalPaise,
+                items: order.items || []
+              })}
+              className="col-span-2 bg-gray-800 hover:bg-gray-700 text-gray-200 py-2.5 rounded-lg font-bold text-sm flex items-center justify-center gap-2 border border-gray-700 mt-2"
+            >
+              🖨️ Print Kitchen / Thermal Bill
+            </button>
           </div>
         </div>
-      ))}
+        );
+      })}
     </div>
+
+    {/* THERMAL BILL PRINT MODAL */}
+    {printingOrder && (
+      <ThermalReceiptPrint 
+        restaurant={restaurant || { name: "SwiftTab Restaurant" }} 
+        order={printingOrder} 
+        onClose={() => setPrintingOrder(null)} 
+      />
+    )}
     </>
   );
 }

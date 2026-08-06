@@ -1,4 +1,4 @@
-# DineFlow Kitchen Guide
+# SwiftTab Kitchen Guide
 
 This guide is for the kitchen staff operating the Kitchen Display System (KDS).
 

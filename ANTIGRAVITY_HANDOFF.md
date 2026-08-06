@@ -1,13 +1,19 @@
-# DineFlow Antigravity Handoff
+# SwiftTab Antigravity Handoff
 
 ## Project
 
-DineFlow is a Next.js 15 MVP scaffold for a multi-tenant QR restaurant ordering platform.
+SwiftTab is a Next.js 15 MVP scaffold for a multi-tenant QR restaurant ordering platform.
 
 Main folder:
 
 ```text
 outputs/dineflow
+```
+
+Active app folder:
+
+```text
+outputs/dineflow/apps/web
 ```
 
 ## What Is Included
@@ -56,7 +62,7 @@ This looks like a local dev-server/browser-state problem, not a production build
 
 ## Recommended Antigravity Steps
 
-1. Open the `outputs/dineflow` folder.
+1. Open the `outputs/dineflow/apps/web` folder.
 
 2. Install dependencies:
 

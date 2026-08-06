@@ -19,12 +19,14 @@ export default function RegisterPage() {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
     const restaurantName = formData.get("restaurantName") as string;
+    const ownerName = formData.get("ownerName") as string;
+    const phone = formData.get("phone") as string;
 
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, restaurantName }),
+        body: JSON.stringify({ email, password, restaurantName, ownerName, phone }),
       });
 
       if (!res.ok) {
@@ -54,7 +56,7 @@ export default function RegisterPage() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-md space-y-8 rounded-xl bg-white p-8 shadow-sm border border-gray-100">
         <div className="text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900">Start DineFlow</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-gray-900">Start SwiftTab</h2>
           <p className="mt-2 text-sm text-gray-600">Get your restaurant online in seconds.</p>
         </div>
 
@@ -65,12 +67,31 @@ export default function RegisterPage() {
               <input name="restaurantName" type="text" required className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black" />
             </div>
             <div>
+              <label className="block text-sm font-medium text-gray-700">Owner Name</label>
+              <input name="ownerName" type="text" required className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+              <input name="phone" type="tel" required pattern="[0-9]{10}" placeholder="10-digit mobile number" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black" />
+            </div>
+            <div>
               <label className="block text-sm font-medium text-gray-700">Email address</label>
               <input name="email" type="email" required className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Password</label>
               <input name="password" type="password" required className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black" />
+            </div>
+          </div>
+
+          <div className="flex items-start">
+            <div className="flex h-5 items-center">
+              <input id="consent" name="consent" type="checkbox" required className="h-4 w-4 rounded border-gray-300 text-black focus:ring-black" />
+            </div>
+            <div className="ml-3 text-sm">
+              <label htmlFor="consent" className="text-gray-600">
+                I agree to the collection of my personal data for account creation and service updates, in compliance with the DPDP Act 2023.
+              </label>
             </div>
           </div>
 

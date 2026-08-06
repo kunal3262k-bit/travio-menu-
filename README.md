@@ -1,10 +1,20 @@
-# DineFlow
+# SwiftTab
 
 Production-oriented MVP scaffold for a multi-tenant QR restaurant ordering platform for India.
 
+## Current App Location
+
+This repository is now a monorepo. The active Next.js app is:
+
+```text
+apps/web
+```
+
+See `TAKEOVER_STATUS.md` for the latest takeover notes, verification status, and known local Prisma file-lock issue.
+
 ## Scope
 
-DineFlow lets a customer scan a table QR, open `/menu/{restaurantSlug}/{tableNumber}`, browse a mobile menu, add instructions, place an order, and send it to the kitchen. Restaurant staff use the kitchen board for order status and the admin panel for operational management.
+SwiftTab lets a customer scan a table QR, open `/menu/{restaurantSlug}/{tableNumber}`, browse a mobile menu, add instructions, place an order, and send it to the kitchen. Restaurant staff use the kitchen board for order status and the admin panel for operational management.
 
 This is intentionally not a POS, inventory, accounting, payroll, GST, CRM, coupon, or delivery system.
 
@@ -21,6 +31,7 @@ This is intentionally not a POS, inventory, accounting, payroll, GST, CRM, coupo
 ## Run Locally
 
 ```bash
+cd apps/web
 cp .env.example .env
 docker compose up -d postgres
 npm install
@@ -30,10 +41,10 @@ npm run dev
 
 Open:
 
-- Client demo: `http://localhost:3000/demo`
-- Customer: `http://localhost:3000/menu/abc-cafe/12`
-- Kitchen: `http://localhost:3000/kitchen`
-- Admin: `http://localhost:3000/admin`
+- Client demo: `http://localhost:3001/demo`
+- Customer QR flow: `http://localhost:3001/demo/t/1`
+- Kitchen: `http://localhost:3001/admin/kitchen`
+- Admin: `http://localhost:3001/admin`
 
 The `/demo` route is a database-free walkthrough for client presentations. The operational UI currently uses demo data while the API and Prisma schema define the production persistence boundaries.
 
@@ -52,20 +63,19 @@ The `/demo` route is a database-free walkthrough for client presentations. The o
 ## Project Structure
 
 ```text
-app/
+apps/web/app/
   api/                    Next.js API routes
   admin/                  restaurant admin workspace
-  kitchen/                kitchen display board
-  menu/[slug]/[table]/    customer QR menu
-components/
+  [restaurantSlug]/t/     customer QR table flow
+apps/web/components/
   admin/ customer/ kitchen/
   ui/                     reusable shadcn-style primitives
-lib/
+apps/web/src/shared/
   auth.ts                 JWT signing and verification
   tenant.ts               restaurant/table resolution
   validation.ts           zod request schemas
   upsell.ts               smart upsell selector
-prisma/
+apps/web/prisma/
   schema.prisma           normalized multi-tenant data model
 docs/
   architecture.md

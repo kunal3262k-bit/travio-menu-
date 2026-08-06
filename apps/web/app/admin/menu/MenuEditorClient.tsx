@@ -131,14 +131,46 @@ export default function MenuEditorClient({ initialCategories }: { initialCategor
     }
   };
 
+  const compressClientImage = (file: File): Promise<Blob> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let { width, height } = img;
+        const maxDim = 1000;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(
+          (blob) => resolve(blob || file),
+          "image/jpeg",
+          0.8
+        );
+      };
+      img.onerror = () => resolve(file);
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
   const handleAiImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setIsAiExtracting(true);
     try {
+      const compressedBlob = await compressClientImage(file);
       const formData = new FormData();
-      formData.append("image", file);
+      formData.append("image", compressedBlob, "menu.jpg");
 
       const res = await fetch("/api/menu/import", {
         method: "POST",
@@ -147,32 +179,38 @@ export default function MenuEditorClient({ initialCategories }: { initialCategor
 
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.message || "Extraction failed");
+        throw new Error(err.error || err.message || "Extraction failed");
       }
 
       const { data } = await res.json();
       
-      if (data && data.categories) {
-        // Map AI data to our schema format
+      if (data && data.categories && Array.isArray(data.categories)) {
+        // Map AI data to our schema format with safe fallbacks
         const newExtractedCategories = data.categories.map((cat: any) => ({
           id: Date.now().toString() + Math.random().toString(),
-          name: cat.categoryName,
+          name: cat.categoryName || cat.name || "Appetizers",
           isNew: true,
-          items: cat.items.map((item: any, idx: number) => ({
-            id: Date.now().toString() + Math.random().toString() + idx,
-            name: item.name,
-            description: "",
-            pricePaise: item.price * 100, // API returns raw number like 150
-            foodType: item.isVeg === true ? "VEG" : item.isVeg === false ? "NON_VEG" : "VEG",
-            spicyLevel: 0,
-            isNew: true
-          }))
+          items: (cat.items || []).map((item: any, idx: number) => {
+            const rawPrice = Number(item.price);
+            const safePricePaise = isNaN(rawPrice) || rawPrice <= 0 ? 15000 : Math.round(rawPrice * 100);
+            return {
+              id: Date.now().toString() + Math.random().toString() + idx,
+              name: item.name || "Special Dish",
+              description: item.description || "",
+              pricePaise: safePricePaise,
+              foodType: item.isVeg === true ? "VEG" : item.isVeg === false ? "NON_VEG" : "VEG",
+              spicyLevel: 0,
+              isNew: true
+            };
+          })
         }));
 
-        const combinedCategories = [...categories, ...newExtractedCategories];
-        setCategories(combinedCategories);
-        handleSave(combinedCategories);
-        alert("✨ AI successfully extracted your menu! Please review the prices and categories.");
+        if (newExtractedCategories.length > 0) {
+          const combinedCategories = [...categories, ...newExtractedCategories];
+          setCategories(combinedCategories);
+          handleSave(combinedCategories);
+          alert("✨ AI successfully extracted your menu! Please review the prices and categories.");
+        }
       }
     } catch (error: any) {
       alert("AI Extraction failed: " + error.message);

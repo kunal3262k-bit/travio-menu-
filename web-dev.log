@@ -1,0 +1,233 @@
+
+> web@0.1.0 dev
+> tsx server.ts
+
+> Ready on http://0.0.0.0:3001
+(node:7788) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ○ Compiling /admin ...
+ ✓ Compiled /admin in 2.8s (1151 modules)
+ GET /admin/kitchen 307 in 3685ms
+ GET /admin 307 in 3852ms
+ ○ Compiling /login ...
+ ✓ Compiled /login in 995ms (1158 modules)
+ GET /login 200 in 1476ms
+ GET /login 200 in 1629ms
+ ⚠ Cross origin request detected from paying-victory-sagging.ngrok-free.dev to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+prisma:query SELECT "public"."Restaurant"."id", "public"."Restaurant"."name", "public"."Restaurant"."status"::text, "public"."Restaurant"."slug" FROM "public"."Restaurant" WHERE ("public"."Restaurant"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Order"."id", "public"."Order"."restaurantId", "public"."Order"."tableId", "public"."Order"."customerId", "public"."Order"."orderNumber", "public"."Order"."status"::text, "public"."Order"."paymentMethod"::text, "public"."Order"."paymentStatus"::text, "public"."Order"."subtotalPaise", "public"."Order"."taxPaise", "public"."Order"."totalPaise", "public"."Order"."instructions", "public"."Order"."estimatedReadyAt", "public"."Order"."idempotencyKey", "public"."Order"."createdAt", "public"."Order"."updatedAt" FROM "public"."Order" WHERE ("public"."Order"."restaurantId" = $1 AND "public"."Order"."createdAt" >= $2) OFFSET $3
+prisma:query SELECT "public"."Table"."id", "public"."Table"."restaurantId", "public"."Table"."number", "public"."Table"."label", "public"."Table"."active", "public"."Table"."qrToken", "public"."Table"."createdAt" FROM "public"."Table" WHERE "public"."Table"."id" IN ($1,$2) OFFSET $3
+prisma:query SELECT "public"."OrderItem"."id", "public"."OrderItem"."orderId", "public"."OrderItem"."menuItemId", "public"."OrderItem"."nameSnapshot", "public"."OrderItem"."pricePaise", "public"."OrderItem"."quantity", "public"."OrderItem"."instructions" FROM "public"."OrderItem" WHERE "public"."OrderItem"."orderId" IN ($1,$2,$3,$4) OFFSET $5
+prisma:query SELECT "public"."Table"."id", "public"."Table"."restaurantId", "public"."Table"."number", "public"."Table"."label", "public"."Table"."active", "public"."Table"."qrToken", "public"."Table"."createdAt" FROM "public"."Table" WHERE "public"."Table"."restaurantId" = $1 OFFSET $2
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."TableScan"."id" FROM "public"."TableScan" WHERE ("public"."TableScan"."restaurantId" = $1 AND "public"."TableScan"."createdAt" >= $2) OFFSET $3) AS "sub"
+prisma:query SELECT "public"."Restaurant"."id", "public"."Restaurant"."status"::text FROM "public"."Restaurant" WHERE ("public"."Restaurant"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /admin 200 in 466ms
+ ○ Compiling /api/auth/[...nextauth] ...
+ ✓ Compiled /api/auth/[...nextauth] in 659ms (1155 modules)
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+prisma:query SELECT "public"."Restaurant"."id", "public"."Restaurant"."name", "public"."Restaurant"."status"::text, "public"."Restaurant"."slug" FROM "public"."Restaurant" WHERE ("public"."Restaurant"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Order"."id", "public"."Order"."restaurantId", "public"."Order"."tableId", "public"."Order"."customerId", "public"."Order"."orderNumber", "public"."Order"."status"::text, "public"."Order"."paymentMethod"::text, "public"."Order"."paymentStatus"::text, "public"."Order"."subtotalPaise", "public"."Order"."taxPaise", "public"."Order"."totalPaise", "public"."Order"."instructions", "public"."Order"."estimatedReadyAt", "public"."Order"."idempotencyKey", "public"."Order"."createdAt", "public"."Order"."updatedAt" FROM "public"."Order" WHERE ("public"."Order"."restaurantId" = $1 AND "public"."Order"."createdAt" >= $2) OFFSET $3
+prisma:query SELECT "public"."Table"."id", "public"."Table"."restaurantId", "public"."Table"."number", "public"."Table"."label", "public"."Table"."active", "public"."Table"."qrToken", "public"."Table"."createdAt" FROM "public"."Table" WHERE "public"."Table"."id" IN ($1,$2) OFFSET $3
+prisma:query SELECT "public"."OrderItem"."id", "public"."OrderItem"."orderId", "public"."OrderItem"."menuItemId", "public"."OrderItem"."nameSnapshot", "public"."OrderItem"."pricePaise", "public"."OrderItem"."quantity", "public"."OrderItem"."instructions" FROM "public"."OrderItem" WHERE "public"."OrderItem"."orderId" IN ($1,$2,$3,$4) OFFSET $5
+prisma:query SELECT "public"."Table"."id", "public"."Table"."restaurantId", "public"."Table"."number", "public"."Table"."label", "public"."Table"."active", "public"."Table"."qrToken", "public"."Table"."createdAt" FROM "public"."Table" WHERE "public"."Table"."restaurantId" = $1 OFFSET $2
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."TableScan"."id" FROM "public"."TableScan" WHERE ("public"."TableScan"."restaurantId" = $1 AND "public"."TableScan"."createdAt" >= $2) OFFSET $3) AS "sub"
+prisma:query SELECT "public"."Restaurant"."id", "public"."Restaurant"."status"::text FROM "public"."Restaurant" WHERE ("public"."Restaurant"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /admin 200 in 387ms
+ GET /api/auth/session 200 in 52ms
+Socket VnLUBgIBl9Tg3akpAAAD joined room kitchen_cms91iz3t0000va38f3b7bnyr
+Socket VnLUBgIBl9Tg3akpAAAD joined room waiter_cms91iz3t0000va38f3b7bnyr
+Socket VnLUBgIBl9Tg3akpAAAD joined room admin_cms91iz3t0000va38f3b7bnyr
+ ✓ Compiled /admin/kitchen in 220ms (837 modules)
+prisma:query SELECT "public"."Order"."id", "public"."Order"."restaurantId", "public"."Order"."tableId", "public"."Order"."customerId", "public"."Order"."orderNumber", "public"."Order"."status"::text, "public"."Order"."paymentMethod"::text, "public"."Order"."paymentStatus"::text, "public"."Order"."subtotalPaise", "public"."Order"."taxPaise", "public"."Order"."totalPaise", "public"."Order"."instructions", "public"."Order"."estimatedReadyAt", "public"."Order"."idempotencyKey", "public"."Order"."createdAt", "public"."Order"."updatedAt" FROM "public"."Order" WHERE ("public"."Order"."restaurantId" = $1 AND "public"."Order"."status" NOT IN (CAST($2::text AS "public"."OrderStatus"),CAST($3::text AS "public"."OrderStatus"),CAST($4::text AS "public"."OrderStatus"))) ORDER BY "public"."Order"."createdAt" ASC OFFSET $5
+prisma:query SELECT "public"."Table"."id", "public"."Table"."restaurantId", "public"."Table"."number", "public"."Table"."label", "public"."Table"."active", "public"."Table"."qrToken", "public"."Table"."createdAt" FROM "public"."Table" WHERE "public"."Table"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."OrderItem"."id", "public"."OrderItem"."orderId", "public"."OrderItem"."menuItemId", "public"."OrderItem"."nameSnapshot", "public"."OrderItem"."pricePaise", "public"."OrderItem"."quantity", "public"."OrderItem"."instructions" FROM "public"."OrderItem" WHERE "public"."OrderItem"."orderId" IN ($1) OFFSET $2
+ GET /admin/kitchen 200 in 452ms
+Socket ZyPuqP7kdF2FPKT1AAAG joined room kitchen_cms91iz3t0000va38f3b7bnyr
+ ○ Compiling /api/orders/[orderId]/status ...
+ ✓ Compiled /api/orders/[orderId]/status in 716ms (1187 modules)
+prisma:query BEGIN
+prisma:query UPDATE "public"."Order" SET "status" = CAST($1::text AS "public"."OrderStatus"), "updatedAt" = $2 WHERE ("public"."Order"."id" = $3 AND "public"."Order"."restaurantId" = $4)
+prisma:query COMMIT
+ PATCH /api/orders/cmsea5mwd000qva4segwckjzd/status 200 in 2115ms
+prisma:query SELECT 1
+prisma:query BEGIN
+prisma:query UPDATE "public"."Order" SET "status" = CAST($1::text AS "public"."OrderStatus"), "updatedAt" = $2 WHERE ("public"."Order"."id" = $3 AND "public"."Order"."restaurantId" = $4)
+prisma:query COMMIT
+ PATCH /api/orders/cmsea5mwd000qva4segwckjzd/status 200 in 106ms
+prisma:query BEGIN
+prisma:query UPDATE "public"."Order" SET "status" = CAST($1::text AS "public"."OrderStatus"), "updatedAt" = $2 WHERE ("public"."Order"."id" = $3 AND "public"."Order"."restaurantId" = $4)
+prisma:query COMMIT
+ PATCH /api/orders/cmsea5mwd000qva4segwckjzd/status 200 in 63ms
+prisma:query SELECT "public"."Order"."id", "public"."Order"."restaurantId", "public"."Order"."tableId", "public"."Order"."customerId", "public"."Order"."orderNumber", "public"."Order"."status"::text, "public"."Order"."paymentMethod"::text, "public"."Order"."paymentStatus"::text, "public"."Order"."subtotalPaise", "public"."Order"."taxPaise", "public"."Order"."totalPaise", "public"."Order"."instructions", "public"."Order"."estimatedReadyAt", "public"."Order"."idempotencyKey", "public"."Order"."createdAt", "public"."Order"."updatedAt" FROM "public"."Order" WHERE ("public"."Order"."restaurantId" = $1 AND "public"."Order"."createdAt" >= $2) OFFSET $3
+prisma:query SELECT "public"."Table"."id", "public"."Table"."restaurantId", "public"."Table"."number", "public"."Table"."label", "public"."Table"."active", "public"."Table"."qrToken", "public"."Table"."createdAt" FROM "public"."Table" WHERE "public"."Table"."id" IN ($1,$2) OFFSET $3
+prisma:query SELECT "public"."OrderItem"."id", "public"."OrderItem"."orderId", "public"."OrderItem"."menuItemId", "public"."OrderItem"."nameSnapshot", "public"."OrderItem"."pricePaise", "public"."OrderItem"."quantity", "public"."OrderItem"."instructions" FROM "public"."OrderItem" WHERE "public"."OrderItem"."orderId" IN ($1,$2,$3,$4) OFFSET $5
+prisma:query SELECT "public"."Table"."id", "public"."Table"."restaurantId", "public"."Table"."number", "public"."Table"."label", "public"."Table"."active", "public"."Table"."qrToken", "public"."Table"."createdAt" FROM "public"."Table" WHERE "public"."Table"."restaurantId" = $1 OFFSET $2
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."TableScan"."id" FROM "public"."TableScan" WHERE ("public"."TableScan"."restaurantId" = $1 AND "public"."TableScan"."createdAt" >= $2) OFFSET $3) AS "sub"
+prisma:query SELECT "public"."Restaurant"."id", "public"."Restaurant"."status"::text FROM "public"."Restaurant" WHERE ("public"."Restaurant"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /admin 200 in 132ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ○ Compiling /[restaurantSlug]/t/[tableNumber]/order/[orderId] ...
+ ✓ Compiled /[restaurantSlug]/t/[tableNumber]/order/[orderId] in 614ms (1195 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /cyz/t/10/order/cmsea5mwd000qva4segwckjzd 200 in 860ms
+prisma:query SELECT "public"."Order"."id", "public"."Order"."restaurantId", "public"."Order"."tableId", "public"."Order"."customerId", "public"."Order"."orderNumber", "public"."Order"."status"::text, "public"."Order"."paymentMethod"::text, "public"."Order"."paymentStatus"::text, "public"."Order"."subtotalPaise", "public"."Order"."taxPaise", "public"."Order"."totalPaise", "public"."Order"."instructions", "public"."Order"."estimatedReadyAt", "public"."Order"."idempotencyKey", "public"."Order"."createdAt", "public"."Order"."updatedAt" FROM "public"."Order" WHERE "public"."Order"."id" IN ($1,$2) OFFSET $3
+prisma:query SELECT "public"."OrderItem"."id", "public"."OrderItem"."orderId", "public"."OrderItem"."menuItemId", "public"."OrderItem"."nameSnapshot", "public"."OrderItem"."pricePaise", "public"."OrderItem"."quantity", "public"."OrderItem"."instructions" FROM "public"."OrderItem" WHERE "public"."OrderItem"."orderId" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Restaurant"."id", "public"."Restaurant"."name", "public"."Restaurant"."slug", "public"."Restaurant"."logoUrl", "public"."Restaurant"."currency", "public"."Restaurant"."serviceEnabled", "public"."Restaurant"."status"::text, "public"."Restaurant"."createdAt", "public"."Restaurant"."updatedAt", "public"."Restaurant"."coverImage", "public"."Restaurant"."brandColor", "public"."Restaurant"."phone", "public"."Restaurant"."address", "public"."Restaurant"."googleReviewUrl", "public"."Restaurant"."upiQrUrl", "public"."Restaurant"."cuisine", "public"."Restaurant"."isVegOnly", "public"."Restaurant"."instagramUrl", "public"."Restaurant"."facebookUrl", "public"."Restaurant"."websiteUrl", "public"."Restaurant"."settings" FROM "public"."Restaurant" WHERE "public"."Restaurant"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Table"."id", "public"."Table"."restaurantId", "public"."Table"."number", "public"."Table"."label", "public"."Table"."active", "public"."Table"."qrToken", "public"."Table"."createdAt" FROM "public"."Table" WHERE "public"."Table"."id" IN ($1) OFFSET $2
+ GET /cyz/t/10/order/cmsea5mwd000qva4segwckjzd 200 in 1127ms
+ GET /api/auth/session 200 in 125ms
+Socket K3_fdjUai83nycv_AAAO joined room order_cmsea5mwd000qva4segwckjzd
+ ○ Compiling /api/waiter-requests ...
+ ✓ Compiled /api/waiter-requests in 564ms (1199 modules)
+prisma:query SELECT 1
+prisma:query SELECT "public"."Restaurant"."id", "public"."Restaurant"."name", "public"."Restaurant"."slug", "public"."Restaurant"."serviceEnabled" FROM "public"."Restaurant" WHERE ("public"."Restaurant"."slug" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Table"."id", "public"."Table"."restaurantId", "public"."Table"."number", "public"."Table"."label", "public"."Table"."active", "public"."Table"."qrToken", "public"."Table"."createdAt" FROM "public"."Table" WHERE (("public"."Table"."restaurantId" = $1 AND "public"."Table"."number" = $2) AND 1=1) LIMIT $3 OFFSET $4
+prisma:query INSERT INTO "public"."WaiterRequest" ("id","restaurantId","tableId","type","status","createdAt","updatedAt") VALUES ($1,$2,$3,CAST($4::text AS "public"."RequestType"),CAST($5::text AS "public"."RequestStatus"),$6,$7) RETURNING "public"."WaiterRequest"."id", "public"."WaiterRequest"."restaurantId", "public"."WaiterRequest"."tableId", "public"."WaiterRequest"."type"::text, "public"."WaiterRequest"."status"::text, "public"."WaiterRequest"."createdAt", "public"."WaiterRequest"."updatedAt"
+ POST /api/waiter-requests 201 in 737ms
+ ○ Compiling /[restaurantSlug]/t/[tableNumber] ...
+ ✓ Compiled /[restaurantSlug]/t/[tableNumber] in 1045ms (1210 modules)
+prisma:query SELECT "public"."Restaurant"."id", "public"."Restaurant"."name", "public"."Restaurant"."slug", "public"."Restaurant"."logoUrl", "public"."Restaurant"."currency", "public"."Restaurant"."serviceEnabled", "public"."Restaurant"."status"::text, "public"."Restaurant"."createdAt", "public"."Restaurant"."updatedAt", "public"."Restaurant"."coverImage", "public"."Restaurant"."brandColor", "public"."Restaurant"."phone", "public"."Restaurant"."address", "public"."Restaurant"."googleReviewUrl", "public"."Restaurant"."upiQrUrl", "public"."Restaurant"."cuisine", "public"."Restaurant"."isVegOnly", "public"."Restaurant"."instagramUrl", "public"."Restaurant"."facebookUrl", "public"."Restaurant"."websiteUrl", "public"."Restaurant"."settings" FROM "public"."Restaurant" WHERE ("public"."Restaurant"."slug" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Category"."id", "public"."Category"."restaurantId", "public"."Category"."name", "public"."Category"."sortOrder", "public"."Category"."active" FROM "public"."Category" WHERE ("public"."Category"."active" = $1 AND "public"."Category"."restaurantId" IN ($2)) ORDER BY "public"."Category"."sortOrder" ASC OFFSET $3
+prisma:query SELECT "public"."MenuItem"."id", "public"."MenuItem"."restaurantId", "public"."MenuItem"."categoryId", "public"."MenuItem"."name", "public"."MenuItem"."description", "public"."MenuItem"."imageUrl", "public"."MenuItem"."pricePaise", "public"."MenuItem"."foodType"::text, "public"."MenuItem"."spicyLevel", "public"."MenuItem"."available", "public"."MenuItem"."active", "public"."MenuItem"."preparationMin", "public"."MenuItem"."sortOrder", "public"."MenuItem"."createdAt", "public"."MenuItem"."updatedAt" FROM "public"."MenuItem" WHERE (("public"."MenuItem"."available" = $1 AND "public"."MenuItem"."active" = $2) AND "public"."MenuItem"."categoryId" IN ($3,$4,$5,$6,$7,$8,$9,$10,$11,$12)) ORDER BY "public"."MenuItem"."sortOrder" ASC OFFSET $13
+prisma:query SELECT "public"."Table"."id", "public"."Table"."restaurantId", "public"."Table"."number", "public"."Table"."label", "public"."Table"."active", "public"."Table"."qrToken", "public"."Table"."createdAt" FROM "public"."Table" WHERE ("public"."Table"."number" = $1 AND "public"."Table"."restaurantId" IN ($2)) OFFSET $3
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."Order"."id" FROM "public"."Order" WHERE ("public"."Order"."tableId" = $1 AND "public"."Order"."restaurantId" = $2 AND "public"."Order"."status" NOT IN (CAST($3::text AS "public"."OrderStatus"),CAST($4::text AS "public"."OrderStatus"))) OFFSET $5) AS "sub"
+ GET /cyz/t/10 200 in 2320ms
+ ✓ Compiled /api/orders in 504ms (1212 modules)
+prisma:query SELECT "public"."Restaurant"."id", "public"."Restaurant"."name", "public"."Restaurant"."slug", "public"."Restaurant"."serviceEnabled" FROM "public"."Restaurant" WHERE ("public"."Restaurant"."slug" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Table"."id", "public"."Table"."restaurantId", "public"."Table"."number", "public"."Table"."label", "public"."Table"."active", "public"."Table"."qrToken", "public"."Table"."createdAt" FROM "public"."Table" WHERE (("public"."Table"."restaurantId" = $1 AND "public"."Table"."number" = $2) AND 1=1) LIMIT $3 OFFSET $4
+prisma:query SELECT "public"."MenuItem"."id", "public"."MenuItem"."restaurantId", "public"."MenuItem"."categoryId", "public"."MenuItem"."name", "public"."MenuItem"."description", "public"."MenuItem"."imageUrl", "public"."MenuItem"."pricePaise", "public"."MenuItem"."foodType"::text, "public"."MenuItem"."spicyLevel", "public"."MenuItem"."available", "public"."MenuItem"."active", "public"."MenuItem"."preparationMin", "public"."MenuItem"."sortOrder", "public"."MenuItem"."createdAt", "public"."MenuItem"."updatedAt" FROM "public"."MenuItem" WHERE ("public"."MenuItem"."restaurantId" = $1 AND "public"."MenuItem"."id" IN ($2,$3,$4) AND "public"."MenuItem"."available" = $5) OFFSET $6
+prisma:query BEGIN
+prisma:query SELECT "public"."Order"."id", "public"."Order"."orderNumber" FROM "public"."Order" WHERE "public"."Order"."restaurantId" = $1 ORDER BY "public"."Order"."orderNumber" DESC LIMIT $2 OFFSET $3
+prisma:query INSERT INTO "public"."Order" ("id","restaurantId","tableId","orderNumber","status","paymentStatus","subtotalPaise","taxPaise","totalPaise","estimatedReadyAt","createdAt","updatedAt") VALUES ($1,$2,$3,$4,CAST($5::text AS "public"."OrderStatus"),CAST($6::text AS "public"."PaymentStatus"),$7,$8,$9,$10,$11,$12) RETURNING "public"."Order"."id"
+prisma:query INSERT INTO "public"."OrderItem" ("id","orderId","menuItemId","nameSnapshot","pricePaise","quantity") VALUES ($1,$2,$3,$4,$5,$6), ($7,$8,$9,$10,$11,$12), ($13,$14,$15,$16,$17,$18)
+prisma:query SELECT "public"."Order"."id", "public"."Order"."restaurantId", "public"."Order"."tableId", "public"."Order"."customerId", "public"."Order"."orderNumber", "public"."Order"."status"::text, "public"."Order"."paymentMethod"::text, "public"."Order"."paymentStatus"::text, "public"."Order"."subtotalPaise", "public"."Order"."taxPaise", "public"."Order"."totalPaise", "public"."Order"."instructions", "public"."Order"."estimatedReadyAt", "public"."Order"."idempotencyKey", "public"."Order"."createdAt", "public"."Order"."updatedAt" FROM "public"."Order" WHERE "public"."Order"."id" = $1 LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."OrderItem"."id", "public"."OrderItem"."orderId", "public"."OrderItem"."menuItemId", "public"."OrderItem"."nameSnapshot", "public"."OrderItem"."pricePaise", "public"."OrderItem"."quantity", "public"."OrderItem"."instructions" FROM "public"."OrderItem" WHERE "public"."OrderItem"."orderId" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Table"."id", "public"."Table"."restaurantId", "public"."Table"."number", "public"."Table"."label", "public"."Table"."active", "public"."Table"."qrToken", "public"."Table"."createdAt" FROM "public"."Table" WHERE "public"."Table"."id" IN ($1) OFFSET $2
+prisma:query COMMIT
+ POST /api/orders 201 in 711ms
+prisma:query SELECT "public"."Order"."id", "public"."Order"."restaurantId", "public"."Order"."tableId", "public"."Order"."customerId", "public"."Order"."orderNumber", "public"."Order"."status"::text, "public"."Order"."paymentMethod"::text, "public"."Order"."paymentStatus"::text, "public"."Order"."subtotalPaise", "public"."Order"."taxPaise", "public"."Order"."totalPaise", "public"."Order"."instructions", "public"."Order"."estimatedReadyAt", "public"."Order"."idempotencyKey", "public"."Order"."createdAt", "public"."Order"."updatedAt" FROM "public"."Order" WHERE ("public"."Order"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."OrderItem"."id", "public"."OrderItem"."orderId", "public"."OrderItem"."menuItemId", "public"."OrderItem"."nameSnapshot", "public"."OrderItem"."pricePaise", "public"."OrderItem"."quantity", "public"."OrderItem"."instructions" FROM "public"."OrderItem" WHERE "public"."OrderItem"."orderId" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Restaurant"."id", "public"."Restaurant"."name", "public"."Restaurant"."slug", "public"."Restaurant"."logoUrl", "public"."Restaurant"."currency", "public"."Restaurant"."serviceEnabled", "public"."Restaurant"."status"::text, "public"."Restaurant"."createdAt", "public"."Restaurant"."updatedAt", "public"."Restaurant"."coverImage", "public"."Restaurant"."brandColor", "public"."Restaurant"."phone", "public"."Restaurant"."address", "public"."Restaurant"."googleReviewUrl", "public"."Restaurant"."upiQrUrl", "public"."Restaurant"."cuisine", "public"."Restaurant"."isVegOnly", "public"."Restaurant"."instagramUrl", "public"."Restaurant"."facebookUrl", "public"."Restaurant"."websiteUrl", "public"."Restaurant"."settings" FROM "public"."Restaurant" WHERE "public"."Restaurant"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."Table"."id", "public"."Table"."restaurantId", "public"."Table"."number", "public"."Table"."label", "public"."Table"."active", "public"."Table"."qrToken", "public"."Table"."createdAt" FROM "public"."Table" WHERE "public"."Table"."id" IN ($1) OFFSET $2
+ GET /cyz/t/10/order/cmseafpdc0003va0cqhf5acrh 200 in 128ms
+Socket Qu2XD5JQ6BfadRVpAAAV joined room order_cmseafpdc0003va0cqhf5acrh
+prisma:query SELECT "public"."Order"."id", "public"."Order"."restaurantId", "public"."Order"."tableId", "public"."Order"."customerId", "public"."Order"."orderNumber", "public"."Order"."status"::text, "public"."Order"."paymentMethod"::text, "public"."Order"."paymentStatus"::text, "public"."Order"."subtotalPaise", "public"."Order"."taxPaise", "public"."Order"."totalPaise", "public"."Order"."instructions", "public"."Order"."estimatedReadyAt", "public"."Order"."idempotencyKey", "public"."Order"."createdAt", "public"."Order"."updatedAt" FROM "public"."Order" WHERE ("public"."Order"."restaurantId" = $1 AND "public"."Order"."status" NOT IN (CAST($2::text AS "public"."OrderStatus"),CAST($3::text AS "public"."OrderStatus"),CAST($4::text AS "public"."OrderStatus"))) ORDER BY "public"."Order"."createdAt" ASC OFFSET $5
+prisma:query SELECT "public"."Table"."id", "public"."Table"."restaurantId", "public"."Table"."number", "public"."Table"."label", "public"."Table"."active", "public"."Table"."qrToken", "public"."Table"."createdAt" FROM "public"."Table" WHERE "public"."Table"."id" IN ($1) OFFSET $2
+prisma:query SELECT "public"."OrderItem"."id", "public"."OrderItem"."orderId", "public"."OrderItem"."menuItemId", "public"."OrderItem"."nameSnapshot", "public"."OrderItem"."pricePaise", "public"."OrderItem"."quantity", "public"."OrderItem"."instructions" FROM "public"."OrderItem" WHERE "public"."OrderItem"."orderId" IN ($1,$2) OFFSET $3
+ GET /admin/kitchen 200 in 165ms
+Socket 019GEn3Ji3rTBq_IAAAY joined room kitchen_cms91iz3t0000va38f3b7bnyr
+prisma:query SELECT 1
+prisma:query BEGIN
+prisma:query UPDATE "public"."Order" SET "status" = CAST($1::text AS "public"."OrderStatus"), "updatedAt" = $2 WHERE ("public"."Order"."id" = $3 AND "public"."Order"."restaurantId" = $4)
+prisma:query COMMIT
+ PATCH /api/orders/cmseafpdc0003va0cqhf5acrh/status 200 in 126ms
+prisma:query BEGIN
+prisma:query UPDATE "public"."Order" SET "status" = CAST($1::text AS "public"."OrderStatus"), "updatedAt" = $2 WHERE ("public"."Order"."id" = $3 AND "public"."Order"."restaurantId" = $4)
+prisma:query COMMIT
+ PATCH /api/orders/cmsea5mwd000qva4segwckjzd/status 200 in 44ms
+prisma:query BEGIN
+prisma:query UPDATE "public"."Order" SET "status" = CAST($1::text AS "public"."OrderStatus"), "updatedAt" = $2 WHERE ("public"."Order"."id" = $3 AND "public"."Order"."restaurantId" = $4)
+prisma:query COMMIT
+ PATCH /api/orders/cmseafpdc0003va0cqhf5acrh/status 200 in 51ms
+prisma:query SELECT "public"."Order"."id", "public"."Order"."restaurantId", "public"."Order"."tableId", "public"."Order"."customerId", "public"."Order"."orderNumber", "public"."Order"."status"::text, "public"."Order"."paymentMethod"::text, "public"."Order"."paymentStatus"::text, "public"."Order"."subtotalPaise", "public"."Order"."taxPaise", "public"."Order"."totalPaise", "public"."Order"."instructions", "public"."Order"."estimatedReadyAt", "public"."Order"."idempotencyKey", "public"."Order"."createdAt", "public"."Order"."updatedAt" FROM "public"."Order" WHERE ("public"."Order"."restaurantId" = $1 AND "public"."Order"."createdAt" >= $2) OFFSET $3
+prisma:query SELECT "public"."Table"."id", "public"."Table"."restaurantId", "public"."Table"."number", "public"."Table"."label", "public"."Table"."active", "public"."Table"."qrToken", "public"."Table"."createdAt" FROM "public"."Table" WHERE "public"."Table"."id" IN ($1,$2) OFFSET $3
+prisma:query SELECT "public"."OrderItem"."id", "public"."OrderItem"."orderId", "public"."OrderItem"."menuItemId", "public"."OrderItem"."nameSnapshot", "public"."OrderItem"."pricePaise", "public"."OrderItem"."quantity", "public"."OrderItem"."instructions" FROM "public"."OrderItem" WHERE "public"."OrderItem"."orderId" IN ($1,$2,$3,$4,$5) OFFSET $6
+prisma:query SELECT "public"."Table"."id", "public"."Table"."restaurantId", "public"."Table"."number", "public"."Table"."label", "public"."Table"."active", "public"."Table"."qrToken", "public"."Table"."createdAt" FROM "public"."Table" WHERE "public"."Table"."restaurantId" = $1 OFFSET $2
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."TableScan"."id" FROM "public"."TableScan" WHERE ("public"."TableScan"."restaurantId" = $1 AND "public"."TableScan"."createdAt" >= $2) OFFSET $3) AS "sub"
+prisma:query SELECT "public"."Restaurant"."id", "public"."Restaurant"."status"::text FROM "public"."Restaurant" WHERE ("public"."Restaurant"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /admin 200 in 71ms
+prisma:query SELECT "public"."Restaurant"."id", "public"."Restaurant"."name", "public"."Restaurant"."slug", "public"."Restaurant"."serviceEnabled" FROM "public"."Restaurant" WHERE ("public"."Restaurant"."slug" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Table"."id", "public"."Table"."restaurantId", "public"."Table"."number", "public"."Table"."label", "public"."Table"."active", "public"."Table"."qrToken", "public"."Table"."createdAt" FROM "public"."Table" WHERE (("public"."Table"."restaurantId" = $1 AND "public"."Table"."number" = $2) AND 1=1) LIMIT $3 OFFSET $4
+prisma:query INSERT INTO "public"."WaiterRequest" ("id","restaurantId","tableId","type","status","createdAt","updatedAt") VALUES ($1,$2,$3,CAST($4::text AS "public"."RequestType"),CAST($5::text AS "public"."RequestStatus"),$6,$7) RETURNING "public"."WaiterRequest"."id", "public"."WaiterRequest"."restaurantId", "public"."WaiterRequest"."tableId", "public"."WaiterRequest"."type"::text, "public"."WaiterRequest"."status"::text, "public"."WaiterRequest"."createdAt", "public"."WaiterRequest"."updatedAt"
+ POST /api/waiter-requests 201 in 193ms
+ ✓ Compiled in 3s (1187 modules)
+ ✓ Compiled /api/auth/[...nextauth] in 431ms (851 modules)
+ ⨯ Error: Cannot find module './7967.js'
+Require stack:
+- C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\apps\web\.next\server\webpack-runtime.js
+- C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\apps\web\.next\server\app\api\auth\[...nextauth]\route.js
+- C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\node_modules\next\dist\server\require.js
+- C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\node_modules\next\dist\server\load-components.js
+- C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\node_modules\next\dist\build\utils.js
+- C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\node_modules\next\dist\build\swc\options.js
+- C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\node_modules\next\dist\build\swc\index.js
+- C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\node_modules\next\dist\server\config.js
+- C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\node_modules\next\dist\server\next.js
+- C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\apps\web\server.ts
+    at <unknown> (C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\apps\web\.next\server\app\api\auth\[...nextauth]\route.js:1:8871)
+    at Object.<anonymous> (C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\apps\web\.next\server\app\api\auth\[...nextauth]\route.js:1:8927) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/api/auth/session'
+}
+ ○ Compiling /_error ...
+Socket GzXqvVF43IvoOHN1AAAy joined room kitchen_cms91iz3t0000va38f3b7bnyr
+Socket GzXqvVF43IvoOHN1AAAy joined room waiter_cms91iz3t0000va38f3b7bnyr
+Socket GzXqvVF43IvoOHN1AAAy joined room admin_cms91iz3t0000va38f3b7bnyr
+ ✓ Compiled /_error in 1044ms (1541 modules)
+ ✓ Compiled in 199ms (496 modules)
+ GET /api/auth/session 500 in 2261ms
+ ⨯ Error: Cannot find module './7967.js'
+Require stack:
+- C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\apps\web\.next\server\webpack-runtime.js
+- C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\apps\web\.next\server\pages\_document.js
+- C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\node_modules\next\dist\server\require.js
+- C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\node_modules\next\dist\server\load-components.js
+- C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\node_modules\next\dist\build\utils.js
+- C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\node_modules\next\dist\build\swc\options.js
+- C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\node_modules\next\dist\build\swc\index.js
+- C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\node_modules\next\dist\server\config.js
+- C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\node_modules\next\dist\server\next.js
+- C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\apps\web\server.ts
+    at <unknown> (C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\apps\web\.next\server\app\api\auth\[...nextauth]\route.js:1:8871)
+    at Object.<anonymous> (C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\apps\web\.next\server\app\api\auth\[...nextauth]\route.js:1:8927) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/api/auth/_log'
+}
+ POST /api/auth/_log 500 in 285ms
+prisma:query SELECT "public"."Restaurant"."id", "public"."Restaurant"."name", "public"."Restaurant"."status"::text, "public"."Restaurant"."slug" FROM "public"."Restaurant" WHERE ("public"."Restaurant"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Order"."id", "public"."Order"."restaurantId", "public"."Order"."tableId", "public"."Order"."customerId", "public"."Order"."orderNumber", "public"."Order"."status"::text, "public"."Order"."paymentMethod"::text, "public"."Order"."paymentStatus"::text, "public"."Order"."subtotalPaise", "public"."Order"."taxPaise", "public"."Order"."totalPaise", "public"."Order"."instructions", "public"."Order"."estimatedReadyAt", "public"."Order"."idempotencyKey", "public"."Order"."createdAt", "public"."Order"."updatedAt" FROM "public"."Order" WHERE ("public"."Order"."restaurantId" = $1 AND "public"."Order"."createdAt" >= $2) OFFSET $3
+prisma:query SELECT "public"."Table"."id", "public"."Table"."restaurantId", "public"."Table"."number", "public"."Table"."label", "public"."Table"."active", "public"."Table"."qrToken", "public"."Table"."createdAt" FROM "public"."Table" WHERE "public"."Table"."id" IN ($1,$2) OFFSET $3
+prisma:query SELECT "public"."OrderItem"."id", "public"."OrderItem"."orderId", "public"."OrderItem"."menuItemId", "public"."OrderItem"."nameSnapshot", "public"."OrderItem"."pricePaise", "public"."OrderItem"."quantity", "public"."OrderItem"."instructions" FROM "public"."OrderItem" WHERE "public"."OrderItem"."orderId" IN ($1,$2,$3,$4,$5) OFFSET $6
+prisma:query SELECT "public"."Table"."id", "public"."Table"."restaurantId", "public"."Table"."number", "public"."Table"."label", "public"."Table"."active", "public"."Table"."qrToken", "public"."Table"."createdAt" FROM "public"."Table" WHERE "public"."Table"."restaurantId" = $1 OFFSET $2
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."TableScan"."id" FROM "public"."TableScan" WHERE ("public"."TableScan"."restaurantId" = $1 AND "public"."TableScan"."createdAt" >= $2) OFFSET $3) AS "sub"
+prisma:query SELECT "public"."Restaurant"."id", "public"."Restaurant"."status"::text FROM "public"."Restaurant" WHERE ("public"."Restaurant"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /admin 200 in 743ms
+prisma:query SELECT "public"."Restaurant"."id", "public"."Restaurant"."name", "public"."Restaurant"."status"::text, "public"."Restaurant"."slug" FROM "public"."Restaurant" WHERE ("public"."Restaurant"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Order"."id", "public"."Order"."restaurantId", "public"."Order"."tableId", "public"."Order"."customerId", "public"."Order"."orderNumber", "public"."Order"."status"::text, "public"."Order"."paymentMethod"::text, "public"."Order"."paymentStatus"::text, "public"."Order"."subtotalPaise", "public"."Order"."taxPaise", "public"."Order"."totalPaise", "public"."Order"."instructions", "public"."Order"."estimatedReadyAt", "public"."Order"."idempotencyKey", "public"."Order"."createdAt", "public"."Order"."updatedAt" FROM "public"."Order" WHERE ("public"."Order"."restaurantId" = $1 AND "public"."Order"."createdAt" >= $2) OFFSET $3
+prisma:query SELECT "public"."Table"."id", "public"."Table"."restaurantId", "public"."Table"."number", "public"."Table"."label", "public"."Table"."active", "public"."Table"."qrToken", "public"."Table"."createdAt" FROM "public"."Table" WHERE "public"."Table"."id" IN ($1,$2) OFFSET $3
+prisma:query SELECT "public"."OrderItem"."id", "public"."OrderItem"."orderId", "public"."OrderItem"."menuItemId", "public"."OrderItem"."nameSnapshot", "public"."OrderItem"."pricePaise", "public"."OrderItem"."quantity", "public"."OrderItem"."instructions" FROM "public"."OrderItem" WHERE "public"."OrderItem"."orderId" IN ($1,$2,$3,$4,$5) OFFSET $6
+prisma:query SELECT "public"."Table"."id", "public"."Table"."restaurantId", "public"."Table"."number", "public"."Table"."label", "public"."Table"."active", "public"."Table"."qrToken", "public"."Table"."createdAt" FROM "public"."Table" WHERE "public"."Table"."restaurantId" = $1 OFFSET $2
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."TableScan"."id" FROM "public"."TableScan" WHERE ("public"."TableScan"."restaurantId" = $1 AND "public"."TableScan"."createdAt" >= $2) OFFSET $3) AS "sub"
+prisma:query SELECT "public"."Restaurant"."id", "public"."Restaurant"."status"::text FROM "public"."Restaurant" WHERE ("public"."Restaurant"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /admin 200 in 95ms
+prisma:query SELECT "public"."Restaurant"."id", "public"."Restaurant"."name", "public"."Restaurant"."status"::text, "public"."Restaurant"."slug" FROM "public"."Restaurant" WHERE ("public"."Restaurant"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query SELECT "public"."Order"."id", "public"."Order"."restaurantId", "public"."Order"."tableId", "public"."Order"."customerId", "public"."Order"."orderNumber", "public"."Order"."status"::text, "public"."Order"."paymentMethod"::text, "public"."Order"."paymentStatus"::text, "public"."Order"."subtotalPaise", "public"."Order"."taxPaise", "public"."Order"."totalPaise", "public"."Order"."instructions", "public"."Order"."estimatedReadyAt", "public"."Order"."idempotencyKey", "public"."Order"."createdAt", "public"."Order"."updatedAt" FROM "public"."Order" WHERE ("public"."Order"."restaurantId" = $1 AND "public"."Order"."createdAt" >= $2) OFFSET $3
+prisma:query SELECT "public"."Table"."id", "public"."Table"."restaurantId", "public"."Table"."number", "public"."Table"."label", "public"."Table"."active", "public"."Table"."qrToken", "public"."Table"."createdAt" FROM "public"."Table" WHERE "public"."Table"."id" IN ($1,$2) OFFSET $3
+prisma:query SELECT "public"."OrderItem"."id", "public"."OrderItem"."orderId", "public"."OrderItem"."menuItemId", "public"."OrderItem"."nameSnapshot", "public"."OrderItem"."pricePaise", "public"."OrderItem"."quantity", "public"."OrderItem"."instructions" FROM "public"."OrderItem" WHERE "public"."OrderItem"."orderId" IN ($1,$2,$3,$4,$5) OFFSET $6
+prisma:query SELECT "public"."Table"."id", "public"."Table"."restaurantId", "public"."Table"."number", "public"."Table"."label", "public"."Table"."active", "public"."Table"."qrToken", "public"."Table"."createdAt" FROM "public"."Table" WHERE "public"."Table"."restaurantId" = $1 OFFSET $2
+prisma:query SELECT COUNT(*) AS "_count$_all" FROM (SELECT "public"."TableScan"."id" FROM "public"."TableScan" WHERE ("public"."TableScan"."restaurantId" = $1 AND "public"."TableScan"."createdAt" >= $2) OFFSET $3) AS "sub"
+prisma:query SELECT "public"."Restaurant"."id", "public"."Restaurant"."status"::text FROM "public"."Restaurant" WHERE ("public"."Restaurant"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+ GET /admin 200 in 106ms
+ ○ Compiling /admin/waiter ...
+ ✓ Compiled /admin/waiter in 2.8s (1549 modules)
+ GET /admin/kitchen 307 in 2732ms
+ ○ Compiling /login ...
+ ✓ Compiled /login in 787ms (1056 modules)
+ GET /admin/waiter 307 in 1375ms
+ GET /login 200 in 106ms
+ GET /login 200 in 139ms
+ GET /admin 307 in 270ms
+ GET /login 200 in 103ms
+npm error Lifecycle script `dev` failed with error:
+npm error code 4294967295
+npm error path C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\apps\web
+npm error workspace web@0.1.0
+npm error location C:\Users\Admin\Documents\Codex\2026-07-31\files-mentioned-by-the-user-you\outputs\dineflow\apps\web
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c tsx server.ts
