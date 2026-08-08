@@ -10,12 +10,16 @@ export default function WaiterClient({
   initialRequests, 
   initialReadyOrders, 
   initialPendingPayments,
+  initialActiveTables = [],
+  staleTableMinutes = 45,
   restaurantId,
   restaurant
 }: { 
   initialRequests: any[], 
   initialReadyOrders: any[],
   initialPendingPayments?: any[],
+  initialActiveTables?: any[],
+  staleTableMinutes?: number,
   restaurantId: string,
   restaurant?: any
 }) {
@@ -23,31 +27,63 @@ export default function WaiterClient({
   const [requests, setRequests] = useState(initialRequests);
   const [readyOrders, setReadyOrders] = useState(initialReadyOrders);
   const [pendingPayments, setPendingPayments] = useState(initialPendingPayments || []);
+  const [activeTables, setActiveTables] = useState(initialActiveTables);
   const [printingOrder, setPrintingOrder] = useState<any>(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
   const { isSoundEnabled, playSound, unlockSound } = useNotificationSound();
 
   useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000); // update every minute
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(console.error);
+    }
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+
     const socket = io();
     socket.emit("join_room", `waiter_${restaurantId}`);
+
+    const triggerNotification = (title: string, body: string) => {
+      if ("serviceWorker" in navigator && "Notification" in window && Notification.permission === "granted") {
+        navigator.serviceWorker.ready.then(registration => {
+          registration.showNotification(title, {
+            body,
+            icon: "/icon.png",
+            vibrate: [200, 100, 200, 100, 400],
+            silent: false,
+            requireInteraction: true
+          } as any).catch(console.error);
+        });
+      }
+    };
 
     socket.on("waiter_order_status", () => {
       router.refresh();
       void playSound("order");
+      triggerNotification("Order Ready!", "An order is ready to serve.");
     });
     
     socket.on("waiter_bill_requested", () => {
       router.refresh();
       void playSound("payment");
+      triggerNotification("Bill Requested", "A table has requested their bill.");
     });
 
     socket.on("waiter_called", () => {
       router.refresh();
       void playSound("waiter");
+      triggerNotification("Waiter Called", "A customer is requesting assistance.");
     });
 
     socket.on("payment_claimed", () => {
       router.refresh();
       void playSound("payment");
+      triggerNotification("Payment Claimed", "A customer has submitted a payment claim.");
     });
 
     socket.on("cash_requested", () => {
@@ -108,6 +144,25 @@ export default function WaiterClient({
       socket.emit("payment_confirmed", { tableId, restaurantId });
     } catch (e) {
       alert("Failed to confirm payment");
+    }
+  };
+
+  const markSessionVacated = async (tableId: string | null, tableSessionId: string, label: string) => {
+    if (!confirm(`Are you sure you want to mark ${label} as vacated/departed? Any unpaid orders will be CANCELLED.`)) return;
+    
+    if (tableId) {
+      setActiveTables(prev => prev.filter(t => t.id !== tableId));
+    }
+    
+    try {
+      await fetch("/api/tables/mark-vacated", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tableId, tableSessionId })
+      });
+      router.refresh();
+    } catch (e) {
+      alert("Failed to clear session");
     }
   };
 
@@ -221,6 +276,58 @@ export default function WaiterClient({
           </div>
         )}
       </div>
+
+      {/* ACTIVE TABLES (STALE DETECTION) */}
+      {activeTables.length > 0 && (
+        <div>
+          <h2 className="text-xl font-bold mb-4 text-slate-700 flex items-center gap-2">
+            Active Tables
+            <span className="bg-slate-200 text-slate-800 text-xs px-2 py-1 rounded-full">{activeTables.length}</span>
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {activeTables.map(table => {
+              const lastActivity = table.lastActivityAt ? new Date(table.lastActivityAt) : null;
+              let minsActive = 0;
+              if (lastActivity) {
+                minsActive = Math.floor((currentTime.getTime() - lastActivity.getTime()) / 60000);
+              }
+              const isStale = minsActive >= staleTableMinutes;
+
+              return (
+                <div key={table.id} className={`bg-white border-2 rounded-xl p-4 shadow-sm flex flex-col justify-between ${isStale ? "border-amber-500 bg-amber-50" : "border-slate-200"}`}>
+                  <div>
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="text-xl font-black text-slate-900">Table {table.number}</h3>
+                      {isStale && (
+                        <span className="bg-amber-100 text-amber-800 text-[10px] font-black uppercase px-2 py-1 rounded">Stale</span>
+                      )}
+                    </div>
+                    {lastActivity && (
+                      <p className={`text-sm font-medium ${isStale ? "text-amber-700" : "text-slate-500"}`}>
+                        Active for: {Math.floor(minsActive / 60)}h {minsActive % 60}m
+                      </p>
+                    )}
+                    {table.hasUnpaid && (
+                      <p className="text-xs font-bold text-red-500 mt-1 uppercase">Has Unpaid Items</p>
+                    )}
+                  </div>
+                  
+                  {isStale && (
+                    <div className="mt-4">
+                      <button 
+                        onClick={() => markSessionVacated(table.id, table.currentSessionId, `Table ${table.number}`)}
+                        className="w-full bg-amber-600 hover:bg-amber-500 text-white py-2 rounded-lg font-bold text-xs shadow transition-colors"
+                      >
+                        Clear Table (Abandoned)
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* THERMAL BILL PRINT MODAL */}
       {printingOrder && (

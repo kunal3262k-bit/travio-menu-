@@ -17,11 +17,13 @@ import {
   X,
   BookOpen,
   MessageSquare,
-  ClipboardList
+  ClipboardList,
+  Users
 } from "lucide-react";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { href: "/admin/staff", label: "Staff Roster", icon: Users },
   { href: "/admin/kitchen", label: "Kitchen", icon: ChefHat },
   { href: "/admin/waiter", label: "Waiter", icon: Bell },
   { href: "/admin/tables", label: "Tables", icon: Grid3X3 },

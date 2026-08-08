@@ -24,17 +24,17 @@ export default async function AdminOrdersPage() {
   }
   startOfDay.setHours(5, 0, 0, 0);
 
-  // Fetch initial order history
+  // Fetch initial order history (most recent 200 orders across dates)
   const initialOrders = await prisma.order.findMany({
     where: { 
       restaurantId: session.user.restaurantId,
-      createdAt: { gte: startOfDay }
     },
     include: {
       table: true,
       items: true
     },
-    orderBy: { createdAt: "desc" }
+    orderBy: { createdAt: "desc" },
+    take: 200
   });
 
   return (

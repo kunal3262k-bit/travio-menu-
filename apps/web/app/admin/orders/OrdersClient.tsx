@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import ThermalReceiptPrint from "../components/ThermalReceiptPrint";
+import { getBusinessDayStart } from "@/src/shared/utils/dateUtils";
 
 interface OrdersClientProps {
   initialOrders: any[];
@@ -77,10 +78,7 @@ export default function OrdersClient({ initialOrders, restaurant }: OrdersClient
   };
 
   const getFilteredSessions = () => {
-    const now = new Date();
-    const today5am = new Date(now);
-    if (now.getHours() < 5) today5am.setDate(today5am.getDate() - 1);
-    today5am.setHours(5, 0, 0, 0);
+    const today5am = getBusinessDayStart();
 
     const yesterday5am = new Date(today5am);
     yesterday5am.setDate(yesterday5am.getDate() - 1);
@@ -218,6 +216,7 @@ export default function OrdersClient({ initialOrders, restaurant }: OrdersClient
             <thead>
               <tr className="bg-slate-900/80 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-700">
                 <th className="p-4">Date / Time</th>
+                <th className="p-4">Order #</th>
                 <th className="p-4">Invoice #</th>
                 <th className="p-4">Location</th>
                 <th className="p-4">Items Summary</th>
@@ -240,7 +239,7 @@ export default function OrdersClient({ initialOrders, restaurant }: OrdersClient
                   const itemsCount = session.items.reduce((sum: number, i: any) => sum + i.quantity, 0);
                   const invDisplay = session.invoiceNumber
                     ? `INV-${session.invoiceNumber}`
-                    : `#${Math.min(...session.orderNumbers)}`;
+                    : `-`;
                   const isMultiRound = session.orderIds.length > 1;
 
                   return (
@@ -255,12 +254,15 @@ export default function OrdersClient({ initialOrders, restaurant }: OrdersClient
                         })}
                       </td>
                       <td className="p-4">
-                        <div className="font-black text-white font-mono">{invDisplay}</div>
+                        <div className="font-bold text-slate-200">#{session.orderNumbers.join(', #')}</div>
                         {isMultiRound && (
                           <div className="text-[10px] text-slate-400 mt-0.5">
-                            {session.orderIds.length} rounds combined
+                            {session.orderIds.length} rounds
                           </div>
                         )}
+                      </td>
+                      <td className="p-4">
+                        <div className="font-black text-white font-mono">{invDisplay}</div>
                       </td>
                       <td className="p-4 font-medium text-slate-200">
                         {session.sessionType === "CAR" ? (

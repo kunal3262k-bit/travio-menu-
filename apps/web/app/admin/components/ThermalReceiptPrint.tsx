@@ -68,7 +68,7 @@ export default function ThermalReceiptPrint({ restaurant, order, onClose, autoPr
   const sgstPaise = totalTaxPaise - cgstPaise;
 
   const isDuplicate = order.isReprint || (order.printCount !== undefined && order.printCount > 1) || order.paymentStatus === "PAID";
-  const invNo = order.invoiceNumber ? `INV-${order.invoiceNumber}` : `INV-${1000 + Number(order.orderNumber || 1)}`;
+  const invNo = order.invoiceNumber ? `INV-${order.invoiceNumber}` : null;
 
   const formattedDate = order.createdAt 
     ? new Date(order.createdAt).toLocaleString("en-IN", {
@@ -130,7 +130,7 @@ export default function ThermalReceiptPrint({ restaurant, order, onClose, autoPr
             {/* Meta */}
             <div className="space-y-1 text-[11px]">
               <div className="flex justify-between font-bold">
-                <span>GST Tax Inv #: {invNo}</span>
+                <span>{invNo ? `GST Tax Inv #: ${invNo}` : "Status: Unpaid"}</span>
                 <span>Order: #{order.dailyOrderNumber || order.orderNumber}</span>
               </div>
               <div className="flex justify-between">
@@ -247,7 +247,7 @@ export default function ThermalReceiptPrint({ restaurant, order, onClose, autoPr
 
         <div className="space-y-0.5 text-[11px]">
           <div className="flex justify-between font-bold">
-            <span>GST Inv #: {invNo}</span>
+            <span>{invNo ? `GST Inv #: ${invNo}` : "Status: Unpaid"}</span>
             <span>Order: #{order.dailyOrderNumber || order.orderNumber}</span>
           </div>
           <div className="flex justify-between">

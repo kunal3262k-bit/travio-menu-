@@ -14,8 +14,10 @@ export default async function WaiterDashboardPage() {
 
   const restaurant = await prisma.restaurant.findUnique({
     where: { id: restaurantId },
-    select: { name: true, gstNumber: true, address: true, phone: true }
+    select: { name: true, gstNumber: true, address: true, phone: true, settings: true }
   });
+
+  const staleTableMinutes = (restaurant?.settings as any)?.staleTableMinutes || 45;
 
   // Fetch initial waiter requests
   const requests = await prisma.waiterRequest.findMany({
@@ -84,6 +86,35 @@ export default async function WaiterDashboardPage() {
 
   const pendingPayments = Object.values(claimsByTable);
 
+  // Fetch Active Tables
+  const activeTables = await prisma.table.findMany({
+    where: { 
+      restaurantId, 
+      currentSessionId: { not: null } 
+    },
+    orderBy: { number: 'asc' }
+  });
+
+  const activeTablesWithActivity = await Promise.all(activeTables.map(async (table) => {
+    const latestOrder = await prisma.order.findFirst({
+      where: { tableSessionId: table.currentSessionId! },
+      orderBy: { createdAt: 'desc' },
+      select: { createdAt: true }
+    });
+    
+    const hasUnpaid = await prisma.order.count({
+      where: { tableSessionId: table.currentSessionId!, paymentStatus: 'UNPAID', status: { not: 'CANCELLED' } }
+    });
+
+    return {
+      id: table.id,
+      number: table.number,
+      currentSessionId: table.currentSessionId,
+      lastActivityAt: latestOrder?.createdAt || null,
+      hasUnpaid: hasUnpaid > 0
+    };
+  }));
+
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <header className="flex items-center justify-between pb-4 border-b mb-6 bg-white p-4 rounded-xl shadow-sm">
@@ -104,6 +135,8 @@ export default async function WaiterDashboardPage() {
         initialRequests={requests} 
         initialReadyOrders={readyOrders}
         initialPendingPayments={pendingPayments}
+        initialActiveTables={activeTablesWithActivity}
+        staleTableMinutes={staleTableMinutes}
         restaurantId={restaurantId}
         restaurant={restaurant || { name: "SwiftTab Restaurant" }} 
       />

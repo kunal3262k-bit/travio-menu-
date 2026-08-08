@@ -1,15 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { ShoppingBag, CheckCircle2, Car, ArrowRight } from "lucide-react";
 import { io } from "socket.io-client";
 
 export default function CarOrderingClient({ restaurant }: { restaurant: any }) {
   const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [carOrderType, setCarOrderType] = useState<"EAT_IN_CAR" | "TAKEAWAY">("EAT_IN_CAR");
   const [carBrand, setCarBrand] = useState("");
   const [carColor, setCarColor] = useState("");
   const [carLicensePlate, setCarLicensePlate] = useState("");
+  const [carSessionId, setCarSessionId] = useState<string>("");
   const [sessionActive, setSessionActive] = useState(false);
+  const [joinedSessionInfo, setJoinedSessionInfo] = useState<{ isJoined: boolean; hostName?: string | null } | null>(null);
 
   const [cart, setCart] = useState<{ [key: string]: number }>({});
   const [sessionOrders, setSessionOrders] = useState<any[]>([]);
@@ -24,15 +28,33 @@ export default function CarOrderingClient({ restaurant }: { restaurant: any }) {
   const [staffCalled, setStaffCalled] = useState(false);
   const [sessionClosed, setSessionClosed] = useState(false);
 
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return "Good morning — here's today's menu";
+    if (hour >= 12 && hour < 17) return "Good afternoon — here's today's menu";
+    if (hour >= 17 && hour < 22) return "Good evening — here's tonight's menu";
+    return "Welcome — here's our late night menu";
+  }, []);
+
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+
+    let sessionId = localStorage.getItem(`car_session_id_${restaurant.slug}`);
+    if (!sessionId) {
+      sessionId = `car_session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      localStorage.setItem(`car_session_id_${restaurant.slug}`, sessionId);
+    }
+    setCarSessionId(sessionId);
+
     const savedSession = localStorage.getItem(`car_session_${restaurant.slug}`);
     if (savedSession) {
       try {
         const parsed = JSON.parse(savedSession);
         setCustomerName(parsed.customerName || "");
+        setCustomerPhone(parsed.customerPhone || "");
+        setCarOrderType(parsed.carOrderType || "EAT_IN_CAR");
         setCarBrand(parsed.carBrand || "");
         setCarColor(parsed.carColor || "");
         setCarLicensePlate(parsed.carLicensePlate || "");
@@ -50,15 +72,35 @@ export default function CarOrderingClient({ restaurant }: { restaurant: any }) {
         }
       } catch (e) {}
     }
-  }, [restaurant.slug]);
+
+    const socket = io();
+    socket.emit("join_room", `car_${restaurant.id}`);
+
+    socket.on("order_status_updated", ({ orderId, status }: { orderId: string, status: string }) => {
+      setSessionOrders((prev) => {
+        const updated = prev.map((o) => (o.id === orderId ? { ...o, status } : o));
+        localStorage.setItem(`car_orders_${restaurant.slug}`, JSON.stringify(updated));
+        return updated;
+      });
+    });
+
+    socket.on("payment_confirmed", () => {
+      setPaymentState("PAID");
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [restaurant.slug, restaurant.id]);
 
   if (!mounted) return null;
 
   const handleStartSession = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customerName.trim() || !carBrand.trim() || !carColor.trim()) return;
+    if (!customerName.trim()) return;
+    if (carOrderType === "EAT_IN_CAR" && (!carBrand.trim() || !carColor.trim())) return;
 
-    const data = { customerName, carBrand, carColor, carLicensePlate };
+    const data = { customerName, customerPhone, carOrderType, carBrand, carColor, carLicensePlate };
     localStorage.setItem(`car_session_${restaurant.slug}`, JSON.stringify(data));
     setSessionActive(true);
   };
@@ -101,7 +143,10 @@ export default function CarOrderingClient({ restaurant }: { restaurant: any }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           restaurantSlug: restaurant.slug,
+          tableSessionId: carSessionId,
           customerName,
+          customerPhone,
+          carOrderType,
           carBrand,
           carColor,
           carLicensePlate,
@@ -112,6 +157,16 @@ export default function CarOrderingClient({ restaurant }: { restaurant: any }) {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to place order");
+
+      if (data.isJoinedSession) {
+        const info = { isJoined: true, hostName: data.joinedHostName };
+        setJoinedSessionInfo(info);
+        localStorage.setItem(`car_session_info_${restaurant.slug}`, JSON.stringify(info));
+      } else {
+        const info = { isJoined: false };
+        setJoinedSessionInfo(info);
+        localStorage.setItem(`car_session_info_${restaurant.slug}`, JSON.stringify(info));
+      }
 
       setSessionOrders((prev) => {
         const updated = [...prev, data.order];
@@ -207,6 +262,31 @@ export default function CarOrderingClient({ restaurant }: { restaurant: any }) {
           </div>
 
           <form onSubmit={handleStartSession} className="space-y-4">
+            {/* ORDER TYPE SELECTOR */}
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">Order Type *</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCarOrderType("EAT_IN_CAR")}
+                  className={`py-3 px-3 rounded-xl border-2 font-bold text-xs flex items-center justify-center gap-2 transition ${
+                    carOrderType === "EAT_IN_CAR" ? "border-emerald-600 bg-emerald-50 text-emerald-900 shadow-sm" : "border-gray-200 text-gray-600 bg-white"
+                  }`}
+                >
+                  <span>🚗 Eat in Car</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCarOrderType("TAKEAWAY")}
+                  className={`py-3 px-3 rounded-xl border-2 font-bold text-xs flex items-center justify-center gap-2 transition ${
+                    carOrderType === "TAKEAWAY" ? "border-emerald-600 bg-emerald-50 text-emerald-900 shadow-sm" : "border-gray-200 text-gray-600 bg-white"
+                  }`}
+                >
+                  <span>🛍️ Takeaway</span>
+                </button>
+              </div>
+            </div>
+
             <div>
               <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">Your Name *</label>
               <input
@@ -219,12 +299,25 @@ export default function CarOrderingClient({ restaurant }: { restaurant: any }) {
               />
             </div>
 
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Phone Number (Optional)</label>
+              <input
+                type="tel"
+                value={customerPhone}
+                onChange={(e) => setCustomerPhone(e.target.value)}
+                placeholder="e.g. 9876543210"
+                className="w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+              />
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">Car Color *</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
+                  Car Color {carOrderType === "EAT_IN_CAR" ? "*" : "(Optional)"}
+                </label>
                 <input
                   type="text"
-                  required
+                  required={carOrderType === "EAT_IN_CAR"}
                   value={carColor}
                   onChange={(e) => setCarColor(e.target.value)}
                   placeholder="e.g. White"
@@ -232,10 +325,12 @@ export default function CarOrderingClient({ restaurant }: { restaurant: any }) {
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">Car Brand/Model *</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
+                  Car Model {carOrderType === "EAT_IN_CAR" ? "*" : "(Optional)"}
+                </label>
                 <input
                   type="text"
-                  required
+                  required={carOrderType === "EAT_IN_CAR"}
                   value={carBrand}
                   onChange={(e) => setCarBrand(e.target.value)}
                   placeholder="e.g. Maruti Swift"
@@ -412,6 +507,10 @@ export default function CarOrderingClient({ restaurant }: { restaurant: any }) {
     const totalPaiseSum = sessionOrders.reduce((sum, o) => sum + (o.totalPaise || 0), 0);
     const orderNumbersList = sessionOrders.map((o) => `#${o.dailyOrderNumber || o.orderNumber}`).join(", ");
 
+    const latestOrderStatus = sessionOrders.length > 0
+      ? sessionOrders[sessionOrders.length - 1].status || "RECEIVED"
+      : "RECEIVED";
+
     return (
       <div className="min-h-screen bg-slate-50 p-4 max-w-md mx-auto space-y-6">
         <div className="bg-white rounded-3xl p-6 shadow-md border space-y-6">
@@ -424,9 +523,23 @@ export default function CarOrderingClient({ restaurant }: { restaurant: any }) {
             </span>
             <h2 className="text-2xl font-black">Bill & Order Details</h2>
             <p className="text-gray-500 text-xs">
-              🚗 {carColor} {carBrand} ({customerName}) {carLicensePlate ? `• ${carLicensePlate}` : ""}
+              {carOrderType === "TAKEAWAY" ? "🛍️ Takeaway" : "🚗 Eat in Car"} • {customerName} {customerPhone ? `(${customerPhone})` : ""} {carBrand ? `• ${carColor} ${carBrand}` : ""} {carLicensePlate ? `• ${carLicensePlate}` : ""}
             </p>
           </div>
+
+          {/* SESSION MATCH SIGNAL FEEDBACK */}
+          {joinedSessionInfo?.isJoined ? (
+            <div className="bg-emerald-500/15 border border-emerald-500/40 text-emerald-950 rounded-2xl p-3.5 text-xs font-extrabold text-center flex items-center justify-center gap-2 shadow-sm">
+              <span>👥 Joined {joinedSessionInfo.hostName || "Driver"}&apos;s Car Session (Combined Bill)</span>
+            </div>
+          ) : (
+            <div className="bg-slate-100 border text-slate-700 rounded-2xl p-2.5 text-xs font-bold text-center">
+              <span>🚗 Dedicated Car Session Active</span>
+            </div>
+          )}
+
+          {/* LIVE ORDER STATUS STEPPER */}
+          <OrderStatusStepper status={latestOrderStatus} />
 
           {/* QUICK ACTIONS: CALL STAFF & ADD MORE ITEMS */}
           <div className="grid grid-cols-2 gap-3 pt-1">
@@ -593,9 +706,10 @@ export default function CarOrderingClient({ restaurant }: { restaurant: any }) {
       <header className="sticky top-0 bg-white border-b z-40 px-4 py-3 flex items-center justify-between shadow-sm">
         <div>
           <h1 className="font-black text-lg text-slate-900">{restaurant.name}</h1>
-          <p className="text-xs text-emerald-700 font-bold flex items-center gap-1">
+          <p className="text-[10px] text-emerald-700 font-bold flex items-center gap-1 uppercase tracking-wider mb-1">
             🚗 {carColor} {carBrand} • {customerName}
           </p>
+          <p className="text-xs font-medium text-slate-500 mt-0.5">{greeting}</p>
         </div>
         <div className="flex gap-2 items-center">
           <button
@@ -669,6 +783,56 @@ export default function CarOrderingClient({ restaurant }: { restaurant: any }) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function OrderStatusStepper({ status }: { status: string }) {
+  const steps = [
+    { label: "Placed", key: "RECEIVED" },
+    { label: "Preparing", key: "PREPARING" },
+    { label: "Ready", key: "READY" },
+    { label: "Served", key: "SERVED" }
+  ];
+
+  const getStepIndex = (s: string) => {
+    if (s === "RECEIVED" || s === "ACCEPTED") return 0;
+    if (s === "PREPARING") return 1;
+    if (s === "READY") return 2;
+    if (s === "SERVED" || s === "COMPLETED") return 3;
+    return 0;
+  };
+
+  const currentIndex = getStepIndex(status);
+
+  return (
+    <div className="bg-slate-900 text-white rounded-2xl p-4 space-y-3 shadow-md">
+      <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-emerald-400">
+        <span>Order Status</span>
+        <span className="bg-emerald-500/20 px-2.5 py-0.5 rounded text-[11px] text-emerald-300 font-extrabold">{status}</span>
+      </div>
+      <div className="flex items-center justify-between relative pt-2 pb-1 px-2">
+        <div className="absolute top-[18px] left-6 right-6 h-1 bg-slate-700 z-0" />
+        <div
+          className="absolute top-[18px] left-6 h-1 bg-emerald-500 z-0 transition-all duration-500"
+          style={{ width: `${(currentIndex / (steps.length - 1)) * 82}%` }}
+        />
+        {steps.map((step, idx) => {
+          const isDone = idx <= currentIndex;
+          return (
+            <div key={step.key} className="relative z-10 flex flex-col items-center gap-1">
+              <div
+                className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black transition-all ${
+                  isDone ? "bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/50" : "bg-slate-700 text-slate-400"
+                }`}
+              >
+                {idx + 1}
+              </div>
+              <span className={`text-[10px] font-bold ${isDone ? "text-emerald-400" : "text-slate-500"}`}>{step.label}</span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

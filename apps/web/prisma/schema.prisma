@@ -76,6 +76,7 @@ model Restaurant {
 
   settings        Json             @default("{}")
   users           User[]
+  staff           Staff[]
   tables         Table[]
   categories     Category[]
   menuItems      MenuItem[]
@@ -85,6 +86,21 @@ model Restaurant {
   waiterRequests WaiterRequest[]
   tableScans     TableScan[]
   feedbacks      Feedback[]
+}
+
+model Staff {
+  id           String     @id @default(cuid())
+  restaurantId String
+  name         String
+  phone        String?
+  pinHash      String
+  role         UserRole
+  active       Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId, role, active])
 }
 
 model Feedback {
@@ -217,7 +233,9 @@ model Order {
   carBrand         String?
   carColor         String?
   carLicensePlate  String?
+  carOrderType     String?       @default("EAT_IN_CAR")
   customerName     String?
+  customerPhone    String?
   status           OrderStatus   @default(RECEIVED)
   paymentMethod    PaymentMethod?
   paymentStatus    PaymentStatus @default(UNPAID)
@@ -227,6 +245,8 @@ model Order {
   instructions     String?
   estimatedReadyAt DateTime?
   idempotencyKey   String?
+  processedByStaffId   String?
+  processedByStaffName String?
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   restaurant       Restaurant    @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
@@ -237,6 +257,8 @@ model Order {
   @@unique([restaurantId, orderNumber])
   @@unique([restaurantId, idempotencyKey])
   @@index([restaurantId, status, createdAt])
+  @@index([restaurantId, tableSessionId])
+  @@index([restaurantId, createdAt])
 }
 
 model OrderItem {

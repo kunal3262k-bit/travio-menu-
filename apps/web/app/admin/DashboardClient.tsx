@@ -1,8 +1,7 @@
-"use client";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ThermalReceiptPrint from "./components/ThermalReceiptPrint";
+import { AlertTriangle, Users, ChefHat, Bell, ArrowRight } from "lucide-react";
 
 export default function DashboardClient({ initialMetrics, initialStatus, restaurant }: { initialMetrics: any, initialStatus: string, restaurant?: any }) {
   const router = useRouter();
@@ -12,6 +11,22 @@ export default function DashboardClient({ initialMetrics, initialStatus, restaur
   const [closing, setClosing] = useState(false);
   const [report, setReport] = useState<any>(null);
   const [printingOrder, setPrintingOrder] = useState<any>(null);
+  const [unmannedStatus, setUnmannedStatus] = useState<any>(null);
+
+  useEffect(() => {
+    async function checkUnmanned() {
+      try {
+        const res = await fetch("/api/admin/unmanned-status");
+        if (res.ok) {
+          const data = await res.json();
+          setUnmannedStatus(data);
+        }
+      } catch (e) {}
+    }
+    checkUnmanned();
+    const interval = setInterval(checkUnmanned, 30000); // Check every 30s
+    return () => clearInterval(interval);
+  }, []);
 
   const handleStatusChange = async (newStatus: string) => {
     setIsUpdatingStatus(true);
@@ -85,6 +100,43 @@ export default function DashboardClient({ initialMetrics, initialStatus, restaur
 
   return (
     <div className="space-y-6">
+
+      {/* ── UNMANNED ROLE WARNING BANNER (PART 4) ── */}
+      {unmannedStatus && (unmannedStatus.kitchenUnmanned || unmannedStatus.waiterUnmanned) && (
+        <div className="bg-gradient-to-r from-amber-500 to-red-600 text-white rounded-2xl p-5 shadow-2xl border-2 border-amber-300 animate-pulse flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-start gap-3.5">
+            <div className="p-3 bg-black/20 rounded-xl">
+              <AlertTriangle className="w-6 h-6 text-yellow-300" />
+            </div>
+            <div>
+              <h3 className="text-base font-black uppercase tracking-wider flex items-center gap-2">
+                ⚠️ UNMANNED ROLE WARNING — OPERATING HOURS ({unmannedStatus.openTime} - {unmannedStatus.closeTime})
+              </h3>
+              <div className="text-xs font-bold text-amber-100 mt-1 space-y-0.5">
+                {unmannedStatus.kitchenUnmanned && (
+                  <div className="flex items-center gap-1.5">
+                    <ChefHat className="w-4 h-4 text-orange-200" />
+                    <span>Kitchen Panel has NO active staff logged in (Operating for {unmannedStatus.minutesSinceOpen} mins)!</span>
+                  </div>
+                )}
+                {unmannedStatus.waiterUnmanned && (
+                  <div className="flex items-center gap-1.5">
+                    <Bell className="w-4 h-4 text-emerald-200" />
+                    <span>Waiter Panel has NO active staff logged in (Operating for {unmannedStatus.minutesSinceOpen} mins)!</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <a
+            href="/admin/staff"
+            className="bg-white hover:bg-slate-100 text-slate-900 font-extrabold text-xs px-5 py-3 rounded-xl shadow transition flex items-center justify-center gap-2 self-start md:self-auto shrink-0"
+          >
+            <Users className="w-4 h-4" /> Manage Staff Roster <ArrowRight className="w-4 h-4" />
+          </a>
+        </div>
+      )}
 
       {/* ── STATUS CONTROL STRIP ── */}
       <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-r ${currentStatus.bg} border ${currentStatus.border} shadow-xl ${currentStatus.glow}`}>

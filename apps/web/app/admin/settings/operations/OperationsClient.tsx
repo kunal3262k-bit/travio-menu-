@@ -8,7 +8,9 @@ export default function OperationsClient({ restaurant }: { restaurant: any }) {
   const settings = restaurant.settings || {};
   
   const [status, setStatus] = useState(restaurant.status);
-  const [businessHours, setBusinessHours] = useState(settings.businessHours || "Mon-Sun, 11 AM - 11 PM");
+  const [businessHours, setBusinessHours] = useState(settings.businessHours || "Mon-Sun, 09:00 AM - 11:00 PM");
+  const [openTime, setOpenTime] = useState(settings.openTime || "09:00");
+  const [closeTime, setCloseTime] = useState(settings.closeTime || "23:00");
   const [gstEnabled, setGstEnabled] = useState(settings.gstEnabled !== false); // default true
   const [gstPercentage, setGstPercentage] = useState(settings.gstPercentage || 5);
   const [saving, setSaving] = useState(false);
@@ -25,6 +27,8 @@ export default function OperationsClient({ restaurant }: { restaurant: any }) {
           settings: {
             ...settings,
             businessHours,
+            openTime,
+            closeTime,
             gstEnabled,
             gstPercentage: parseInt(gstPercentage, 10)
           }
@@ -79,17 +83,44 @@ export default function OperationsClient({ restaurant }: { restaurant: any }) {
         </div>
       </div>
 
-      {/* Business Hours */}
+      {/* Operating Hours & Unmanned Detection Settings */}
       <div className="space-y-4 pt-4 border-t">
-        <h3 className="text-lg font-bold">Business Hours</h3>
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-600">Displayed to customers when the restaurant is closed.</label>
+        <h3 className="text-lg font-bold">Operating Hours & Unmanned Role Detection</h3>
+        <p className="text-xs text-gray-500">
+          Used to trigger Unmanned Role Warnings on the Admin Dashboard if kitchen or waiter panels have no active staff 15+ minutes after opening.
+        </p>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-bold uppercase text-gray-700 mb-1">Daily Opening Time (24h) *</label>
+            <input
+              type="time"
+              required
+              value={openTime}
+              onChange={(e) => setOpenTime(e.target.value)}
+              className="w-full border p-2.5 rounded-lg text-sm font-mono"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold uppercase text-gray-700 mb-1">Daily Closing Time (24h) *</label>
+            <input
+              type="time"
+              required
+              value={closeTime}
+              onChange={(e) => setCloseTime(e.target.value)}
+              className="w-full border p-2.5 rounded-lg text-sm font-mono"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2 pt-2">
+          <label className="text-sm font-medium text-gray-600">Customer Display Business Hours Label</label>
           <input 
             type="text" 
             value={businessHours} 
             onChange={e => setBusinessHours(e.target.value)}
             className="w-full border p-2 rounded-lg"
-            placeholder="e.g., Mon-Sun, 11:00 AM - 11:00 PM"
+            placeholder="e.g., Mon-Sun, 09:00 AM - 11:00 PM"
           />
         </div>
       </div>

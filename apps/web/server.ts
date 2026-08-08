@@ -136,6 +136,11 @@ app.prepare().then(async () => {
       io.to(`admin_${restaurantId}`).emit("admin_payment_confirmed", { tableId });
     });
 
+    socket.on("admin_escalation_alert", ({ restaurantId, orderId, role, reason }) => {
+      console.log(`[ESCALATION ALERT] ${role} unacknowledged order ${orderId} -> notifying admin_${restaurantId}`);
+      io.to(`admin_${restaurantId}`).emit("admin_escalation_received", { orderId, role, reason, timestamp: Date.now() });
+    });
+
     socket.on("disconnect", () => {
       // Handle disconnects
     });

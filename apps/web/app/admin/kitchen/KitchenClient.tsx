@@ -16,11 +16,31 @@ export default function KitchenClient({ initialOrders, restaurantId, restaurant 
   };
 
   useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(console.error);
+    }
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+    
     const socket = io();
     socket.emit("join_room", `kitchen_${restaurantId}`);
 
     socket.on("kitchen_new_order", async ({ orderId }) => {
       playPingSound();
+      
+      if ("serviceWorker" in navigator && "Notification" in window && Notification.permission === "granted") {
+        navigator.serviceWorker.ready.then(registration => {
+          registration.showNotification("New Order Received!", {
+            body: `A new order has been placed and needs attention.`,
+            icon: "/icon.png",
+            vibrate: [200, 100, 200, 100, 400],
+            silent: false,
+            requireInteraction: true
+          } as any).catch(console.error);
+        });
+      }
+
       setUnacknowledged(prev => [...prev, orderId]);
       
       // Fetch latest orders without reloading the page
@@ -74,10 +94,26 @@ export default function KitchenClient({ initialOrders, restaurantId, restaurant 
     }
   };
 
-  if (orders.length === 0) {
+  const visibleOrders = orders.filter((order) => {
+    if (order.sessionType === "TABLE") return true;
+
+    // CAR orders: Round 1 must be PAID. 
+    // Subsequent rounds in an active session where Round 1 was PAID are allowed on Open Tab.
+    if (order.paymentStatus === "PAID") return true;
+
+    if (order.tableSessionId) {
+      const sessionOrders = orders.filter((o) => o.tableSessionId === order.tableSessionId);
+      const hasPaidRound = sessionOrders.some((o) => o.paymentStatus === "PAID");
+      if (hasPaidRound) return true;
+    }
+
+    return false;
+  });
+
+  if (visibleOrders.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] text-gray-500">
-        <h2 className="text-2xl font-bold mb-2">No Active Orders</h2>
+        <h2 className="text-2xl font-bold mb-2">No Active Kitchen Orders</h2>
         <p>Waiting for customers to place orders...</p>
       </div>
     );
@@ -91,7 +127,7 @@ export default function KitchenClient({ initialOrders, restaurantId, restaurant 
         </div>
       )}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {orders.map(order => {
+        {visibleOrders.map(order => {
           const isUnack = unacknowledged.includes(order.id);
           const cardClasses = isUnack 
             ? "border-4 border-red-500 bg-red-900/40 animate-pulse scale-105 transition-transform" 
@@ -103,10 +139,17 @@ export default function KitchenClient({ initialOrders, restaurantId, restaurant 
             <div>
               <h3 className="text-2xl font-black">
                 {order.sessionType === "CAR"
-                  ? `🚗 ${order.carColor || ""} ${order.carBrand || ""} — ${order.customerName || "Car Customer"}`
+                  ? `${order.carOrderType === "TAKEAWAY" ? "🛍️ Takeaway" : "🚗 Eat in Car"} • ${order.carColor || ""} ${order.carBrand || ""} — ${order.customerName || "Car Customer"}`
                   : `Table ${order.table?.number || ""}`}
               </h3>
-              <p className="text-sm text-gray-400">Order #{order.dailyOrderNumber || order.orderNumber}</p>
+              <div className="flex items-center gap-2 mt-1">
+                <p className="text-sm text-gray-400">Order #{order.dailyOrderNumber || order.orderNumber}</p>
+                {order.customerPhone && (
+                  <span className="text-xs font-semibold text-gray-300 bg-white/10 px-2 py-0.5 rounded">
+                    📞 {order.customerPhone}
+                  </span>
+                )}
+              </div>
             </div>
             <div className="bg-white/10 px-3 py-1 rounded-full text-sm font-bold uppercase tracking-wider">
               {isUnack ? "NEW!" : order.status}

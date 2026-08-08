@@ -31,7 +31,8 @@ type CartLine = { item: MenuItem; quantity: number; instructions: string };
 export function CustomerMenu({ restaurant }: { restaurant: RestaurantView }) {
   const [cart, setCart] = useState<Record<string, CartLine>>({});
   const [notice, setNotice] = useState<string | null>(null);
-  const [orderNumber, setOrderNumber] = useState<number | null>(null);
+  const [sessionDailyOrderNumber, setSessionDailyOrderNumber] = useState<number | null>(null);
+  const [rounds, setRounds] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [idempotencyKey, setIdempotencyKey] = useState(() => Math.random().toString(36).substring(2) + Date.now().toString(36));
   const items = restaurant.categories.flatMap((category) => category.items);
@@ -95,8 +96,18 @@ export function CustomerMenu({ restaurant }: { restaurant: RestaurantView }) {
         socket.emit("new_order", { restaurantId: data.order.restaurantId, orderId: data.order.id });
       });
 
-      setOrderNumber(data.order.orderNumber);
-      showNotice(`Order #${data.order.orderNumber} sent to kitchen.`);
+      setRounds((r) => r + 1);
+      if (!sessionDailyOrderNumber) {
+        setSessionDailyOrderNumber(data.order.dailyOrderNumber);
+      }
+      
+      const isFirstRound = rounds === 0;
+      const displayOrderNumber = sessionDailyOrderNumber ?? data.order.dailyOrderNumber;
+      const orderMessage = isFirstRound 
+        ? `Order #${data.order.dailyOrderNumber} sent to kitchen.`
+        : `Order #${displayOrderNumber} (Round ${rounds + 1}) sent to kitchen.`;
+
+      showNotice(orderMessage);
       setCart({}); // Clear cart on success
       setIdempotencyKey(Math.random().toString(36).substring(2) + Date.now().toString(36)); // Rotate key for next possible order
     } catch (error: any) {
@@ -108,13 +119,24 @@ export function CustomerMenu({ restaurant }: { restaurant: RestaurantView }) {
 
   const estimatedWait = useMemo(() => (cartLines.length ? "18-22 min" : "Add items to estimate"), [cartLines.length]);
 
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return "Good morning — here's today's menu";
+    if (hour >= 12 && hour < 17) return "Good afternoon — here's today's menu";
+    if (hour >= 17 && hour < 22) return "Good evening — here's tonight's menu";
+    return "Welcome — here's our late night menu";
+  }, []);
+
   return (
     <main className="min-h-svh bg-[#f8f4ed] pb-36">
       <header className="sticky top-0 z-20 border-b border-stone-300/70 bg-[#f8f4ed]/95 px-4 py-3 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-800">Table {restaurant.tableNumber}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-800">
+              {restaurant.tableNumber ? `Table ${restaurant.tableNumber}` : "Drive-In Menu"}
+            </p>
             <h1 className="text-2xl font-semibold text-stone-950">{restaurant.name}</h1>
+            <p className="text-sm font-medium text-stone-500 mt-0.5">{greeting}</p>
           </div>
           <div className="flex gap-2">
             <Button variant="ghost" aria-label="Call waiter" onClick={() => showNotice(`Waiter request sent for Table ${restaurant.tableNumber}.`)}>
@@ -192,7 +214,8 @@ export function CustomerMenu({ restaurant }: { restaurant: RestaurantView }) {
             addItem={(item) => updateQuantity(item, 1)}
             onPlaceOrder={placeRealOrder}
             isSubmitting={isSubmitting}
-            orderNumber={orderNumber}
+            sessionDailyOrderNumber={sessionDailyOrderNumber}
+            rounds={rounds}
           />
         </aside>
       </section>
@@ -208,7 +231,8 @@ export function CustomerMenu({ restaurant }: { restaurant: RestaurantView }) {
           addItem={(item) => updateQuantity(item, 1)}
           onPlaceOrder={placeRealOrder}
           isSubmitting={isSubmitting}
-          orderNumber={orderNumber}
+          sessionDailyOrderNumber={sessionDailyOrderNumber}
+          rounds={rounds}
           compact
         />
       </div>
@@ -225,7 +249,8 @@ function CartPanel({
   recommendations,
   addItem,
   onPlaceOrder,
-  orderNumber,
+  sessionDailyOrderNumber,
+  rounds,
   isSubmitting,
   compact
 }: {
@@ -238,7 +263,8 @@ function CartPanel({
   addItem: (item: MenuItem) => void;
   onPlaceOrder: () => void;
   isSubmitting?: boolean;
-  orderNumber: number | null;
+  sessionDailyOrderNumber: number | null;
+  rounds: number;
   compact?: boolean;
 }) {
   return (
@@ -285,13 +311,13 @@ function CartPanel({
           <span>{formatMoney(total)}</span>
         </div>
       </div>
-      {orderNumber && (
+      {sessionDailyOrderNumber && (
         <div className="mt-4 rounded-lg bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-900">
-          Order #{orderNumber} received. Status: Preparing.
+          Order #{sessionDailyOrderNumber} {rounds > 1 ? `(Round ${rounds}) ` : ""}received. Status: Preparing.
         </div>
       )}
       <Button className="mt-4 w-full" disabled={cartLines.length === 0 || isSubmitting} onClick={onPlaceOrder}>
-        {isSubmitting ? "Sending..." : (orderNumber ? "Order Sent" : "Place Order")}
+        {isSubmitting ? "Sending..." : (sessionDailyOrderNumber ? "Order Sent" : "Place Order")}
       </Button>
     </div>
   );
