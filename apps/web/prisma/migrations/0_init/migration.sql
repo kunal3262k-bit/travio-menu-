@@ -1,4 +1,4 @@
-﻿-- CreateSchema
+-- CreateSchema
 CREATE SCHEMA IF NOT EXISTS "public";
 
 -- CreateEnum
@@ -358,4 +358,3 @@ ALTER TABLE "TableScan" ADD CONSTRAINT "TableScan_restaurantId_fkey" FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE "TableScan" ADD CONSTRAINT "TableScan_tableId_fkey" FOREIGN KEY ("tableId") REFERENCES "Table"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
