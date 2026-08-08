@@ -25,6 +25,19 @@ export default function KitchenClient({ initialOrders, restaurantId, restaurant 
     
     const socket = io();
     socket.emit("join_room", `kitchen_${restaurantId}`);
+    socket.emit("join_room", `admin_${restaurantId}`);
+
+    const refreshOrders = async () => {
+      try {
+        const res = await fetch("/api/kitchen/active-orders");
+        if (res.ok) {
+          const data = await res.json();
+          setOrders(data.orders);
+        }
+      } catch (err) {
+        console.error("Failed to refresh orders");
+      }
+    };
 
     socket.on("kitchen_new_order", async ({ orderId }) => {
       playPingSound();
@@ -44,15 +57,23 @@ export default function KitchenClient({ initialOrders, restaurantId, restaurant 
       setUnacknowledged(prev => [...prev, orderId]);
       
       // Fetch latest orders without reloading the page
-      try {
-        const res = await fetch("/api/kitchen/active-orders");
-        if (res.ok) {
-          const data = await res.json();
-          setOrders(data.orders);
-        }
-      } catch (err) {
-        console.error("Failed to fetch new orders");
-      }
+      await refreshOrders();
+    });
+
+    // Keep the kitchen board in sync with any status change or payment
+    // confirmation coming from any staff/admin session.
+    socket.on("kitchen_order_status_changed", ({ orderId, status }) => {
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
+      void refreshOrders();
+    });
+
+    socket.on("admin_order_status_changed", ({ orderId, status }) => {
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
+      void refreshOrders();
+    });
+
+    socket.on("admin_payment_confirmed", () => {
+      void refreshOrders();
     });
 
     return () => {
@@ -71,13 +92,6 @@ export default function KitchenClient({ initialOrders, restaurantId, restaurant 
         body: JSON.stringify({ status })
       });
       if (!res.ok) throw new Error("Failed to update status");
-      
-      // We don't necessarily need to reload here because our optimistic update worked,
-      // and the server route we hit should emit the event to the customer.
-      // Wait, we need the API route to emit the socket event! But we can't emit from the API route easily.
-      const currentOrder = orders.find(o => o.id === orderId);
-      const socket = io();
-      socket.emit("order_status_updated", { orderId, status, restaurantId, tableId: currentOrder?.tableId || currentOrder?.table?.id });
     } catch (err) {
       alert("Failed to update status");
       window.location.reload();

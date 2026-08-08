@@ -1,9 +1,16 @@
 import { prisma } from "@/lib/prisma";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { getStaffSession } from "@/lib/staffAuth";
+import { fetchGatedKitchenOrders } from "@/lib/kitchenFeed";
 import StaffKitchenClient from "./StaffKitchenClient";
 
 export default async function StaffKitchenPage({ params }: { params: Promise<{ restaurantSlug: string }> }) {
   const { restaurantSlug } = await params;
+
+  const staff = await getStaffSession();
+  if (!staff || staff.role !== "KITCHEN") {
+    redirect(`/${restaurantSlug}/staff/login`);
+  }
 
   const restaurant = await prisma.restaurant.findUnique({
     where: { slug: restaurantSlug },
@@ -18,17 +25,13 @@ export default async function StaffKitchenPage({ params }: { params: Promise<{ r
 
   if (!restaurant) notFound();
 
-  // Fetch initial active orders for kitchen display
-  const initialOrders = await prisma.order.findMany({
-    where: {
-      restaurantId: restaurant.id,
-      status: { in: ["RECEIVED", "ACCEPTED", "PREPARING", "READY"] },
-    },
-    include: {
-      table: true,
-      items: true,
-    },
-    orderBy: { createdAt: "asc" },
+  if (restaurant.id !== staff.restaurantId) {
+    redirect(`/${restaurantSlug}/staff/login`);
+  }
+
+  // Fetch initial active orders for kitchen display — CAR payment gate enforced server-side.
+  const initialOrders = await fetchGatedKitchenOrders(restaurant.id, {
+    statuses: ["RECEIVED", "ACCEPTED", "PREPARING", "READY"],
   });
 
   return (

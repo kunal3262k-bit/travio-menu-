@@ -87,6 +87,7 @@ export default function StaffWaiterClient({
     const socket = io();
     socketRef.current = socket;
     socket.emit("join_room", `waiter_${restaurant.id}`);
+    socket.emit("join_room", `admin_${restaurant.id}`);
 
     socket.on("waiter_request", (data) => {
       setRequests((prev) => [data, ...prev.filter((r) => r.id !== data.id)]);
@@ -112,10 +113,34 @@ export default function StaffWaiterClient({
       refreshData();
     });
 
+    // Keep the waiter panel in sync with any status change or payment
+    // confirmation coming from any staff/admin session.
+    socket.on("kitchen_new_order", () => {
+      refreshData();
+    });
+
+    socket.on("waiter_order_status", () => {
+      refreshData();
+    });
+
+    socket.on("admin_order_status_changed", () => {
+      refreshData();
+    });
+
+    socket.on("payment_confirmed", () => {
+      refreshData();
+      void playSound("payment");
+    });
+
+    socket.on("admin_payment_confirmed", () => {
+      refreshData();
+      void playSound("payment");
+    });
+
     return () => {
       socket.disconnect();
     };
-  }, [restaurant.id]);
+  }, [restaurant.id, playSound]);
 
   const refreshData = async () => {
     try {
@@ -177,10 +202,11 @@ export default function StaffWaiterClient({
 
   const resolveRequest = async (requestId: string) => {
     try {
-      await fetch(`/api/waiter/requests/${requestId}`, {
+      await fetch(`/api/waiter-requests`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          requestId,
           status: "RESOLVED",
           processedByStaffId: session?.staffId,
           processedByStaffName: session?.staffName,

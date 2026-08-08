@@ -3,7 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { resolveRestaurantTable } from "@/lib/tenant";
 import { waiterRequestSchema } from "@/lib/validation";
 import { rateLimit } from "@/lib/rate-limit";
-import { requireSession } from "@/lib/auth";
+import { requireAdminOrStaff } from "@/lib/staffAuth";
+import { emitWaiterRequestCreated } from "@/lib/socket";
 export async function POST(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for") ?? "local";
   if (!rateLimit(`waiter:${ip}`).allowed) {
@@ -28,13 +29,24 @@ export async function POST(request: NextRequest) {
     }
   });
 
+  // Server-side push: waiter calls / bill requests are broadcast from here.
+  emitWaiterRequestCreated({
+    restaurantId: context.restaurant.id,
+    request: {
+      id: waiterRequest.id,
+      type: waiterRequest.type,
+      tableId: waiterRequest.tableId,
+    },
+    table: { id: context.table.id, number: context.table.number },
+  });
+
   return NextResponse.json({ request: waiterRequest }, { status: 201 });
 }
 
 export async function PATCH(request: NextRequest) {
   let session;
   try {
-    session = await requireSession(["ADMIN", "KITCHEN"]);
+    session = await requireAdminOrStaff(["WAITER", "KITCHEN"]);
   } catch (error) {
     return error instanceof Response ? error : NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

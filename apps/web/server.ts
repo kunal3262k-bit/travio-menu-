@@ -5,6 +5,8 @@ import { join } from "path";
 import { parse } from "url";
 import next from "next";
 import { Server } from "socket.io";
+import { setIO } from "@/lib/socket";
+import { assertStaffAuthConfig } from "@/lib/staffAuthConfig";
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = "0.0.0.0";
@@ -61,6 +63,7 @@ async function ensureRuntimeChunks() {
 
 app.prepare().then(async () => {
   await ensureRuntimeChunks();
+  assertStaffAuthConfig(process.env);
 
   const httpServer = createServer(async (req, res) => {
     try {
@@ -85,6 +88,13 @@ app.prepare().then(async () => {
     },
   });
 
+  // Expose the io instance so API routes can push events server-side.
+  // All state-changing events (new order, status changes, payment claims,
+  // payment confirmations, waiter calls/bill requests) are now emitted from
+  // the API routes AFTER the database write. We deliberately do NOT accept
+  // these from client sockets — a client-emitted event was a spoof vector.
+  setIO(io);
+
   io.on("connection", (socket) => {
     // Basic room joining logic
     socket.on("join_room", (room: string) => {
@@ -92,50 +102,8 @@ app.prepare().then(async () => {
       console.log(`Socket ${socket.id} joined room ${room}`);
     });
 
-    // Kitchen events
-    socket.on("order_status_updated", ({ orderId, status, restaurantId, tableId }) => {
-      // Broadcast to the specific table's order listeners and table room
-      io.to(`order_${orderId}`).emit("order_status_changed", { orderId, status });
-      if (tableId) {
-        io.to(`table_${tableId}`).emit("table_order_status_changed", { orderId, status });
-      }
-      io.to(`waiter_${restaurantId}`).emit("waiter_order_status", { orderId, status });
-      io.to(`admin_${restaurantId}`).emit("admin_order_status_changed", { orderId, status });
-    });
-
-    // Customer events
-    socket.on("new_order", ({ restaurantId, orderId }) => {
-      // Notify kitchen
-      io.to(`kitchen_${restaurantId}`).emit("kitchen_new_order", { orderId });
-    });
-
-    socket.on("request_bill", ({ restaurantId, tableId, orderId }) => {
-      // Notify waiter
-      io.to(`waiter_${restaurantId}`).emit("waiter_bill_requested", { tableId, orderId });
-      io.to(`admin_${restaurantId}`).emit("admin_bill_requested", { tableId, orderId });
-    });
-
-    socket.on("call_waiter", ({ restaurantId, tableId }) => {
-      // Notify waiter
-      io.to(`waiter_${restaurantId}`).emit("waiter_called", { tableId });
-      io.to(`admin_${restaurantId}`).emit("admin_waiter_called", { tableId });
-    });
-
-    socket.on("cash_requested", ({ restaurantId, tableId, amount }) => {
-      io.to(`waiter_${restaurantId}`).emit("cash_requested", { tableId, amount });
-      io.to(`admin_${restaurantId}`).emit("admin_cash_requested", { tableId, amount });
-    });
-
-    socket.on("payment_claimed", ({ restaurantId, tableId, method, amount }) => {
-      io.to(`waiter_${restaurantId}`).emit("payment_claimed", { tableId, method, amount });
-    });
-
-    socket.on("payment_confirmed", ({ restaurantId, tableId }) => {
-      io.to(`table_${tableId}`).emit("payment_confirmed", { tableId });
-      io.to(`waiter_${restaurantId}`).emit("payment_confirmed", { tableId });
-      io.to(`admin_${restaurantId}`).emit("admin_payment_confirmed", { tableId });
-    });
-
+    // Client-initiated escalation alert when a kitchen ticket stays unacknowledged
+    // for > 20s. This is a read-only alert (no state mutation), kept client-side.
     socket.on("admin_escalation_alert", ({ restaurantId, orderId, role, reason }) => {
       console.log(`[ESCALATION ALERT] ${role} unacknowledged order ${orderId} -> notifying admin_${restaurantId}`);
       io.to(`admin_${restaurantId}`).emit("admin_escalation_received", { orderId, role, reason, timestamp: Date.now() });

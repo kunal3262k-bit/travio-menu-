@@ -112,6 +112,24 @@ export default function StaffKitchenClient({
     const socket = io();
     socketRef.current = socket;
     socket.emit("join_room", `kitchen_${restaurant.id}`);
+    socket.emit("join_room", `admin_${restaurant.id}`);
+
+    const refetchOrders = async () => {
+      try {
+        const res = await fetch(`/api/staff/kitchen/active-orders?restaurantSlug=${restaurant.slug}`);
+        if (res.ok) {
+          const data = await res.json();
+          const freshOrders = data.orders || [];
+          setOrders(freshOrders);
+
+          // Track any RECEIVED orders as unacknowledged so alerts play upon unlock
+          const receivedIds = freshOrders.filter((o: any) => o.status === "RECEIVED").map((o: any) => o.id);
+          if (receivedIds.length > 0) {
+            setUnacknowledged((prev) => [...new Set([...prev, ...receivedIds])]);
+          }
+        }
+      } catch (err) {}
+    };
 
     socket.on("kitchen_new_order", async ({ orderId }) => {
       setUnacknowledged((prev) => [...new Set([...prev, orderId])]);
@@ -141,20 +159,23 @@ export default function StaffKitchenClient({
       }
 
       // Fetch fresh active orders for staff panel
-      try {
-        const res = await fetch(`/api/staff/kitchen/active-orders?restaurantSlug=${restaurant.slug}`);
-        if (res.ok) {
-          const data = await res.json();
-          const freshOrders = data.orders || [];
-          setOrders(freshOrders);
+      await refetchOrders();
+    });
 
-          // Track any RECEIVED orders as unacknowledged so alerts play upon unlock
-          const receivedIds = freshOrders.filter((o: any) => o.status === "RECEIVED").map((o: any) => o.id);
-          if (receivedIds.length > 0) {
-            setUnacknowledged((prev) => [...new Set([...prev, ...receivedIds])]);
-          }
-        }
-      } catch (err) {}
+    // Keep the KDS in sync with any status change or payment confirmation
+    // coming from any staff/admin session.
+    socket.on("kitchen_order_status_changed", ({ orderId, status }) => {
+      setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status } : o)));
+      void refetchOrders();
+    });
+
+    socket.on("admin_order_status_changed", ({ orderId, status }) => {
+      setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status } : o)));
+      void refetchOrders();
+    });
+
+    socket.on("admin_payment_confirmed", () => {
+      void refetchOrders();
     });
 
     return () => {
@@ -189,15 +210,6 @@ export default function StaffKitchenClient({
           processedByStaffName: session?.staffName,
         }),
       });
-
-      if (socketRef.current) {
-        socketRef.current.emit("order_status_updated", {
-          orderId,
-          status,
-          restaurantId: restaurant.id,
-          staffName: session?.staffName,
-        });
-      }
     } catch (err) {
       alert("Failed to update ticket status");
     }

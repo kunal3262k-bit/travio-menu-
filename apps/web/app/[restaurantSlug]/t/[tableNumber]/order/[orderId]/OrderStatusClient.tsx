@@ -27,8 +27,6 @@ export default function OrderStatusClient({ order }: { order: any }) {
         })
       });
       
-      const socket = io();
-      socket.emit("call_waiter", { restaurantId: order.restaurantId, tableId: order.tableId });
       void playSound("waiter");
       
       setWaiterCalled(true);
@@ -56,21 +54,27 @@ export default function OrderStatusClient({ order }: { order: any }) {
     };
   }, [order.id, playSound]);
 
-  const requestBill = () => {
+  const requestBill = async () => {
     setIsRequestingBill(true);
-    const socket = io();
-    socket.emit("request_bill", { 
-      restaurantId: order.restaurantId, 
-      tableId: order.tableId, 
-      orderId: order.id 
-    });
-    void playSound("payment");
-    setBillRequested(true);
-    setIsRequestingBill(false);
-    
-    // In a real app, this might redirect to a payment page immediately, 
-    // or wait for the waiter to confirm the bill on the dashboard.
-    // For our flow, we will navigate to the payment screen when the customer wants to pay.
+    try {
+      await fetch("/api/waiter-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          restaurantSlug: order.restaurant.slug,
+          tableNumber: order.table.number,
+          type: "REQUEST_BILL"
+        })
+      });
+      void playSound("payment");
+      setBillRequested(true);
+    } catch (e) {
+      alert("Failed to request bill. Please try again.");
+    } finally {
+      setIsRequestingBill(false);
+    }
+
+    // Navigate to the payment screen when the customer wants to pay.
     router.push(`/${order.restaurant.slug}/t/${order.table.number}/payment`);
   };
 

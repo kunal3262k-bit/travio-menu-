@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 type Item = {
@@ -20,8 +20,6 @@ type Category = {
 
 type CartItem = Item & { quantity: number; instructions: string };
 
-import { io } from "socket.io-client";
-
 export default function CustomerMenu({
   restaurant,
   table,
@@ -38,6 +36,8 @@ export default function CustomerMenu({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCallingWaiter, setIsCallingWaiter] = useState(false);
   const [waiterCalled, setWaiterCalled] = useState(false);
+  const isSubmittingRef = useRef(false);
+  const idempotencyKeyRef = useRef<string | null>(null);
 
   const handleCallWaiter = async () => {
     setIsCallingWaiter(true);
@@ -51,9 +51,6 @@ export default function CustomerMenu({
           type: "CALL_WAITER"
         })
       });
-      
-      const socket = io();
-      socket.emit("call_waiter", { restaurantId: restaurant.id, tableId: table.id });
       
       setWaiterCalled(true);
       setTimeout(() => setWaiterCalled(false), 30000); // Allow calling again after 30s
@@ -98,8 +95,19 @@ export default function CustomerMenu({
 
   const placeOrder = async () => {
     if (cart.length === 0) return;
+    // Strictly bound to an explicit "Place Order" click: bail out immediately
+    // if a submission is already in flight (covers fast double-clicks, slow
+    // connections, and the brief window before React flushes the disabled flag).
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
     setIsSubmitting(true);
-    
+
+    // Idempotency key: generated once per cart submission and reused across
+    // retries, so a retry after a network timeout cannot create a duplicate order.
+    if (!idempotencyKeyRef.current && typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+      idempotencyKeyRef.current = crypto.randomUUID();
+    }
+
     try {
       const res = await fetch("/api/orders", {
         method: "POST",
@@ -111,7 +119,8 @@ export default function CustomerMenu({
             menuItemId: i.id,
             quantity: i.quantity,
             instructions: i.instructions || undefined
-          }))
+          })),
+          idempotencyKey: idempotencyKeyRef.current || undefined
         })
       });
 
@@ -119,18 +128,16 @@ export default function CustomerMenu({
       
       const { order } = await res.json();
       
-      // Emit socket event
-      const socket = io();
-      socket.emit("new_order", { restaurantId: restaurant.id, orderId: order.id });
-      
       // Clear cart
       setCart([]);
+      idempotencyKeyRef.current = null;
       
       router.push(`/${restaurant.slug}/t/${table.number}/order/${order.id}`);
       
     } catch (err) {
       alert("Something went wrong. Please try again.");
     } finally {
+      isSubmittingRef.current = false;
       setIsSubmitting(false);
     }
   };
@@ -235,9 +242,9 @@ export default function CustomerMenu({
             <button 
               onClick={placeOrder}
               disabled={isSubmitting}
-              className="bg-black text-white px-8 py-3 rounded-lg font-bold text-lg disabled:opacity-50 active:scale-95 transition-transform"
+              className="bg-black text-white px-8 py-3 rounded-lg font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-transform"
             >
-              {isSubmitting ? "Sending..." : "Place Order →"}
+              {isSubmitting ? "Placing Order..." : "Place Order →"}
             </button>
           </div>
         </div>

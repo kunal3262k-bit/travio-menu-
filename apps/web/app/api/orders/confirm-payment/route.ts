@@ -1,25 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth";
+import { emitPaymentConfirmed } from "@/lib/socket";
+import { isPaymentConfirmationAllowedRole } from "@/lib/staffAuth";
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await requireSession(["ADMIN", "KITCHEN"]);
+    const session = await requireSession(["ADMIN", "KITCHEN", "WAITER"]);
+    if (!isPaymentConfirmationAllowedRole(session.role)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    }
     const { orderIds } = await request.json();
 
     if (!orderIds || !Array.isArray(orderIds) || orderIds.length === 0) {
       return NextResponse.json({ error: "Invalid data" }, { status: 400 });
     }
 
+    // 1. Get the first order to find table + session context
+    const firstOrder = await prisma.order.findUnique({
+      where: { id: orderIds[0] },
+      select: { tableId: true, tableSessionId: true, sessionType: true }
+    });
+
+    if (!firstOrder) {
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    }
+
     await prisma.$transaction(async (tx) => {
-      // 1. Get the first order to find table + session context
-      const firstOrder = await tx.order.findUnique({
-        where: { id: orderIds[0] },
-        select: { tableId: true, tableSessionId: true }
-      });
-
-      if (!firstOrder) return;
-
       // 2. Find ALL unpaid, non-cancelled orders in this session.
       //    CRITICAL FIX: We settle by sessionId (entire session), not just
       //    the orderIds passed in. This prevents partial billing when a customer
@@ -84,6 +91,14 @@ export async function POST(request: NextRequest) {
           });
         }
       }
+    });
+
+    // Server-side push: payment confirmation is broadcast from the server,
+    // never from a client socket emit.
+    emitPaymentConfirmed({
+      restaurantId: session.restaurantId,
+      tableId: firstOrder.tableId,
+      isCar: firstOrder.sessionType === "CAR"
     });
 
     return NextResponse.json({ success: true });

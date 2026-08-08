@@ -1,9 +1,15 @@
 import { prisma } from "@/lib/prisma";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { getStaffSession } from "@/lib/staffAuth";
 import StaffWaiterClient from "./StaffWaiterClient";
 
 export default async function StaffWaiterPage({ params }: { params: Promise<{ restaurantSlug: string }> }) {
   const { restaurantSlug } = await params;
+
+  const staff = await getStaffSession();
+  if (!staff || staff.role !== "WAITER") {
+    redirect(`/${restaurantSlug}/staff/login`);
+  }
 
   const restaurant = await prisma.restaurant.findUnique({
     where: { slug: restaurantSlug },
@@ -11,6 +17,10 @@ export default async function StaffWaiterPage({ params }: { params: Promise<{ re
   });
 
   if (!restaurant) notFound();
+
+  if (restaurant.id !== staff.restaurantId) {
+    redirect(`/${restaurantSlug}/staff/login`);
+  }
 
   // Fetch initial active tables & car sessions
   const tables = await prisma.table.findMany({

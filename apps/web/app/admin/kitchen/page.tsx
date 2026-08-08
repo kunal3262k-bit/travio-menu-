@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@core/auth/authOptions";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { fetchGatedKitchenOrders } from "@/lib/kitchenFeed";
 import KitchenClient from "./KitchenClient";
 
 export default async function KitchenDashboardPage() {
@@ -17,18 +18,8 @@ export default async function KitchenDashboardPage() {
     select: { name: true, gstNumber: true, address: true, phone: true }
   });
 
-  // Fetch initial active orders
-  const initialOrders = await prisma.order.findMany({
-    where: { 
-      restaurantId,
-      status: { notIn: ["COMPLETED", "CANCELLED", "SERVED"] }
-    },
-    include: {
-      table: true,
-      items: true
-    },
-    orderBy: { createdAt: 'asc' }
-  });
+  // Fetch initial active orders — CAR payment gate enforced server-side.
+  const initialOrders = await fetchGatedKitchenOrders(restaurantId);
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-4">

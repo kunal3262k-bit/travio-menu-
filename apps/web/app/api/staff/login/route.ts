@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rate-limit";
+import { signStaffSession, setStaffSessionCookie } from "@/lib/staffAuth";
+import { StaffAuthConfigError } from "@/lib/staffAuthConfig";
 import bcrypt from "bcryptjs";
 
 export async function POST(request: NextRequest) {
@@ -9,6 +11,9 @@ export async function POST(request: NextRequest) {
     if (!rateLimit(`staff_login:${ip}`).allowed) {
       return NextResponse.json({ error: "Too many login attempts. Please wait 1 minute." }, { status: 429 });
     }
+
+    const forwardedProto = request.headers.get("x-forwarded-proto");
+    const requestSecure = forwardedProto?.split(",")[0]?.trim().toLowerCase() === "https";
 
     const body = await request.json();
     const { restaurantSlug, staffId, pin } = body;
@@ -57,20 +62,31 @@ export async function POST(request: NextRequest) {
       expiresAt: Date.now() + 2 * 3600_000, // 2-hour session
     };
 
+    // Sign the session so staff identity is server-verifiable and tamper-proof.
+    const token = await signStaffSession({
+      staffId: staff.id,
+      staffName: staff.name,
+      role: staff.role as "WAITER" | "KITCHEN",
+      restaurantId: restaurant.id,
+      restaurantSlug: restaurant.slug,
+      restaurantName: restaurant.name,
+      loggedInAt: Date.now(),
+    });
+
     const response = NextResponse.json({
       success: true,
       session: sessionPayload,
     });
 
-    // Store secure cookie for staff session
-    response.cookies.set(`staff_session_${restaurant.slug}`, JSON.stringify(sessionPayload), {
-      httpOnly: false, // Accessible to client JS for reactivity
-      path: "/",
-      maxAge: 7200, // 2 hours
-    });
+    // Store signed, httpOnly staff session cookie (server-verified, not client-tamperable).
+    setStaffSessionCookie(response, token, { requestSecure });
 
     return response;
   } catch (error: any) {
+    if (error instanceof StaffAuthConfigError) {
+      console.error("POST /api/staff/login config error:", error.message);
+      return NextResponse.json({ error: `Server configuration error: ${error.message}` }, { status: 503 });
+    }
     console.error("POST /api/staff/login error:", error);
     return NextResponse.json({ error: "Staff login failed" }, { status: 500 });
   }

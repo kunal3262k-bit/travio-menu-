@@ -1,25 +1,16 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth";
+import { fetchGatedKitchenOrders } from "@/lib/kitchenFeed";
 
 export async function GET() {
   try {
     const session = await requireSession(["ADMIN", "KITCHEN"]);
-    
-    const orders = await prisma.order.findMany({
-      where: { 
-        restaurantId: session.restaurantId,
-        status: { notIn: ["COMPLETED", "CANCELLED", "SERVED"] }
-      },
-      include: {
-        table: true,
-        items: true
-      },
-      orderBy: { createdAt: 'asc' }
-    });
+
+    const orders = await fetchGatedKitchenOrders(session.restaurantId);
 
     return NextResponse.json({ orders });
   } catch (error: any) {
+    if (error instanceof Response) return error;
     return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
   }
 }

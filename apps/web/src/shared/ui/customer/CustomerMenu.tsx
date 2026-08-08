@@ -91,11 +91,6 @@ export function CustomerMenu({ restaurant }: { restaurant: RestaurantView }) {
         throw new Error(data.error || "Failed to place order");
       }
       
-      import("socket.io-client").then(({ io }) => {
-        const socket = io();
-        socket.emit("new_order", { restaurantId: data.order.restaurantId, orderId: data.order.id });
-      });
-
       setRounds((r) => r + 1);
       if (!sessionDailyOrderNumber) {
         setSessionDailyOrderNumber(data.order.dailyOrderNumber);

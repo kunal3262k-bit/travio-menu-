@@ -47,6 +47,7 @@ export default function WaiterClient({
 
     const socket = io();
     socket.emit("join_room", `waiter_${restaurantId}`);
+    socket.emit("join_room", `admin_${restaurantId}`);
 
     const triggerNotification = (title: string, body: string) => {
       if ("serviceWorker" in navigator && "Notification" in window && Notification.permission === "granted") {
@@ -91,6 +92,32 @@ export default function WaiterClient({
       void playSound("payment");
     });
 
+    // Keep the waiter panel in sync with new orders and any status/payment
+    // change coming from any staff/admin session.
+    socket.on("new_order", () => {
+      router.refresh();
+      void playSound("order");
+    });
+
+    socket.on("kitchen_new_order", () => {
+      router.refresh();
+      void playSound("order");
+    });
+
+    socket.on("admin_order_status_changed", () => {
+      router.refresh();
+    });
+
+    socket.on("payment_confirmed", () => {
+      router.refresh();
+      void playSound("payment");
+    });
+
+    socket.on("admin_payment_confirmed", () => {
+      router.refresh();
+      void playSound("payment");
+    });
+
     return () => {
       socket.disconnect();
     };
@@ -100,9 +127,6 @@ export default function WaiterClient({
     setRequests(prev => prev.filter(r => r.id !== id));
     
     if (type === "REQUEST_BILL") {
-      const socket = io();
-      socket.emit("bill_confirmed", { tableId, restaurantId });
-      
       // Auto-close all open orders for this table when bill is generated
       await fetch(`/api/tables/clear`, {
         method: "POST",
@@ -120,8 +144,6 @@ export default function WaiterClient({
 
   const markOrderServed = async (orderId: string) => {
     setReadyOrders(prev => prev.filter(o => o.id !== orderId));
-    const socket = io();
-    socket.emit("order_status_updated", { orderId, status: "SERVED", restaurantId });
     
     await fetch(`/api/orders/${orderId}/status`, {
       method: "PATCH",
@@ -139,9 +161,6 @@ export default function WaiterClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orderIds })
       });
-      
-      const socket = io();
-      socket.emit("payment_confirmed", { tableId, restaurantId });
     } catch (e) {
       alert("Failed to confirm payment");
     }

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { createOrderSchema } from "@/lib/validation";
 import { resolveRestaurantTable } from "@/lib/tenant";
 import { rateLimit } from "@/lib/rate-limit";
+import { emitOrderCreated } from "@/lib/socket";
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for") ?? "local";
@@ -143,6 +144,9 @@ export async function POST(request: NextRequest) {
       include: { items: true, table: true }
     });
   });
+
+  // Server-side push: notify kitchen + waiter rooms that a new order exists.
+  emitOrderCreated(context.restaurant.id, order.id);
 
   return NextResponse.json({ order }, { status: 201 });
 }

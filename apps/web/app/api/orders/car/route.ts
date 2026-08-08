@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rate-limit";
 import { getBusinessDayStart } from "@/src/shared/utils/dateUtils";
+import { emitOrderCreated } from "@/lib/socket";
 
 export async function POST(request: NextRequest) {
   try {
@@ -203,6 +204,8 @@ export async function POST(request: NextRequest) {
         include: { items: true }
       });
     });
+
+    emitOrderCreated(restaurant.id, order.id);
 
     return NextResponse.json({ order, isJoinedSession, joinedHostName }, { status: 201 });
   } catch (error: any) {

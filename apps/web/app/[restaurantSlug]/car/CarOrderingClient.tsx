@@ -376,13 +376,6 @@ export default function CarOrderingClient({ restaurant }: { restaurant: any }) {
         body: JSON.stringify({ orderIds, method: paymentMethod })
       });
 
-      const socket = io();
-      socket.emit("payment_claimed", {
-        restaurantId: restaurant.id,
-        method: paymentMethod,
-        amount: totalAmountPaise
-      });
-
       setPaymentState("CLAIMED");
     } catch (e) {
       alert("Failed to update payment status");
@@ -394,12 +387,6 @@ export default function CarOrderingClient({ restaurant }: { restaurant: any }) {
   const handleCallStaffToCar = async () => {
     setIsCallingStaff(true);
     try {
-      const socket = io();
-      socket.emit("call_waiter", { 
-        restaurantId: restaurant.id, 
-        message: `🚗 Drive-In Car Staff Alert: ${carColor} ${carBrand} (${customerName}) ${carLicensePlate ? `• ${carLicensePlate}` : ""}`
-      });
-
       const firstTableNumber = (restaurant.tables && restaurant.tables.length > 0) ? restaurant.tables[0].number : 1;
       await fetch("/api/waiter-requests", {
         method: "POST",

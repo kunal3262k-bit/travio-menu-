@@ -4,7 +4,7 @@ import { authOptions } from "@core/auth/authOptions";
 export type Session = {
   sub: string;
   restaurantId: string;
-  role: "ADMIN" | "KITCHEN";
+  role: "ADMIN" | "KITCHEN" | "WAITER";
   email: string;
 };
 

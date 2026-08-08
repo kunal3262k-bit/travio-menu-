@@ -69,8 +69,6 @@ export default function PaymentClient({
         })
       });
 
-      const socket = io();
-      socket.emit("call_waiter", { tableId: table.id, restaurantId: restaurant.id });
       void playSound("waiter");
       setWaiterCalled(true);
       setTimeout(() => setWaiterCalled(false), 30000);
@@ -87,16 +85,13 @@ export default function PaymentClient({
     
     try {
       if (paymentMethod === "UPI") {
-        // Mark orders as CLAIMED
+        // Mark orders as CLAIMED — the server broadcasts payment_claimed to the waiter panel.
         await fetch("/api/orders/claim-payment", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ orderIds, method: "UPI" })
         });
         
-        // Notify waiter
-        const socket = io();
-        socket.emit("payment_claimed", { tableId: table.id, restaurantId: restaurant.id, method: "UPI", amount: grandTotal });
         void playSound("payment");
         
         setPaymentState("UPI_CLAIMED");
@@ -109,9 +104,6 @@ export default function PaymentClient({
           body: JSON.stringify({ orderIds, method: "CASH" })
         });
 
-        // Notify waiter to collect cash
-        const socket = io();
-        socket.emit("cash_requested", { tableId: table.id, restaurantId: restaurant.id, amount: grandTotal });
         void playSound("waiter");
 
         setPaymentState("CASH_REQUESTED");
@@ -158,13 +150,6 @@ export default function PaymentClient({
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto"></div>
         <h2 className="text-2xl font-bold">Verifying Payment...</h2>
         <p className="text-gray-500">Your waiter has been notified and is confirming the UPI transfer. This will only take a moment.</p>
-        
-        <button onClick={() => {
-            setPaymentState("PAID"); 
-            setTimeout(() => router.push(`/${restaurant.slug}/t/${table.number}/review`), 500);
-        }} className="text-xs text-gray-300 mt-12 block mx-auto underline">
-          Simulate Waiter Confirmation
-        </button>
       </div>
     );
   }
