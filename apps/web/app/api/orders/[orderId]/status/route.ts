@@ -7,7 +7,7 @@ import { emitOrderStatusChanged } from "@/lib/socket";
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ orderId: string }> }) {
   let auth;
   try {
-    auth = await requireAdminOrStaff(["KITCHEN", "WAITER"]);
+    auth = await requireAdminOrStaff(["KITCHEN"]);
   } catch (error) {
     return error instanceof Response ? error : NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
