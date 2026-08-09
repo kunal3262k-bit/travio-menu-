@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { io, Socket } from "socket.io-client";
 import { Bell, LogOut, CheckCircle, Car, AlertCircle, Clock, CreditCard, Check, X, Sun } from "lucide-react";
 import { useNotificationSound } from "@/lib/sound";
+import { mergeAlertIds, dropAlertIds } from "@/lib/orderAlert";
 import { useScreenWakeLock } from "@/lib/useScreenWakeLock";
 
 export default function StaffWaiterClient({
@@ -25,7 +26,7 @@ export default function StaffWaiterClient({
   const [activeTables, setActiveTables] = useState<any[]>(initialTables);
   const [unacknowledged, setUnacknowledged] = useState<string[]>([]);
 
-  const { isSoundEnabled, playSound, unlockSound } = useNotificationSound();
+  const { isSoundEnabled, playSound, vibrate } = useNotificationSound();
   const { isSupported: isWakeLockSupported, isWakeLockActive, requestWakeLock } = useScreenWakeLock();
   const socketRef = useRef<Socket | null>(null);
   const alertIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -57,9 +58,8 @@ export default function StaffWaiterClient({
         alertIntervalRef.current = setInterval(() => {
           if (isSoundEnabled) {
             void playSound("waiter");
-          }
-          if ("vibrate" in navigator) {
-            navigator.vibrate([200, 100, 200]);
+          } else {
+            vibrate("waiter");
           }
         }, 3000);
       }
@@ -105,7 +105,7 @@ export default function StaffWaiterClient({
     });
 
     socket.on("payment_claimed", (data) => {
-      setUnacknowledged((prev) => [...new Set([...prev, data.orderId || data.tableId])]);
+      setUnacknowledged((prev) => mergeAlertIds(prev, [data?.orderId || data?.tableId], new Set()));
       refreshData();
     });
 
@@ -150,8 +150,15 @@ export default function StaffWaiterClient({
         setOrders(data.orders || []);
         setActiveTables(data.tables || []);
         setRequests(data.requests || []);
+        // Orders settled on ANY panel must stop alarming this panel too.
+        const paidKeys = (data.orders || [])
+          .filter((o: any) => o.paymentStatus === "PAID")
+          .flatMap((o: any) => [o.id, o.tableId]);
+        setUnacknowledged((prev) => dropAlertIds(prev, paidKeys));
+        return data;
       }
     } catch (e) {}
+    return null;
   };
 
   const handleSwitchUser = () => {
@@ -172,8 +179,17 @@ export default function StaffWaiterClient({
       });
 
       if (res.ok) {
-        setUnacknowledged((prev) => prev.filter((id) => id !== orderId));
-        refreshData();
+        // The backend settles the ENTIRE session (all unpaid rounds of the
+        // same table/car). Remove exactly those settled orders from local
+        // state instead of blanking the whole list, then re-sync quietly.
+        const data = await res.json().catch(() => ({}));
+        const settledIds: string[] = Array.isArray(data.settledOrderIds)
+          ? data.settledOrderIds
+          : [orderId];
+
+        setOrders((prev) => prev.filter((o) => !settledIds.includes(o.id)));
+        setUnacknowledged((prev) => prev.filter((id) => !settledIds.includes(id)));
+        void refreshData();
       }
     } catch (e) {
       alert("Failed to confirm payment");
@@ -265,15 +281,6 @@ export default function StaffWaiterClient({
           </button>
         </div>
       </header>
-
-      {!isSoundEnabled && (
-        <div
-          className="bg-blue-900/60 text-blue-200 p-3.5 rounded-xl text-center font-bold text-xs animate-pulse cursor-pointer border border-blue-500/50"
-          onClick={unlockSound}
-        >
-          Click anywhere to enable waiter chime alerts 🔔
-        </div>
-      )}
 
       {/* CUSTOMER REQUEST ALERTS */}
       {requests.length > 0 && (

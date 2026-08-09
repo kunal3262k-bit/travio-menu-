@@ -41,7 +41,7 @@ export async function PATCH(
   const processedByStaffId = body.processedByStaffId || staff.staffId;
   const processedByStaffName = body.processedByStaffName || staff.staffName;
 
-  await prisma.$transaction(async (tx) => {
+  const settled = await prisma.$transaction(async (tx) => {
     // Settle by sessionId (entire session) so every round is covered.
     const allUnpaidInSession = await tx.order.findMany({
       where: {
@@ -56,7 +56,7 @@ export async function PATCH(
     });
 
     const allOrderIds = allUnpaidInSession.map((o) => o.id);
-    if (allOrderIds.length === 0) return; // Already fully paid
+    if (allOrderIds.length === 0) return { settledOrderIds: [] }; // Already fully paid
 
     const restaurant = await tx.restaurant.update({
       where: { id: staff.restaurantId },
@@ -72,7 +72,7 @@ export async function PATCH(
       },
       data: {
         paymentStatus: "PAID",
-        status: "COMPLETED",
+        ...(firstOrder.sessionType === "CAR" ? {} : { status: "COMPLETED" }),
         invoiceNumber,
         processedByStaffId,
         processedByStaffName,
@@ -100,6 +100,8 @@ export async function PATCH(
         });
       }
     }
+
+    return { settledOrderIds: allOrderIds };
   });
 
   emitPaymentConfirmed({
@@ -108,5 +110,5 @@ export async function PATCH(
     isCar: firstOrder.sessionType === "CAR",
   });
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, ...settled });
 }

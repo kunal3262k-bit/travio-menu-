@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
       prisma.order.findMany({
         where: {
           restaurantId,
+          paymentStatus: { not: "PAID" },
           status: { notIn: ["COMPLETED", "CANCELLED"] },
         },
         include: { table: true, items: true },

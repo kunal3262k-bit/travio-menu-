@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { io, Socket } from "socket.io-client";
 import { ChefHat, LogOut, Check, UtensilsCrossed, AlertTriangle, Bell, RefreshCw, Sun } from "lucide-react";
 import { useNotificationSound } from "@/lib/sound";
+import { mergeAlertIds, dropAlertIds } from "@/lib/orderAlert";
 import { useScreenWakeLock } from "@/lib/useScreenWakeLock";
 
 export default function StaffKitchenClient({
@@ -24,13 +25,21 @@ export default function StaffKitchenClient({
   const [categories, setCategories] = useState<any[]>(restaurant.categories || []);
   const [togglingItemId, setTogglingItemId] = useState<string | null>(null);
 
-  const { isSoundEnabled, playSound, unlockSound } = useNotificationSound();
+  const { isSoundEnabled, playSound, vibrate } = useNotificationSound();
   const { isSupported: isWakeLockSupported, isWakeLockActive, requestWakeLock } = useScreenWakeLock();
   const socketRef = useRef<Socket | null>(null);
 
   // Persistent repeating alert interval & escalation timer references
   const alertIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const escalationTimerRef = useRef<{ [orderId: string]: NodeJS.Timeout }>({});
+  const acknowledgedRef = useRef<Set<string>>(new Set());
+
+  // Orders that have left RECEIVED (acked, or advanced elsewhere) must never
+  // re-trigger the alert loop on later feed refreshes.
+  const markDone = (orderId: string) => {
+    acknowledgedRef.current.add(orderId);
+    setUnacknowledged((prev) => dropAlertIds(prev, [orderId]));
+  };
 
   // 1. Session verification & 2-hour inactivity check
   useEffect(() => {
@@ -64,7 +73,7 @@ export default function StaffKitchenClient({
             setOrders(freshOrders);
             const receivedIds = freshOrders.filter((o: any) => o.status === "RECEIVED").map((o: any) => o.id);
             if (receivedIds.length > 0) {
-              setUnacknowledged((prev) => [...new Set([...prev, ...receivedIds])]);
+              setUnacknowledged((prev) => mergeAlertIds(prev, receivedIds, acknowledgedRef.current));
             }
           }
         } catch (e) {}
@@ -82,9 +91,8 @@ export default function StaffKitchenClient({
         alertIntervalRef.current = setInterval(() => {
           if (isSoundEnabled) {
             void playSound("order");
-          }
-          if ("vibrate" in navigator) {
-            navigator.vibrate([300, 100, 300, 100, 400]);
+          } else {
+            vibrate("order");
           }
         }, 3000);
       }
@@ -125,14 +133,14 @@ export default function StaffKitchenClient({
           // Track any RECEIVED orders as unacknowledged so alerts play upon unlock
           const receivedIds = freshOrders.filter((o: any) => o.status === "RECEIVED").map((o: any) => o.id);
           if (receivedIds.length > 0) {
-            setUnacknowledged((prev) => [...new Set([...prev, ...receivedIds])]);
+            setUnacknowledged((prev) => mergeAlertIds(prev, receivedIds, acknowledgedRef.current));
           }
         }
       } catch (err) {}
     };
 
     socket.on("kitchen_new_order", async ({ orderId }) => {
-      setUnacknowledged((prev) => [...new Set([...prev, orderId])]);
+      setUnacknowledged((prev) => mergeAlertIds(prev, [orderId], acknowledgedRef.current));
 
       // Trigger Service Worker OS Notification
       if ("serviceWorker" in navigator && "Notification" in window && Notification.permission === "granted") {
@@ -166,11 +174,13 @@ export default function StaffKitchenClient({
     // coming from any staff/admin session.
     socket.on("kitchen_order_status_changed", ({ orderId, status }) => {
       setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status } : o)));
+      if (status !== "RECEIVED") markDone(orderId);
       void refetchOrders();
     });
 
     socket.on("admin_order_status_changed", ({ orderId, status }) => {
       setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status } : o)));
+      if (status !== "RECEIVED") markDone(orderId);
       void refetchOrders();
     });
 
@@ -185,7 +195,7 @@ export default function StaffKitchenClient({
   }, [restaurant.id, restaurant.slug]);
 
   const handleAcknowledge = (orderId: string) => {
-    setUnacknowledged((prev) => prev.filter((id) => id !== orderId));
+    markDone(orderId);
     if (escalationTimerRef.current[orderId]) {
       clearTimeout(escalationTimerRef.current[orderId]);
       delete escalationTimerRef.current[orderId];
@@ -199,6 +209,7 @@ export default function StaffKitchenClient({
 
   const updateStatus = async (orderId: string, status: string) => {
     setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status } : o)));
+    if (status !== "RECEIVED") markDone(orderId);
 
     try {
       await fetch(`/api/orders/${orderId}/status`, {
@@ -290,16 +301,6 @@ export default function StaffKitchenClient({
         </div>
       </header>
 
-      {!isSoundEnabled && (
-        <div
-          className="bg-blue-900/60 text-blue-200 p-3.5 rounded-xl text-center font-bold text-xs animate-pulse cursor-pointer border border-blue-500/50"
-          onClick={unlockSound}
-        >
-          Click anywhere to enable kitchen audio alert chime 🔔
-        </div>
-      )}
-
-      {/* KITCHEN TICKETS GRID */}
       {visibleOrders.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-slate-500 bg-slate-900/40 rounded-3xl border border-slate-800/80">
           <ChefHat className="w-12 h-12 mb-3 text-slate-600 animate-bounce" />

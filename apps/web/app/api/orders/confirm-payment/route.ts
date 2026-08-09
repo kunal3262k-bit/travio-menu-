@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
         },
         data: {
           paymentStatus: "PAID",
-          status: "COMPLETED",
+          ...(firstOrder.sessionType === "CAR" ? {} : { status: "COMPLETED" }),
           invoiceNumber
         }
       });

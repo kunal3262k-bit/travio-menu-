@@ -211,7 +211,7 @@ try {
   check("admin room got admin_payment_confirmed", true);
 
   const car1Db = await prisma.order.findUnique({ where: { id: car1.id } });
-  check("car1 settled: PAID + COMPLETED + invoice + staff", car1Db.paymentStatus === "PAID" && car1Db.status === "COMPLETED" && car1Db.invoiceNumber != null && car1Db.processedByStaffName === "E2E Waiter", `status=${car1Db.status} inv=${car1Db.invoiceNumber} by=${car1Db.processedByStaffName}`);
+  check("car1 settled: PAID + stays RECEIVED (KDS gate) + invoice + staff", car1Db.paymentStatus === "PAID" && car1Db.status === "RECEIVED" && car1Db.invoiceNumber != null && car1Db.processedByStaffName === "E2E Waiter", `status=${car1Db.status} inv=${car1Db.invoiceNumber} by=${car1Db.processedByStaffName}`);
 
   // round 2, same car session
   const evCarNew2 = waiter(kitchenSock, "kitchen_new_order");
