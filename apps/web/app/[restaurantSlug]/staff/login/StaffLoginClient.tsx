@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ChefHat, Bell, KeyRound, ArrowRight, UserCheck } from "lucide-react";
+import { unlockAudio } from "@/lib/sound";
 
 export default function StaffLoginClient({ restaurant }: { restaurant: any }) {
   const router = useRouter();
@@ -51,6 +52,10 @@ export default function StaffLoginClient({ restaurant }: { restaurant: any }) {
     e.preventDefault();
     if (!selectedStaffId) return setError("Please select your name from the staff roster");
     if (!pin || pin.length !== 4) return setError("Please enter your 4-digit PIN");
+
+    // Unlock the shared audio context inside this real user gesture so the
+    // staff panel alerts can play immediately after login — no extra tap needed.
+    void unlockAudio();
 
     setLoggingIn(true);
     setError("");

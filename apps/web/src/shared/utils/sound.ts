@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 type SoundKind = "order" | "waiter" | "status" | "payment" | "alert";
 
@@ -22,50 +22,114 @@ const vibrations: Record<SoundKind, VibrationPattern> = {
   alert: [100, 40, 100]
 };
 
+/**
+ * Single audio context shared across the whole app session. Because Next.js
+ * staff routes navigate between login/kitchen/waiter pages WITHOUT a full
+ * document reload, an AudioContext created here stays alive (and keeps its
+ * unlocked state) across those transitions. This is what lets the PIN-login
+ * button unlock audio for the kitchen/waiter panel without any second tap.
+ */
+let sharedCtx: AudioContext | null = null;
+let sharedEnabled = false;
+const listeners = new Set<() => void>();
+
+function getContext(): AudioContext | null {
+  if (typeof window === "undefined") return null;
+  const AudioContextImpl = window.AudioContext || (window as any).webkitAudioContext;
+  if (!AudioContextImpl) return null;
+  if (!sharedCtx) {
+    try {
+      sharedCtx = new AudioContextImpl();
+    } catch {
+      return null;
+    }
+  }
+  return sharedCtx;
+}
+
+export function isAudioUnlocked(): boolean {
+  return sharedEnabled;
+}
+
+/**
+ * Unlocks the shared audio context. Must run inside a real user gesture
+ * (click / keypress / touch), which is an inescapable browser restriction.
+ * Plays a silent near-silent blip then relies on the short-lived oscillator —
+ * the minimal gesture that satisfies iOS/Safari autoplay policy.
+ */
+export async function unlockAudio(): Promise<void> {
+  if (typeof window === "undefined") return;
+  const ctx = getContext();
+  if (!ctx) return;
+
+  try {
+    if (ctx.state === "suspended") {
+      await ctx.resume();
+    }
+  } catch {
+    // Some browsers reject resume outside a gesture; we ignore that silently.
+  }
+
+  // Silent blip to make the context fully "playable" on iOS WebKit.
+  try {
+    const oscillator = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const t = ctx.currentTime;
+    oscillator.frequency.setValueAtTime(220, t);
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+    oscillator.connect(gain);
+    gain.connect(ctx.destination);
+    oscillator.start(t);
+    oscillator.stop(t + 0.06);
+  } catch {
+    // Ignore silent-blip failures — the context is still unlocked.
+  }
+
+  if (!sharedEnabled) {
+    sharedEnabled = true;
+    for (const listener of listeners) listener();
+  }
+}
+
 export function useNotificationSound() {
-  const audioRef = useRef<AudioContext | null>(null);
-  const [isSoundEnabled, setIsSoundEnabled] = useState(false);
+  const [isSoundEnabled, setIsSoundEnabled] = useState(isAudioUnlocked);
+
+  useEffect(() => {
+    const update = () => setIsSoundEnabled(isAudioUnlocked());
+    listeners.add(update);
+    update();
+    return () => {
+      listeners.delete(update);
+    };
+  }, []);
 
   const vibrate = useCallback((kind: SoundKind = "alert") => {
     if (typeof navigator === "undefined" || typeof navigator.vibrate !== "function") return;
     navigator.vibrate(vibrations[kind] ?? vibrations.alert);
   }, []);
 
-  const unlockSound = useCallback(async () => {
-    if (typeof window === "undefined") return;
-    const AudioContextImpl = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContextImpl) return;
-
-    if (!audioRef.current) {
-      audioRef.current = new AudioContextImpl();
-    }
-
-    if (audioRef.current.state === "suspended") {
-      await audioRef.current.resume();
-    }
-
-    setIsSoundEnabled(true);
-  }, []);
-
+  // Any tap anywhere on a page also unlocks audio as a safety net. This runs
+  // once per page-mount; once shared audio is unlocked it stays that way.
   useEffect(() => {
     const unlock = () => {
-      void unlockSound();
+      void unlockAudio();
     };
-
     window.addEventListener("pointerdown", unlock, { once: true });
+    window.addEventListener("touchstart", unlock, { once: true });
     window.addEventListener("keydown", unlock, { once: true });
-
     return () => {
       window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("touchstart", unlock);
       window.removeEventListener("keydown", unlock);
     };
-  }, [unlockSound]);
+  }, []);
 
   const playSound = useCallback(
     async (kind: SoundKind = "alert") => {
-      await unlockSound();
+      await unlockAudio();
       vibrate(kind);
-      const ctx = audioRef.current;
+      const ctx = getContext();
       if (!ctx) return;
 
       const sequence = tones[kind] ?? tones.alert;
@@ -89,8 +153,8 @@ export function useNotificationSound() {
         oscillator.stop(stop + 0.03);
       });
     },
-    [unlockSound, vibrate]
+    [unlockAudio, vibrate]
   );
 
-  return { isSoundEnabled, playSound, unlockSound, vibrate };
+  return { isSoundEnabled, playSound, unlockSound: unlockAudio, vibrate };
 }

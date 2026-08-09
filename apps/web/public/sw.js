@@ -6,6 +6,13 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(self.clients.claim());
 });
 
+// Installability requires a fetch handler in modern browsers. This is a pure
+// passthrough — no caching of any response, so stale API/data can never be
+// served to staff or customers.
+self.addEventListener("fetch", (event) => {
+  event.respondWith(fetch(event.request));
+});
+
 self.addEventListener("push", (event) => {
   if (!event.data) return;
   try {
