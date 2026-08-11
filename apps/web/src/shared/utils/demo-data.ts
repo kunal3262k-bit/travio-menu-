@@ -89,8 +89,9 @@ export const demoOrders = [
     status: "RECEIVED",
     createdAt: "2 min ago",
     items: [
-      { name: "Paneer Burger", quantity: 2, instructions: "Less spicy" },
-      { name: "Masala Fries", quantity: 1, instructions: "Extra peri peri" }
+      { name: "Paneer Burger", quantity: 1, instructions: "Less spicy" },
+      { name: "Masala Fries", quantity: 1, instructions: "Extra peri peri" },
+      { name: "Cold Coffee", quantity: 1, instructions: "" }
     ]
   },
   {

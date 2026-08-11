@@ -6,6 +6,8 @@ import { Inter } from "next/font/google";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
+const SITE_URL = "https://justswifttab.com";
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -13,8 +15,46 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "SwiftTab — Next-Gen QR & Drive-In Dining OS",
-  description: "Real-time QR ordering, drive-in car dining, and thermal bill POS platform",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "SwiftTab — QR Table Ordering & Kitchen Display for Indian Restaurants",
+    template: "%s | SwiftTab",
+  },
+  description:
+    "SwiftTab lets customers order from their phone by scanning a QR code on the table. Orders reach your kitchen in real time. Staff stay in control of service and UPI or cash payment. No customer app, no per-order commission.",
+  keywords: [
+    "QR ordering system for restaurants",
+    "restaurant QR menu",
+    "QR table ordering",
+    "restaurant ordering system India",
+    "restaurant KDS",
+    "restaurant self ordering",
+    "waiter ordering system",
+    "drive-in ordering",
+    "car-side ordering",
+    "restaurant software Delhi NCR",
+  ],
+  robots: {
+    index: true,
+    follow: true,
+  },
+  openGraph: {
+    title: "SwiftTab — QR Table Ordering & Kitchen Display",
+    description:
+      "Customers scan a QR code and order from their own phone. Orders reach the kitchen in real time. No customer app, no per-order commission.",
+    url: SITE_URL,
+    siteName: "SwiftTab",
+    locale: "en_IN",
+    type: "website",
+    images: [{ url: `${SITE_URL}/logo-full.png`, width: 1200, height: 630, alt: "SwiftTab" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "SwiftTab — QR Table Ordering & Kitchen Display",
+    description:
+      "Customers scan a QR code and order from their own phone. Orders reach the kitchen in real time. No customer app, no per-order commission.",
+    images: [`${SITE_URL}/logo-full.png`],
+  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
