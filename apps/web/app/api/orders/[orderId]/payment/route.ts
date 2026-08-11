@@ -56,7 +56,17 @@ export async function PATCH(
     });
 
     const allOrderIds = allUnpaidInSession.map((o) => o.id);
-    if (allOrderIds.length === 0) return { settledOrderIds: [] }; // Already fully paid
+    if (allOrderIds.length === 0) {
+      const paid = await tx.order.findFirst({
+        where: {
+          id: orderId,
+          restaurantId: staff.restaurantId,
+          paymentStatus: "PAID",
+        },
+        select: { invoiceNumber: true },
+      });
+      return { settledOrderIds: [], invoiceNumber: paid?.invoiceNumber ?? null };
+    }
 
     const restaurant = await tx.restaurant.update({
       where: { id: staff.restaurantId },
@@ -64,7 +74,6 @@ export async function PATCH(
       select: { invoiceCounter: true }
     });
     const invoiceNumber = restaurant.invoiceCounter;
-
     await tx.order.updateMany({
       where: {
         id: { in: allOrderIds },
@@ -101,13 +110,15 @@ export async function PATCH(
       }
     }
 
-    return { settledOrderIds: allOrderIds };
+    return { settledOrderIds: allOrderIds, invoiceNumber };
   });
 
   emitPaymentConfirmed({
     restaurantId: staff.restaurantId,
     tableId: firstOrder.tableId,
     isCar: firstOrder.sessionType === "CAR",
+    orderId: settled.settledOrderIds[0] ?? null,
+    invoiceNumber: settled.invoiceNumber ?? null,
   });
 
   return NextResponse.json({ success: true, ...settled });

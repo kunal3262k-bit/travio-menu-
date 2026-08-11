@@ -1,19 +1,36 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { io } from "socket.io-client";
+import { useState, useEffect, useCallback } from "react";
 import { useNotificationSound } from "@/lib/sound";
 import ThermalReceiptPrint from "../components/ThermalReceiptPrint";
+import { createRealtimeSocket, createReconcileGuard, bindReconcileTriggers } from "@/lib/realtime";
 
 export default function KitchenClient({ initialOrders, restaurantId, restaurant }: { initialOrders: any[], restaurantId: string, restaurant?: any }) {
   const [orders, setOrders] = useState(initialOrders);
   const [unacknowledged, setUnacknowledged] = useState<string[]>([]);
   const [printingOrder, setPrintingOrder] = useState<any>(null);
-  const { isSoundEnabled, playSound, unlockSound } = useNotificationSound();
+  const { isSoundEnabled, playKitchenRinger, unlockSound } = useNotificationSound();
 
   const playPingSound = () => {
-    void playSound("order");
+    void playKitchenRinger();
   };
+
+  const fetchOrders = useCallback(async () => {
+    try {
+      const res = await fetch("/api/kitchen/active-orders");
+      if (res.ok) {
+        const data = await res.json();
+        return data.orders || null;
+      }
+    } catch (err) {
+      console.error("Failed to refresh orders");
+    }
+    return null;
+  }, []);
+
+  const applyOrders = useCallback((data: any) => {
+    if (data) setOrders(data);
+  }, []);
 
   useEffect(() => {
     if ("serviceWorker" in navigator) {
@@ -22,64 +39,45 @@ export default function KitchenClient({ initialOrders, restaurantId, restaurant 
     if ("Notification" in window && Notification.permission === "default") {
       Notification.requestPermission();
     }
-    
-    const socket = io();
-    socket.emit("join_room", `kitchen_${restaurantId}`);
-    socket.emit("join_room", `admin_${restaurantId}`);
 
-    const refreshOrders = async () => {
-      try {
-        const res = await fetch("/api/kitchen/active-orders");
-        if (res.ok) {
-          const data = await res.json();
-          setOrders(data.orders);
-        }
-      } catch (err) {
-        console.error("Failed to refresh orders");
-      }
-    };
+    // Rooms are re-joined on every connect; authoritative feed reconciles on
+    // connect / visibility / online / focus / mount.
+    const guard = createReconcileGuard(fetchOrders, applyOrders);
+    const rt = createRealtimeSocket({
+      rooms: () => [`kitchen_${restaurantId}`, `admin_${restaurantId}`],
+      onReconcile: () => guard.run(),
+    });
 
-    socket.on("kitchen_new_order", async ({ orderId }) => {
+    rt.on("kitchen_new_order", ({ orderId }) => {
       playPingSound();
-      
-      if ("serviceWorker" in navigator && "Notification" in window && Notification.permission === "granted") {
-        navigator.serviceWorker.ready.then(registration => {
-          registration.showNotification("New Order Received!", {
-            body: `A new order has been placed and needs attention.`,
-            icon: "/icon.png",
-            vibrate: [200, 100, 200, 100, 400],
-            silent: false,
-            requireInteraction: true
-          } as any).catch(console.error);
-        });
-      }
 
-      setUnacknowledged(prev => [...prev, orderId]);
-      
+      // Dedupe: double delivery through overlapping rooms must not stack ids.
+      setUnacknowledged(prev => Array.from(new Set([...prev, orderId])));
+
       // Fetch latest orders without reloading the page
-      await refreshOrders();
+      guard.run();
     });
 
     // Keep the kitchen board in sync with any status change or payment
     // confirmation coming from any staff/admin session.
-    socket.on("kitchen_order_status_changed", ({ orderId, status }) => {
+    const handleStatus = ({ orderId, status }: { orderId: string; status: string }) => {
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
-      void refreshOrders();
+      guard.run();
+    };
+    rt.on("kitchen_order_status_changed", handleStatus);
+    rt.on("admin_order_status_changed", handleStatus);
+
+    rt.on("admin_payment_confirmed", () => {
+      guard.run();
     });
 
-    socket.on("admin_order_status_changed", ({ orderId, status }) => {
-      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
-      void refreshOrders();
-    });
-
-    socket.on("admin_payment_confirmed", () => {
-      void refreshOrders();
-    });
+    const unbindTriggers = bindReconcileTriggers(() => guard.run());
 
     return () => {
-      socket.disconnect();
+      unbindTriggers();
+      rt.disconnect();
     };
-  }, [restaurantId, playSound]);
+  }, [restaurantId, playKitchenRinger, fetchOrders, applyOrders]);
 
   const updateStatus = async (orderId: string, status: string) => {
     // Optimistic update

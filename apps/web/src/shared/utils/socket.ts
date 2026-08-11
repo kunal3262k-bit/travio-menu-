@@ -1,4 +1,5 @@
 import type { Server } from "socket.io";
+import { firePush } from "./push";
 
 /**
  * Shared socket.io instance.
@@ -22,7 +23,10 @@ export function getIO(): Server | undefined {
 export function emitTo(room: string, event: string, payload?: unknown) {
   const io = getIO();
   if (!io) return;
-  io.to(room).emit(event, payload);
+  // Every payload carries the server emit timestamp so clients can dedupe
+  // duplicate/replayed deliveries (rooms overlap when a client joins both
+  // kitchen_ and admin_ for the same restaurant).
+  io.to(room).emit(event, { ...((payload as object) ?? {}), ts: Date.now() });
 }
 
 /**
@@ -42,6 +46,17 @@ export function emitOrderCreated(
   if (emitKitchen) {
     emitTo(`kitchen_${restaurantId}`, "kitchen_new_order", { orderId });
     emitTo(`admin_${restaurantId}`, "kitchen_new_order", { orderId });
+    // Kitchen Web Push — gated by the SAME kitchen flag as the socket emit,
+    // so unpaid round-1 CAR orders never produce a kitchen push.
+    firePush(
+      { restaurantId, roles: ["KITCHEN"] },
+      {
+        title: "🍳 New Kitchen Order",
+        body: `New ticket #${orderId.slice(-4)} placed. Acknowledge on KDS.`,
+        tag: `new-order-${orderId}`,
+        vibrate: [300, 100, 300, 100, 500],
+      }
+    );
   }
   emitTo(`waiter_${restaurantId}`, "new_order", { orderId });
 }
@@ -88,6 +103,14 @@ export function emitPaymentClaimed(payload: {
     method,
     amount: amountPaise,
   });
+  firePush(
+    { restaurantId, roles: ["WAITER"] },
+    {
+      title: "💳 Payment Claimed",
+      body: `A ${method ?? "payment"} claim was submitted. Verify on the waiter panel.`,
+      tag: `payment-claim-${tableId ?? "car"}`,
+    }
+  );
 }
 
 /** Customer requested cash collection. */
@@ -106,16 +129,29 @@ export function emitPaymentConfirmed(payload: {
   restaurantId: string;
   tableId?: string | null;
   isCar: boolean;
+  /** First settled order id + shared invoice number, for the customer's
+   *  payment-success screen (Invoice #XXXX + download link). */
+  orderId?: string | null;
+  invoiceNumber?: number | null;
 }) {
-  const { restaurantId, tableId, isCar } = payload;
+  const { restaurantId, tableId, isCar, orderId, invoiceNumber } = payload;
+  const customerPayload = { tableId, orderId, invoiceNumber };
   if (tableId) {
-    emitTo(`table_${tableId}`, "payment_confirmed", { tableId });
+    emitTo(`table_${tableId}`, "payment_confirmed", customerPayload);
   }
   if (isCar) {
-    emitTo(`car_${restaurantId}`, "payment_confirmed", { tableId });
+    emitTo(`car_${restaurantId}`, "payment_confirmed", customerPayload);
   }
   emitTo(`waiter_${restaurantId}`, "payment_confirmed", { tableId });
   emitTo(`admin_${restaurantId}`, "admin_payment_confirmed", { tableId });
+  firePush(
+    { restaurantId, roles: ["WAITER"] },
+    {
+      title: "✅ Payment Confirmed",
+      body: "Payment confirmed. The order has been settled.",
+      tag: `payment-confirmed-${tableId ?? "car"}`,
+    }
+  );
 }
 
 /** A waiter request (call/bill) was created — push to waiter + admin rooms. */
@@ -135,9 +171,25 @@ export function emitWaiterRequestCreated(payload: {
   if (request.type === "CALL_WAITER") {
     emitTo(`waiter_${restaurantId}`, "waiter_called", { tableId: request.tableId });
     emitTo(`admin_${restaurantId}`, "admin_waiter_called", { tableId: request.tableId });
+    firePush(
+      { restaurantId, roles: ["WAITER"] },
+      {
+        title: "🙋 Waiter Call",
+        body: `Waiter requested${table ? ` at Table ${table.number}` : ""}.`,
+        tag: `request-${request.id}`,
+      }
+    );
   } else if (request.type === "REQUEST_BILL") {
     emitTo(`waiter_${restaurantId}`, "waiter_bill_requested", { tableId: request.tableId });
     emitTo(`admin_${restaurantId}`, "admin_bill_requested", { tableId: request.tableId });
+    firePush(
+      { restaurantId, roles: ["WAITER"] },
+      {
+        title: "🧾 Bill Requested",
+        body: `Bill requested${table ? ` at Table ${table.number}` : ""}.`,
+        tag: `request-${request.id}`,
+      }
+    );
   }
 }
 

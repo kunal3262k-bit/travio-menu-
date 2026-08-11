@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { io } from "socket.io-client";
 import { useRouter } from "next/navigation";
 import { useNotificationSound } from "@/lib/sound";
 import ThermalReceiptPrint from "../components/ThermalReceiptPrint";
+import { createRealtimeSocket, createReconcileGuard, bindReconcileTriggers } from "@/lib/realtime";
 
 export default function WaiterClient({ 
   initialRequests, 
@@ -30,7 +30,7 @@ export default function WaiterClient({
   const [activeTables, setActiveTables] = useState(initialActiveTables);
   const [printingOrder, setPrintingOrder] = useState<any>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const { isSoundEnabled, playSound, unlockSound } = useNotificationSound();
+  const { isSoundEnabled, playWaiterHotelChime, unlockSound } = useNotificationSound();
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000); // update every minute
@@ -45,88 +45,81 @@ export default function WaiterClient({
       Notification.requestPermission();
     }
 
-    const socket = io();
-    socket.emit("join_room", `waiter_${restaurantId}`);
-    socket.emit("join_room", `admin_${restaurantId}`);
+    // Rooms are re-joined on every connect; router.refresh() re-syncs the
+    // SSR data on connect / visibility / online / focus / mount so a
+    // temporary disconnect can never leave the panel stale.
+    const guard = createReconcileGuard(
+      () => Promise.resolve(null),
+      () => router.refresh()
+    );
+    const rt = createRealtimeSocket({
+      rooms: () => [`waiter_${restaurantId}`, `admin_${restaurantId}`],
+      onReconcile: () => guard.run(),
+    });
 
-    const triggerNotification = (title: string, body: string) => {
-      if ("serviceWorker" in navigator && "Notification" in window && Notification.permission === "granted") {
-        navigator.serviceWorker.ready.then(registration => {
-          registration.showNotification(title, {
-            body,
-            icon: "/icon.png",
-            vibrate: [200, 100, 200, 100, 400],
-            silent: false,
-            requireInteraction: true
-          } as any).catch(console.error);
-        });
-      }
-    };
-
-    socket.on("waiter_order_status", () => {
+    rt.on("waiter_order_status", () => {
       router.refresh();
-      void playSound("order");
-      triggerNotification("Order Ready!", "An order is ready to serve.");
+      void playWaiterHotelChime();
     });
     
-    socket.on("waiter_bill_requested", () => {
+    rt.on("waiter_bill_requested", () => {
       router.refresh();
-      void playSound("payment");
-      triggerNotification("Bill Requested", "A table has requested their bill.");
+      void playWaiterHotelChime();
     });
 
-    socket.on("waiter_called", () => {
+    rt.on("waiter_called", () => {
       router.refresh();
-      void playSound("waiter");
-      triggerNotification("Waiter Called", "A customer is requesting assistance.");
+      void playWaiterHotelChime();
     });
 
     // A request resolved on a staff device must vanish here too.
-    socket.on("waiter_request_resolved", () => {
+    rt.on("waiter_request_resolved", () => {
       router.refresh();
     });
 
-    socket.on("payment_claimed", () => {
+    rt.on("payment_claimed", () => {
       router.refresh();
-      void playSound("payment");
-      triggerNotification("Payment Claimed", "A customer has submitted a payment claim.");
+      void playWaiterHotelChime();
     });
 
-    socket.on("cash_requested", () => {
+    rt.on("cash_requested", () => {
       router.refresh();
-      void playSound("payment");
+      void playWaiterHotelChime();
     });
 
     // Keep the waiter panel in sync with new orders and any status/payment
     // change coming from any staff/admin session.
-    socket.on("new_order", () => {
+    rt.on("new_order", () => {
       router.refresh();
-      void playSound("order");
+      void playWaiterHotelChime();
     });
 
-    socket.on("kitchen_new_order", () => {
+    rt.on("kitchen_new_order", () => {
       router.refresh();
-      void playSound("order");
+      void playWaiterHotelChime();
     });
 
-    socket.on("admin_order_status_changed", () => {
+    rt.on("admin_order_status_changed", () => {
       router.refresh();
     });
 
-    socket.on("payment_confirmed", () => {
+    rt.on("payment_confirmed", () => {
       router.refresh();
-      void playSound("payment");
+      void playWaiterHotelChime();
     });
 
-    socket.on("admin_payment_confirmed", () => {
+    rt.on("admin_payment_confirmed", () => {
       router.refresh();
-      void playSound("payment");
+      void playWaiterHotelChime();
     });
+
+    const unbindTriggers = bindReconcileTriggers(() => guard.run());
 
     return () => {
-      socket.disconnect();
+      unbindTriggers();
+      rt.disconnect();
     };
-  }, [restaurantId, router, playSound]);
+  }, [restaurantId, router, playWaiterHotelChime]);
 
   const resolveRequest = async (id: string, type: string, tableId: string) => {
     setRequests(prev => prev.filter(r => r.id !== id));

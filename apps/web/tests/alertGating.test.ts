@@ -198,9 +198,18 @@ describe("BUG4: waiter request resolution is broadcast so other devices stop ale
     const { emitted } = makeCapturingIo();
     emitWaiterRequestResolved({ restaurantId: "r1", requestId: "req-1" });
     expect(emitted).toContainEqual(
-      expect.objectContaining({ room: `waiter_r1`, event: "waiter_request_resolved", payload: { requestId: "req-1" } })
+      expect.objectContaining({ room: `waiter_r1`, event: "waiter_request_resolved", payload: expect.objectContaining({ requestId: "req-1" }) })
     );
     expect(emitted).toContainEqual(expect.objectContaining({ room: `admin_r1`, event: "waiter_request_resolved" }));
+  });
+
+  it("every emit carries a server timestamp (ts) so clients can dedupe", () => {
+    const { emitted } = makeCapturingIo();
+    emitWaiterRequestResolved({ restaurantId: "r1", requestId: "req-1" });
+    expect(emitted.length).toBeGreaterThan(0);
+    for (const e of emitted) {
+      expect((e.payload as any).ts).toEqual(expect.any(Number));
+    }
   });
 
   it("request creation broadcast is unchanged", () => {

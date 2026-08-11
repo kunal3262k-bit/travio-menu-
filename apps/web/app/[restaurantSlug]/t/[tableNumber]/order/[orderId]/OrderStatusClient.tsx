@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { io } from "socket.io-client";
 import { useRouter } from "next/navigation";
 import { useNotificationSound } from "@/lib/sound";
+import { createRealtimeSocket } from "@/lib/realtime";
 
 export default function OrderStatusClient({ order }: { order: any }) {
   const router = useRouter();
@@ -39,10 +39,14 @@ export default function OrderStatusClient({ order }: { order: any }) {
   };
 
   useEffect(() => {
-    const socket = io();
-    socket.emit("join_room", `order_${order.id}`);
+    // Room is re-joined on every (re)connect so a temporary socket drop can
+    // never permanently freeze the customer's live status tracker.
+    const rt = createRealtimeSocket({
+      rooms: () => [`order_${order.id}`],
+      onReconcile: () => {},
+    });
 
-    socket.on("order_status_changed", (data) => {
+    rt.on("order_status_changed", (data) => {
       if (data.orderId === order.id) {
         setStatus(data.status);
         void playSound("status");
@@ -50,7 +54,7 @@ export default function OrderStatusClient({ order }: { order: any }) {
     });
 
     return () => {
-      socket.disconnect();
+      rt.disconnect();
     };
   }, [order.id, playSound]);
 

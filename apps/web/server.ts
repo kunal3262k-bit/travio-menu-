@@ -7,6 +7,7 @@ import next from "next";
 import { Server } from "socket.io";
 import { setIO } from "@/lib/socket";
 import { assertStaffAuthConfig } from "@/lib/staffAuthConfig";
+import { warnIfPushUnconfigured } from "@/lib/push";
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = "0.0.0.0";
@@ -64,6 +65,7 @@ async function ensureRuntimeChunks() {
 app.prepare().then(async () => {
   await ensureRuntimeChunks();
   assertStaffAuthConfig(process.env);
+  warnIfPushUnconfigured();
 
   const httpServer = createServer(async (req, res) => {
     try {
@@ -96,8 +98,13 @@ app.prepare().then(async () => {
   setIO(io);
 
   io.on("connection", (socket) => {
-    // Basic room joining logic
-    socket.on("join_room", (room: string) => {
+    // Room joining logic. Rooms are joined by the client on every (re)connect;
+    // validate the shape so a bad actor can only ever join their restaurant's
+    // own scoped rooms (they gain nothing from joining someone else's).
+    const ROOM_PREFIXES = ["kitchen_", "waiter_", "admin_", "table_", "order_", "car_"];
+    socket.on("join_room", (room: unknown) => {
+      if (typeof room !== "string") return;
+      if (!ROOM_PREFIXES.some((p) => room.startsWith(p))) return;
       socket.join(room);
       console.log(`Socket ${socket.id} joined room ${room}`);
     });

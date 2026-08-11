@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+﻿import { describe, expect, it, vi, beforeEach } from "vitest";
 
 vi.mock("../src/shared/utils/prisma", () => ({
   prisma: {
@@ -23,7 +23,7 @@ vi.mock("../src/shared/utils/staffAuth", () => ({ isPaymentConfirmationAllowedRo
 const carOrder = { id: "car-A", tableId: null, tableSessionId: "car_session_1", sessionType: "CAR", restaurantId: "demo-restaurant" };
 const tableOrder = { id: "table-A", tableId: "t1", tableSessionId: "sess-1", sessionType: "TABLE", restaurantId: "demo-restaurant" };
 
-const makeTx = (rows = [carOrder]) => ({
+const makeTx = (rows: any[] = [carOrder]) => ({
   order: {
     findMany: vi.fn(async ({ where }: any = {}) => (where?.tableSessionId ? rows : [])),
     updateMany: vi.fn().mockResolvedValue({ count: rows.length }),
@@ -44,8 +44,8 @@ beforeEach(() => {
 describe("BUG2 regression: POST /api/orders/confirm-payment keeps CAR orders kitchen-visible", () => {
   it("does not stamp COMPLETED on CAR orders (status stays RECEIVED for the KDS gate)", async () => {
     const tx = makeTx();
-    prisma.order.findUnique.mockResolvedValue(carOrder);
-    prisma.$transaction.mockImplementation(async (cb: any) => cb(tx));
+    (prisma.order.findUnique as any).mockResolvedValue(carOrder);
+    (prisma.$transaction as any).mockImplementation(async (cb: any) => cb(tx));
     const res = (await POST(request({ orderIds: ["car-A"] }) as any)) as Response;
     expect(res.status).toBe(200);
     const call = tx.order.updateMany.mock.calls[0][0] as any;
@@ -56,8 +56,8 @@ describe("BUG2 regression: POST /api/orders/confirm-payment keeps CAR orders kit
 
   it("still stamps COMPLETED on TABLE orders", async () => {
     const tx = makeTx([tableOrder]);
-    prisma.order.findUnique.mockResolvedValue(tableOrder);
-    prisma.$transaction.mockImplementation(async (cb: any) => cb(tx));
+    (prisma.order.findUnique as any).mockResolvedValue(tableOrder);
+    (prisma.$transaction as any).mockImplementation(async (cb: any) => cb(tx));
     await POST(request({ orderIds: ["table-A"] }) as any);
     const call = tx.order.updateMany.mock.calls[0][0] as any;
     expect(call.data.status).toBe("COMPLETED");

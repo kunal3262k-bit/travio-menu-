@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { io, Socket } from "socket.io-client";
 import { ChefHat, LogOut, Check, UtensilsCrossed, AlertTriangle, Bell, RefreshCw, Sun } from "lucide-react";
 import { useNotificationSound } from "@/lib/sound";
 import { mergeAlertIds, dropAlertIds, reconcileAlertIds } from "@/lib/orderAlert";
 import { useScreenWakeLock } from "@/lib/useScreenWakeLock";
+import { PushAlertsButton } from "@/components/staff/PushAlertsButton";
+import RealtimeBadge from "@/components/staff/RealtimeBadge";
+import { createRealtimeSocket, createReconcileGuard, bindReconcileTriggers } from "@/lib/realtime";
 
 export default function StaffKitchenClient({
   restaurant,
@@ -25,9 +27,9 @@ export default function StaffKitchenClient({
   const [categories, setCategories] = useState<any[]>(restaurant.categories || []);
   const [togglingItemId, setTogglingItemId] = useState<string | null>(null);
 
-  const { isSoundEnabled, playSound, vibrate } = useNotificationSound();
+  const { isSoundEnabled, playKitchenRinger, vibrate } = useNotificationSound();
   const { isSupported: isWakeLockSupported, isWakeLockActive, requestWakeLock } = useScreenWakeLock();
-  const socketRef = useRef<Socket | null>(null);
+  const socketRef = useRef<any>(null);
 
   // Persistent repeating alert interval & escalation timer references
   const alertIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -46,7 +48,7 @@ export default function StaffKitchenClient({
   // remain while its order is still RECEIVED in the gated KDS feed and has
   // not been acknowledged. Orders that advanced, were paid, cancelled, or got
   // gated out (unpaid CAR round 1) drop their stale alert claim here.
-  const reconcileAlerts = (freshOrders: any[]) => {
+  const reconcileAlerts = useCallback((freshOrders: any[]) => {
     const receivedIds = freshOrders
       .filter((o: any) => o.status === "RECEIVED")
       .map((o: any) => o.id);
@@ -57,7 +59,32 @@ export default function StaffKitchenClient({
       }
       return next;
     });
-  };
+  }, []);
+
+  // Authoritative reconciliation: fetch (pure) + apply (guarded). Debounced +
+  // stale-guarded by the realtime module — bursts of events coalesce into ONE
+  // fetch, and a late older response can never overwrite newer state.
+  const fetchOrders = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/staff/kitchen/active-orders?restaurantSlug=${restaurant.slug}`);
+      if (res.ok) {
+        const data = await res.json();
+        return data.orders || null;
+      }
+    } catch (err) {}
+    return null;
+  }, [restaurant.slug]);
+
+  const applyOrders = useCallback(
+    (freshOrders: any[] | null) => {
+      if (!freshOrders) return;
+      setOrders(freshOrders);
+      reconcileAlerts(freshOrders);
+    },
+    [reconcileAlerts]
+  );
+
+  const guard = useMemo(() => createReconcileGuard(fetchOrders, applyOrders), [fetchOrders, applyOrders]);
 
   // 1. Session verification & 2-hour inactivity check
   useEffect(() => {
@@ -79,33 +106,15 @@ export default function StaffKitchenClient({
     }
   }, [restaurant.slug, router]);
 
-  // Refetch active orders upon screen unlock / visibilitychange
-  useEffect(() => {
-    const handleFocusRefetch = async () => {
-      if (document.visibilityState === "visible") {
-        try {
-          const res = await fetch(`/api/staff/kitchen/active-orders?restaurantSlug=${restaurant.slug}`);
-          if (res.ok) {
-            const data = await res.json();
-            const freshOrders = data.orders || [];
-            setOrders(freshOrders);
-            reconcileAlerts(freshOrders);
-          }
-        } catch (e) {}
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleFocusRefetch);
-    return () => document.removeEventListener("visibilitychange", handleFocusRefetch);
-  }, [restaurant.slug]);
-
   // 2. Persistent Sound/Vibration Repeating Alert Loop (Part 3)
   useEffect(() => {
     if (unacknowledged.length > 0) {
       if (!alertIntervalRef.current) {
         alertIntervalRef.current = setInterval(() => {
           if (isSoundEnabled) {
-            void playSound("order");
+            // KDS alert: old mechanical telephone bell while a ticket is
+            // unacknowledged. Stops on acknowledge/completion via reconcile.
+            void playKitchenRinger();
           } else {
             vibrate("order");
           }
@@ -124,53 +133,31 @@ export default function StaffKitchenClient({
         alertIntervalRef.current = null;
       }
     };
-  }, [unacknowledged, isSoundEnabled, playSound]);
+  }, [unacknowledged, isSoundEnabled, playKitchenRinger, vibrate]);
 
-  // 3. Socket.io & 20s Admin Escalation Timer
+  // 3. Realtime socket + reconciliation lifecycle
   useEffect(() => {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js").catch(console.error);
     }
 
-    const socket = io();
-    socketRef.current = socket;
-    socket.emit("join_room", `kitchen_${restaurant.id}`);
-    socket.emit("join_room", `admin_${restaurant.id}`);
+    // Rooms are re-joined on EVERY connect (initial + reconnect) and the
+    // authoritative feed is reconciled on connect / visibility / online /
+    // focus / mount — so events missed during a temporary disconnect are
+    // always recovered without a manual refresh.
+    const rt = createRealtimeSocket({
+      rooms: () => [`kitchen_${restaurant.id}`, `admin_${restaurant.id}`],
+      onReconcile: () => guard.run(),
+    });
+    socketRef.current = rt.socket;
 
-    const refetchOrders = async () => {
-      try {
-        const res = await fetch(`/api/staff/kitchen/active-orders?restaurantSlug=${restaurant.slug}`);
-        if (res.ok) {
-          const data = await res.json();
-          const freshOrders = data.orders || [];
-          setOrders(freshOrders);
-
-          // Reconcile alert claims against the authoritative feed: RECEIVED
-          // orders alert unless acknowledged; everything else is dropped.
-          reconcileAlerts(freshOrders);
-        }
-      } catch (err) {}
-    };
-
-    socket.on("kitchen_new_order", async ({ orderId }) => {
+    rt.on("kitchen_new_order", ({ orderId }) => {
       setUnacknowledged((prev) => mergeAlertIds(prev, [orderId], acknowledgedRef.current));
-
-      // Trigger Service Worker OS Notification
-      if ("serviceWorker" in navigator && "Notification" in window && Notification.permission === "granted") {
-        navigator.serviceWorker.ready.then((reg) => {
-          reg.showNotification("🍳 New Kitchen Order!", {
-            body: `New ticket #${orderId.slice(-4)} placed. Acknowledge on KDS.`,
-            icon: "/icon.png",
-            vibrate: [300, 100, 300, 100, 500],
-            requireInteraction: true,
-          } as any).catch(console.error);
-        });
-      }
 
       // Start 20-second Admin Escalation Timer
       if (!escalationTimerRef.current[orderId]) {
         escalationTimerRef.current[orderId] = setTimeout(() => {
-          socket.emit("admin_escalation_alert", {
+          rt.socket.emit("admin_escalation_alert", {
             restaurantId: restaurant.id,
             orderId,
             role: "KITCHEN",
@@ -179,33 +166,33 @@ export default function StaffKitchenClient({
         }, 20_000);
       }
 
-      // Fetch fresh active orders for staff panel
-      await refetchOrders();
+      // Fetch fresh active orders for staff panel (coalesced + stale-guarded)
+      guard.run();
     });
 
     // Keep the KDS in sync with any status change or payment confirmation
     // coming from any staff/admin session.
-    socket.on("kitchen_order_status_changed", ({ orderId, status }) => {
+    const handleStatus = ({ orderId, status }: { orderId: string; status: string }) => {
       setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status } : o)));
       if (status !== "RECEIVED") markDone(orderId);
-      void refetchOrders();
+      guard.run();
+    };
+    rt.on("kitchen_order_status_changed", handleStatus);
+    rt.on("admin_order_status_changed", handleStatus);
+
+    rt.on("admin_payment_confirmed", () => {
+      guard.run();
     });
 
-    socket.on("admin_order_status_changed", ({ orderId, status }) => {
-      setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status } : o)));
-      if (status !== "RECEIVED") markDone(orderId);
-      void refetchOrders();
-    });
-
-    socket.on("admin_payment_confirmed", () => {
-      void refetchOrders();
-    });
+    // visibilitychange / online / focus / mount reconciliation (Phase 4)
+    const unbindTriggers = bindReconcileTriggers(() => guard.run());
 
     return () => {
-      socket.disconnect();
+      unbindTriggers();
+      rt.disconnect();
       Object.values(escalationTimerRef.current).forEach(clearTimeout);
     };
-  }, [restaurant.id, restaurant.slug]);
+  }, [restaurant.id, guard]);
 
   const handleAcknowledge = (orderId: string) => {
     markDone(orderId);
@@ -299,6 +286,8 @@ export default function StaffKitchenClient({
         </div>
 
         <div className="flex items-center gap-3">
+          <RealtimeBadge socket={socketRef.current} />
+          <PushAlertsButton restaurantSlug={restaurant.slug} role="KITCHEN" />
           <button
             onClick={() => setShow86Modal(true)}
             className="bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/40 px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2"

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { io } from "socket.io-client";
 import { useNotificationSound } from "@/lib/sound";
+import { createRealtimeSocket } from "@/lib/realtime";
 
 export default function PaymentClient({ 
   restaurant, 
@@ -21,40 +21,56 @@ export default function PaymentClient({
   const [activeOrders, setActiveOrders] = useState(orders);
   const [isCallingWaiter, setIsCallingWaiter] = useState(false);
   const [waiterCalled, setWaiterCalled] = useState(false);
-  const { isSoundEnabled, playSound, unlockSound } = useNotificationSound();
+  const [invoiceInfo, setInvoiceInfo] = useState<{ orderId: string; invoiceNumber: number } | null>(null);
+  const { isSoundEnabled, playCustomerHotelChime, playStatusChime, unlockSound } = useNotificationSound();
   
   const settings = restaurant.settings || {};
   // As per user request, we use text for UPI instead of a static QR for the demo, 
   // but if upiQrUrl exists, we can still show it.
   const hasUpiQr = !!settings.upiQrUrl;
-  
+
+  // The first order of this session carries the tableSessionId — the same
+  // session proof the invoice endpoint requires (unguessable UUID, possession
+  // of it is possession of the table's own bill).
+  const sessionToken =
+    (Array.isArray(orders) && orders[0]?.tableSessionId) || "";
+
+  // Latest rooms (table + per-order) via a ref so the socket effect stays
+  // mounted once — previously the socket was torn down on EVERY status change.
+  const activeOrdersRef = useRef(orders);
+  activeOrdersRef.current = activeOrders;
+
   useEffect(() => {
-    const socket = io();
-    socket.emit("join_room", `table_${table.id}`);
-    activeOrders.forEach((order: any) => {
-      socket.emit("join_room", `order_${order.id}`);
+    // Rooms are re-joined on every connect — the customer screen survives
+    // temporary socket drops without losing payment confirmation.
+    const rt = createRealtimeSocket({
+      rooms: () => [`table_${table.id}`, ...activeOrdersRef.current.map((order: any) => `order_${order.id}`)],
+      onReconcile: () => {},
     });
 
     // Waiter confirms payment is received
-    socket.on("payment_confirmed", () => {
-      void playSound("payment");
+    rt.on("payment_confirmed", (data) => {
+      void playCustomerHotelChime();
+      if (data?.invoiceNumber && data?.orderId) {
+        setInvoiceInfo({ orderId: data.orderId, invoiceNumber: data.invoiceNumber });
+      }
       setPaymentState("PAID");
       setTimeout(() => {
         router.push(`/${restaurant.slug}/t/${table.number}/review`);
-      }, 1500);
+      }, 4000);
     });
 
-    socket.on("order_status_changed", (data) => {
+    rt.on("order_status_changed", (data) => {
       setActiveOrders((current: any[]) =>
         current.map((order: any) => (order.id === data.orderId ? { ...order, status: data.status } : order))
       );
-      void playSound("status");
+      void playStatusChime();
     });
 
     return () => {
-      socket.disconnect();
+      rt.disconnect();
     };
-  }, [table.id, restaurant.slug, table.number, router, activeOrders, playSound]);
+  }, [table.id, restaurant.slug, table.number, router, playCustomerHotelChime, playStatusChime]);
 
   const handleCallWaiter = async () => {
     setIsCallingWaiter(true);
@@ -69,7 +85,8 @@ export default function PaymentClient({
         })
       });
 
-      void playSound("waiter");
+      // Customer-side: ONE premium hotel chime, never looped.
+      void playCustomerHotelChime();
       setWaiterCalled(true);
       setTimeout(() => setWaiterCalled(false), 30000);
     } catch (e) {
@@ -92,7 +109,7 @@ export default function PaymentClient({
           body: JSON.stringify({ orderIds, method: "UPI" })
         });
         
-        void playSound("payment");
+        void playCustomerHotelChime();
         
         setPaymentState("UPI_CLAIMED");
       } else if (paymentMethod === "CASH") {
@@ -104,7 +121,7 @@ export default function PaymentClient({
           body: JSON.stringify({ orderIds, method: "CASH" })
         });
 
-        void playSound("waiter");
+        void playCustomerHotelChime();
 
         setPaymentState("CASH_REQUESTED");
       }
@@ -135,11 +152,31 @@ export default function PaymentClient({
   const formatPrice = (p: number) => `₹${(p / 100).toFixed(2)}`;
 
   if (paymentState === "PAID") {
+    const invoiceHref = invoiceInfo
+      ? `/api/orders/${invoiceInfo.orderId}/invoice?session=${encodeURIComponent(sessionToken)}`
+      : null;
     return (
       <div className="max-w-md mx-auto text-center space-y-6 pt-20">
         <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto text-3xl">✓</div>
         <h2 className="text-2xl font-bold">Payment Successful!</h2>
-        <p className="text-gray-500">Redirecting you to feedback...</p>
+        {invoiceInfo ? (
+          <div className="space-y-3">
+            <p className="text-gray-500">
+              Invoice <span className="font-black text-gray-800">#{invoiceInfo.invoiceNumber}</span>
+            </p>
+            {invoiceHref && (
+              <a
+                href={invoiceHref}
+                download
+                className="inline-block bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl font-bold text-sm shadow"
+              >
+                Download Invoice PDF
+              </a>
+            )}
+          </div>
+        ) : (
+          <p className="text-gray-500">Redirecting you to feedback...</p>
+        )}
       </div>
     );
   }

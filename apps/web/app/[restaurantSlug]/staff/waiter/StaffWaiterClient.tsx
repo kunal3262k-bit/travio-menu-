@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { io, Socket } from "socket.io-client";
 import { Bell, LogOut, CheckCircle, Car, AlertCircle, Clock, CreditCard, Check, X, Sun } from "lucide-react";
 import { useNotificationSound } from "@/lib/sound";
 import { mergeAlertIds, retainAlertIds } from "@/lib/orderAlert";
 import { useScreenWakeLock } from "@/lib/useScreenWakeLock";
+import { PushAlertsButton } from "@/components/staff/PushAlertsButton";
+import RealtimeBadge from "@/components/staff/RealtimeBadge";
+import { createRealtimeSocket, createReconcileGuard, bindReconcileTriggers } from "@/lib/realtime";
 
 export default function StaffWaiterClient({
   restaurant,
@@ -26,9 +28,9 @@ export default function StaffWaiterClient({
   const [activeTables, setActiveTables] = useState<any[]>(initialTables);
   const [unacknowledged, setUnacknowledged] = useState<string[]>([]);
 
-  const { isSoundEnabled, playSound, vibrate } = useNotificationSound();
+  const { isSoundEnabled, playWaiterHotelChime, vibrate } = useNotificationSound();
   const { isSupported: isWakeLockSupported, isWakeLockActive, requestWakeLock } = useScreenWakeLock();
-  const socketRef = useRef<Socket | null>(null);
+  const socketRef = useRef<any>(null);
   const alertIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // 1. Session verification & 2-hour inactivity check
@@ -57,7 +59,9 @@ export default function StaffWaiterClient({
       if (!alertIntervalRef.current) {
         alertIntervalRef.current = setInterval(() => {
           if (isSoundEnabled) {
-            void playSound("waiter");
+            // Waiter alert: premium hotel service bell while a request/claim
+            // is unresolved. Stops immediately when resolved (reconcile).
+            void playWaiterHotelChime();
           } else {
             vibrate("waiter");
           }
@@ -76,102 +80,108 @@ export default function StaffWaiterClient({
         alertIntervalRef.current = null;
       }
     };
-  }, [unacknowledged, requests, isSoundEnabled, playSound]);
+  }, [unacknowledged, requests, isSoundEnabled, playWaiterHotelChime, vibrate]);
 
-  // 3. Socket.io Listeners for Waiter Surface
+  // Authoritative waiter state: fetch (pure) + apply (guarded). Debounced +
+  // stale-guarded so burst/duplicate events coalesce and a late older response
+  // can never overwrite newer socket-driven state.
+  const fetchActiveState = useCallback(async () => {
+    try {
+      const res = await fetch("/api/waiter/active-state");
+      if (res.ok) return await res.json();
+    } catch (e) {}
+    return null;
+  }, []);
+
+  const applyActiveState = useCallback((data: any) => {
+    if (!data) return;
+    setOrders(data.orders || []);
+    setActiveTables(data.tables || []);
+    setRequests(data.requests || []);
+    // Reconcile payment-claim alerts against the CURRENT actionable state.
+    // A claim may only keep ringing while its order is still CLAIMED in
+    // the active feed — paid/settled/cancelled/completed orders drop their
+    // claim here, so a stale tableId can never ring forever.
+    const claimedOrders = (data.orders || []).filter((o: any) => o.paymentStatus === "CLAIMED");
+    const claimedTableIds: string[] = claimedOrders.map((o: any) => o.tableId).filter((id: any) => !!id);
+    const claimedOrderIds: string[] = claimedOrders.map((o: any) => o.id).filter((id: any) => !!id);
+    const actionable = new Set([...claimedTableIds, ...claimedOrderIds]);
+    setUnacknowledged((prev) => {
+      const next = retainAlertIds(prev, actionable);
+      return next.length === prev.length ? prev : next;
+    });
+  }, []);
+
+  const guard = useMemo(
+    () => createReconcileGuard(fetchActiveState, applyActiveState),
+    [fetchActiveState, applyActiveState]
+  );
+
+  // 3. Realtime socket + reconciliation lifecycle (re-join + reconcile on
+  //    every connect, plus visibilitychange / online / focus / mount).
   useEffect(() => {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js").catch(console.error);
     }
 
-    const socket = io();
-    socketRef.current = socket;
-    socket.emit("join_room", `waiter_${restaurant.id}`);
-    socket.emit("join_room", `admin_${restaurant.id}`);
+    // Rooms are re-joined on every connect; authoritative feed reconciles on
+    // connect / visibility / online / focus / mount (Phase 4).
+    const rt = createRealtimeSocket({
+      rooms: () => [`waiter_${restaurant.id}`, `admin_${restaurant.id}`],
+      onReconcile: () => guard.run(),
+    });
+    socketRef.current = rt.socket;
 
-    socket.on("waiter_request", (data) => {
+    rt.on("waiter_request", (data) => {
       setRequests((prev) => [data, ...prev.filter((r) => r.id !== data.id)]);
-
-      if ("serviceWorker" in navigator && "Notification" in window && Notification.permission === "granted") {
-        navigator.serviceWorker.ready.then((reg) => {
-          reg.showNotification("🔔 Customer Request!", {
-            body: `${data.table ? `Table ${data.table.number}` : "Car Order"}: ${data.requestType}`,
-            icon: "/icon.png",
-            vibrate: [200, 100, 200],
-            requireInteraction: true,
-          } as any).catch(console.error);
-        });
-      }
     });
 
     // A request resolved on another device must stop alerting this device too.
-    socket.on("waiter_request_resolved", ({ requestId }) => {
+    rt.on("waiter_request_resolved", ({ requestId }) => {
       setRequests((prev) => prev.filter((r) => r.id !== requestId));
     });
 
-    socket.on("payment_claimed", (data) => {
+    rt.on("payment_claimed", (data) => {
       setUnacknowledged((prev) => mergeAlertIds(prev, [data?.orderId || data?.tableId], new Set()));
-      refreshData();
+      guard.run();
     });
 
-    socket.on("new_order", () => {
-      refreshData();
+    rt.on("new_order", () => {
+      guard.run();
     });
 
     // Keep the waiter panel in sync with any status change or payment
     // confirmation coming from any staff/admin session.
-    socket.on("kitchen_new_order", () => {
-      refreshData();
+    rt.on("kitchen_new_order", () => {
+      guard.run();
     });
 
-    socket.on("waiter_order_status", () => {
-      refreshData();
+    rt.on("waiter_order_status", () => {
+      guard.run();
     });
 
-    socket.on("admin_order_status_changed", () => {
-      refreshData();
+    rt.on("admin_order_status_changed", () => {
+      guard.run();
     });
 
-    socket.on("payment_confirmed", () => {
-      refreshData();
-      void playSound("payment");
+    rt.on("payment_confirmed", () => {
+      guard.run();
+      void playWaiterHotelChime();
     });
 
-    socket.on("admin_payment_confirmed", () => {
-      refreshData();
-      void playSound("payment");
+    rt.on("admin_payment_confirmed", () => {
+      guard.run();
+      void playWaiterHotelChime();
     });
+
+    // visibilitychange / online / focus / mount reconciliation (Phase 4)
+    const unbindTriggers = bindReconcileTriggers(() => guard.run());
 
     return () => {
-      socket.disconnect();
+      unbindTriggers();
+      rt.disconnect();
     };
-  }, [restaurant.id, playSound]);
-
-  const refreshData = async () => {
-    try {
-      const res = await fetch("/api/waiter/active-state");
-      if (res.ok) {
-        const data = await res.json();
-        setOrders(data.orders || []);
-        setActiveTables(data.tables || []);
-        setRequests(data.requests || []);
-        // Reconcile payment-claim alerts against the CURRENT actionable state.
-        // A claim may only keep ringing while its order is still CLAIMED in
-        // the active feed — paid/settled/cancelled/completed orders drop their
-        // claim here, so a stale tableId can never ring forever.
-        const claimedOrders = (data.orders || []).filter((o: any) => o.paymentStatus === "CLAIMED");
-        const claimedTableIds: string[] = claimedOrders.map((o: any) => o.tableId).filter((id: any) => !!id);
-        const claimedOrderIds: string[] = claimedOrders.map((o: any) => o.id).filter((id: any) => !!id);
-        const actionable = new Set([...claimedTableIds, ...claimedOrderIds]);
-        setUnacknowledged((prev) => {
-          const next = retainAlertIds(prev, actionable);
-          return next.length === prev.length ? prev : next;
-        });
-        return data;
-      }
-    } catch (e) {}
-    return null;
-  };
+  }, [restaurant.id, guard, playWaiterHotelChime]);
 
   const handleSwitchUser = () => {
     localStorage.removeItem(`staff_session_${restaurant.slug}`);
@@ -201,7 +211,7 @@ export default function StaffWaiterClient({
 
         setOrders((prev) => prev.filter((o) => !settledIds.includes(o.id)));
         setUnacknowledged((prev) => prev.filter((id) => !settledIds.includes(id)));
-        void refreshData();
+        void guard.run();
       }
     } catch (e) {
       alert("Failed to confirm payment");
@@ -222,7 +232,7 @@ export default function StaffWaiterClient({
           processedByStaffName: session?.staffName,
         }),
       });
-      refreshData();
+      guard.run();
     } catch (e) {
       alert("Failed to clear session");
     }
@@ -279,8 +289,10 @@ export default function StaffWaiterClient({
         </div>
 
         <div className="flex items-center gap-3">
+          <RealtimeBadge socket={socketRef.current} />
+          <PushAlertsButton restaurantSlug={restaurant.slug} role="WAITER" />
           <button
-            onClick={refreshData}
+            onClick={() => guard.run()}
             className="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3.5 py-2.5 rounded-xl text-xs font-bold border border-slate-700 transition flex items-center gap-1.5"
           >
             <Clock className="w-3.5 h-3.5" /> Refresh

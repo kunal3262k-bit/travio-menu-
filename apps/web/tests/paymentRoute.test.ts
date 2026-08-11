@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+﻿import { describe, expect, it, vi, beforeEach } from "vitest";
 
 vi.mock("../src/shared/utils/prisma", () => ({
   prisma: {
@@ -29,6 +29,7 @@ const makeTx = (sessionRows: unknown[] = [orderA, orderB]) => ({
     findMany: vi.fn(async ({ where }: any = {}) =>
       where?.tableSessionId ? sessionRows : where?.id ? [orderC] : []
     ),
+    findFirst: vi.fn().mockResolvedValue({ invoiceNumber: 12 }),
     updateMany: vi.fn().mockResolvedValue({ count: sessionRows.length }),
   },
   restaurant: { update: vi.fn().mockResolvedValue({ invoiceCounter: 12 }) },
@@ -39,7 +40,7 @@ const makeTx = (sessionRows: unknown[] = [orderA, orderB]) => ({
 const request = (body = {}) => ({ json: vi.fn().mockResolvedValue(body) });
 
 const patch = (orderId: string, firstOrder: unknown) => {
-  prisma.order.findUnique.mockResolvedValue(firstOrder);
+  (prisma.order.findUnique as any).mockResolvedValue(firstOrder);
   return PATCH(request({}) as any, { params: Promise.resolve({ orderId }) } as any);
 };
 
@@ -52,7 +53,7 @@ beforeEach(() => {
 describe("BUG1 regression: PATCH /api/orders/[orderId]/payment settles the selected SESSION only", () => {
   it("settles every unpaid round of the session and returns settledOrderIds", async () => {
     const tx = makeTx();
-    prisma.$transaction.mockImplementation(async (cb: any) => cb(tx));
+    (prisma.$transaction as any).mockImplementation(async (cb: any) => cb(tx));
     const res = (await patch("order-A", { ...orderA, id: "order-A" })) as Response;
     expect(res.status).toBe(200);
     const json = await res.json();
@@ -65,7 +66,7 @@ describe("BUG1 regression: PATCH /api/orders/[orderId]/payment settles the selec
 
   it("never pays orders outside the session (scope = session unpaid rounds only)", async () => {
     const tx = makeTx();
-    prisma.$transaction.mockImplementation(async (cb: any) => cb(tx));
+    (prisma.$transaction as any).mockImplementation(async (cb: any) => cb(tx));
     await patch("order-A", { ...orderA, id: "order-A" });
     const { updateMany } = tx.order;
     const updateCalls = JSON.stringify(updateMany.mock.calls);
@@ -79,7 +80,7 @@ describe("BUG1 regression: PATCH /api/orders/[orderId]/payment settles the selec
 
   it("resolves pending bill requests and frees the table session", async () => {
     const tx = makeTx();
-    prisma.$transaction.mockImplementation(async (cb: any) => cb(tx));
+    (prisma.$transaction as any).mockImplementation(async (cb: any) => cb(tx));
     await patch("order-A", { ...orderA, id: "order-A" });
     expect(tx.waiterRequest.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({ where: expect.objectContaining({ type: "REQUEST_BILL", status: "OPEN" }) })
@@ -91,7 +92,7 @@ describe("BUG1 regression: PATCH /api/orders/[orderId]/payment settles the selec
 
   it("falls back to the single order when it has no tableSessionId", async () => {
     const tx = makeTx([]);
-    prisma.$transaction.mockImplementation(async (cb: any) => cb(tx));
+    (prisma.$transaction as any).mockImplementation(async (cb: any) => cb(tx));
     const res = (await patch("order-C", orderC)) as Response;
     const json = await res.json();
     expect(json.settledOrderIds).toEqual(["order-C"]);
@@ -102,7 +103,7 @@ describe("BUG1 regression: PATCH /api/orders/[orderId]/payment settles the selec
 
   it("is a no-op (no re-invoice) when the session is already fully paid", async () => {
     const emptyTx = makeTx([]);
-    prisma.$transaction.mockImplementation(async (cb: any) => cb(emptyTx));
+    (prisma.$transaction as any).mockImplementation(async (cb: any) => cb(emptyTx));
     const res = (await patch("order-A", { ...orderA, id: "order-A" })) as Response;
     const json = await res.json();
     expect(json.settledOrderIds).toEqual([]);
@@ -112,7 +113,7 @@ describe("BUG1 regression: PATCH /api/orders/[orderId]/payment settles the selec
 
   it("emits payment_confirmed with isCar=false for table orders", async () => {
     const tx = makeTx();
-    prisma.$transaction.mockImplementation(async (cb: any) => cb(tx));
+    (prisma.$transaction as any).mockImplementation(async (cb: any) => cb(tx));
     await patch("order-A", { ...orderA, id: "order-A" });
     expect(emitPaymentConfirmed).toHaveBeenCalledWith(
       expect.objectContaining({ restaurantId: "demo-restaurant", isCar: false })
@@ -121,7 +122,7 @@ describe("BUG1 regression: PATCH /api/orders/[orderId]/payment settles the selec
 
   it("BUG2: marks TABLE orders COMPLETED on payment", async () => {
     const tx = makeTx();
-    prisma.$transaction.mockImplementation(async (cb: any) => cb(tx));
+    (prisma.$transaction as any).mockImplementation(async (cb: any) => cb(tx));
     await patch("order-A", { ...orderA, id: "order-A" });
     expect(tx.order.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ status: "COMPLETED", paymentStatus: "PAID" }) })
@@ -130,7 +131,7 @@ describe("BUG1 regression: PATCH /api/orders/[orderId]/payment settles the selec
 
   it("BUG2: CAR orders keep their status (no COMPLETED) so the KDS gate still shows them", async () => {
     const tx = makeTx();
-    prisma.$transaction.mockImplementation(async (cb: any) => cb(tx));
+    (prisma.$transaction as any).mockImplementation(async (cb: any) => cb(tx));
     await patch("car-A", { id: "car-A", tableId: null, tableSessionId: "car_session_1", sessionType: "CAR", restaurantId: "demo-restaurant" });
     const updateMany = tx.order.updateMany.mock.calls[0][0] as any;
     expect(updateMany.data.paymentStatus).toBe("PAID");
