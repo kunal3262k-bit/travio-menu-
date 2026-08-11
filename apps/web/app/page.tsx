@@ -163,23 +163,20 @@ export default function Home() {
       {/* Navigation */}
       <nav className="border-b border-gray-100">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <Link href="/" className="flex items-center gap-2 text-2xl font-black tracking-tighter text-emerald-950">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-emerald-600 text-white">
-              <Utensils className="h-4 w-4" />
-            </span>
-            SwiftTab
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/logo-full.png" alt="SwiftTab" width={134} height={96} className="h-8 w-auto" priority />
           </Link>
           <div className="flex items-center gap-3">
-            <Link href="/demo" className="hidden text-sm font-semibold text-gray-600 hover:text-emerald-900 sm:block">
-              See it live
+            <Link href="/demo" className="text-sm font-semibold text-gray-600 hover:text-emerald-900">
+              Demo
             </Link>
             <ContactLink className="text-sm font-semibold text-gray-600 hover:text-emerald-900" />
-            <Link href="/login" className="text-sm font-semibold text-gray-600 hover:text-emerald-900">
+            <Link href="/login" className="py-3 text-sm font-semibold text-gray-600 hover:text-emerald-900">
               Restaurant Login
             </Link>
             <Link
               href="/register"
-              className="rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800"
+              className="rounded-lg bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800"
             >
               Get Started
             </Link>
@@ -194,7 +191,7 @@ export default function Home() {
             <p className="mb-4 inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-emerald-800">
               <QrCode className="h-3.5 w-3.5" /> QR ordering for Indian restaurants
             </p>
-            <h1 className="text-4xl font-black leading-[1.1] tracking-tight text-slate-900 md:text-6xl">
+            <h1 className="text-3xl font-black leading-[1.1] tracking-tight text-slate-900 md:text-5xl lg:text-6xl">
               Your customers order from the table.
               <span className="text-emerald-700"> Your kitchen gets it instantly.</span>
             </h1>
@@ -455,7 +452,7 @@ export default function Home() {
               href="/demo"
               className="rounded-xl bg-emerald-700 px-8 py-4 text-lg font-bold text-white transition hover:bg-emerald-800"
             >
-              Open the interactive demo
+              See SwiftTab in action
             </Link>
             <DemoModal />
           </div>
@@ -479,11 +476,8 @@ export default function Home() {
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-8 md:grid-cols-3">
             <div>
-              <Link href="/" className="flex items-center gap-2 text-xl font-black tracking-tighter text-emerald-950">
-                <span className="grid h-8 w-8 place-items-center rounded-lg bg-emerald-600 text-white">
-                  <Utensils className="h-4 w-4" />
-                </span>
-                SwiftTab
+              <Link href="/" className="flex items-center gap-2">
+                <Image src="/logo-full.png" alt="SwiftTab" width={134} height={96} className="h-8 w-auto" />
               </Link>
               <p className="mt-3 max-w-xs text-sm leading-6 text-gray-600">
                 QR ordering, kitchen display, and staff tools built for Indian restaurants.
@@ -494,7 +488,7 @@ export default function Home() {
               <ul className="mt-3 space-y-2 text-sm font-semibold text-gray-700">
                 <li>
                   <Link href="/demo" className="hover:text-emerald-800">
-                    Interactive demo
+                    See SwiftTab in action
                   </Link>
                 </li>
                 <li>
@@ -564,9 +558,9 @@ function ProductPreview({
   const phoneTotalPaise = phoneItems.reduce((sum, item) => sum + item.pricePaise, 0);
   return (
     <div className="relative">
-      <div className="grid grid-cols-5 items-end gap-4 lg:gap-6">
+      <div className="grid grid-cols-1 items-end gap-4 sm:grid-cols-5 lg:gap-6">
         {/* Customer phone */}
-        <div className="col-span-3 rounded-[2rem] border-[10px] border-slate-900 bg-[#f8f4ed] p-4 shadow-2xl">
+        <div className="col-span-1 rounded-[2rem] border-[10px] border-slate-900 bg-[#f8f4ed] p-4 shadow-2xl sm:col-span-3">
           <div className="flex items-center justify-between border-b border-stone-300 px-2 pb-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-800">
@@ -616,7 +610,7 @@ function ProductPreview({
         </div>
 
         {/* Kitchen + staff cards */}
-        <div className="col-span-2 flex flex-col gap-4">
+        <div className="col-span-1 flex flex-col gap-4 sm:col-span-2">
           <div className="rounded-xl border border-white/10 bg-stone-950 p-4 text-white shadow-xl">
             <div className="flex items-center justify-between">
               <h3 className="flex items-center gap-2 text-base font-semibold">
@@ -661,7 +655,7 @@ function ProductPreview({
             href="/demo"
             className="flex items-center justify-center gap-2 rounded-xl border border-emerald-700 bg-white px-4 py-3 text-sm font-bold text-emerald-800 transition hover:bg-emerald-50"
           >
-            <Sparkles className="h-4 w-4" /> Open the interactive demo
+            <Sparkles className="h-4 w-4" /> Explore the workflow
           </Link>
         </div>
       </div>

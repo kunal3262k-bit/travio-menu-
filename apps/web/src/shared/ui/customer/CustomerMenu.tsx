@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { Bell, CheckCircle2, Flame, Minus, Plus, ReceiptText, ShoppingBag, Utensils } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { formatMoney } from "@/lib/utils";
 import { selectUpsellRecommendations } from "@/lib/upsell";
@@ -114,12 +114,13 @@ export function CustomerMenu({ restaurant }: { restaurant: RestaurantView }) {
 
   const estimatedWait = useMemo(() => (cartLines.length ? "18-22 min" : "Add items to estimate"), [cartLines.length]);
 
-  const greeting = useMemo(() => {
+  const [greeting, setGreeting] = useState("Here's our menu");
+  useEffect(() => {
     const hour = new Date().getHours();
-    if (hour >= 5 && hour < 12) return "Good morning — here's today's menu";
-    if (hour >= 12 && hour < 17) return "Good afternoon — here's today's menu";
-    if (hour >= 17 && hour < 22) return "Good evening — here's tonight's menu";
-    return "Welcome — here's our late night menu";
+    if (hour >= 5 && hour < 12) setGreeting("Good morning — here's today's menu");
+    else if (hour >= 12 && hour < 17) setGreeting("Good afternoon — here's today's menu");
+    else if (hour >= 17 && hour < 22) setGreeting("Good evening — here's tonight's menu");
+    else setGreeting("Welcome — here's our late night menu");
   }, []);
 
   return (
