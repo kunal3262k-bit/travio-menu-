@@ -164,7 +164,8 @@ export default function Home() {
       <nav className="border-b border-gray-100">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/logo-full.png" alt="SwiftTab" width={134} height={96} className="h-8 w-auto" priority />
+            <Image src="/logo-icon.png" alt="" width={179} height={166} className="h-10 w-auto lg:h-12" priority />
+            <span className="text-xl font-bold tracking-tight text-emerald-950 lg:text-2xl">SwiftTab</span>
           </Link>
           <div className="flex items-center gap-3">
             <Link href="/demo" className="text-sm font-semibold text-gray-600 hover:text-emerald-900">
@@ -477,7 +478,8 @@ export default function Home() {
           <div className="grid gap-8 md:grid-cols-3">
             <div>
               <Link href="/" className="flex items-center gap-2">
-                <Image src="/logo-full.png" alt="SwiftTab" width={134} height={96} className="h-8 w-auto" />
+                <Image src="/logo-icon.png" alt="" width={179} height={166} className="h-10 w-auto lg:h-12" />
+                <span className="text-xl font-bold tracking-tight text-emerald-950 lg:text-2xl">SwiftTab</span>
               </Link>
               <p className="mt-3 max-w-xs text-sm leading-6 text-gray-600">
                 QR ordering, kitchen display, and staff tools built for Indian restaurants.
