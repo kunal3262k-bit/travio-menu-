@@ -128,6 +128,7 @@ export function emitWaiterRequestCreated(payload: {
   emitTo(`waiter_${restaurantId}`, "waiter_request", {
     id: request.id,
     requestType: request.type,
+    status: "OPEN",
     tableId: request.tableId,
     table: table ?? null,
   });
