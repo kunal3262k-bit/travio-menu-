@@ -4,7 +4,7 @@ import { resolveRestaurantTable } from "@/lib/tenant";
 import { waiterRequestSchema } from "@/lib/validation";
 import { rateLimit } from "@/lib/rate-limit";
 import { requireAdminOrStaff } from "@/lib/staffAuth";
-import { emitWaiterRequestCreated } from "@/lib/socket";
+import { emitWaiterRequestCreated, emitWaiterRequestResolved } from "@/lib/socket";
 export async function POST(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for") ?? "local";
   if (!rateLimit(`waiter:${ip}`).allowed) {
@@ -69,6 +69,10 @@ export async function PATCH(request: NextRequest) {
   if (updatedRequest.count === 0) {
     return NextResponse.json({ error: "Request not found" }, { status: 404 });
   }
+
+  // Broadcast the resolution so every waiter device drops the request from its
+  // actionable alert state immediately — no refresh required.
+  emitWaiterRequestResolved({ restaurantId: session.restaurantId, requestId });
 
   return NextResponse.json({ ok: true });
 }

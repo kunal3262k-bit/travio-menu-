@@ -70,6 +70,26 @@ function waiter(socket, eventName, timeoutMs = 6000) {
   });
 }
 
+// Asserts the event does NOT arrive within the window. Resolves true if silent.
+function waiterNoEvent(socket, eventName, timeoutMs = 1500) {
+  return new Promise((resolve) => {
+    const t0 = Date.now();
+    const handler = () => {
+      clearInterval(iv);
+      socket.off(eventName, handler);
+      resolve(false);
+    };
+    socket.on(eventName, handler);
+    const iv = setInterval(() => {
+      if (Date.now() - t0 > timeoutMs) {
+        clearInterval(iv);
+        socket.off(eventName, handler);
+        resolve(true);
+      }
+    }, 100);
+  });
+}
+
 let restaurantId, table, itemA, itemB, kitchenCookie, waiterCookie;
 
 try {
@@ -178,13 +198,12 @@ try {
 
   // ---- CAR flow + kitchen gate
   const carSession = `e2e-car-session-${Date.now()}`;
-  const evCarNew1 = waiter(kitchenSock, "kitchen_new_order");
+  // Unpaid round 1 is gated OUT of the KDS -> must NOT push a kitchen alert.
+  const evCarKitchenNoEvent = waiterNoEvent(kitchenSock, "kitchen_new_order", 1500);
   r = await api("POST", "/api/orders/car", { body: { restaurantSlug: slug, customerName: "Car Dude", carBrand: "Swift", carColor: "Red", carLicensePlate: "DL12X1234", tableSessionId: carSession, items: [{ menuItemId: itemB.id, quantity: 1 }] } });
   const car1 = r.json?.order;
   check("car order round 1 -> 201", r.status === 201 && !!car1?.id, `status=${r.status}`);
-
-  ev = await evCarNew1;
-  check("kitchen room got car kitchen_new_order", ev.orderId === car1.id);
+  check("CAR GATE: unpaid round 1 does NOT push kitchen_new_order", (await evCarKitchenNoEvent) === true);
 
   r = await api("GET", `/api/staff/kitchen/active-orders?restaurantSlug=${slug}`, { cookie: `swifttab_staff_session=${kitchenCookie}` });
   check("CAR GATE: unpaid round 1 NOT on kitchen feed", r.status === 200 && !r.json?.orders?.some((o) => o.id === car1.id));
@@ -213,12 +232,13 @@ try {
   const car1Db = await prisma.order.findUnique({ where: { id: car1.id } });
   check("car1 settled: PAID + stays RECEIVED (KDS gate) + invoice + staff", car1Db.paymentStatus === "PAID" && car1Db.status === "RECEIVED" && car1Db.invoiceNumber != null && car1Db.processedByStaffName === "E2E Waiter", `status=${car1Db.status} inv=${car1Db.invoiceNumber} by=${car1Db.processedByStaffName}`);
 
-  // round 2, same car session
+  // round 2, same car session (a prior round is now PAID -> gate open -> alert)
   const evCarNew2 = waiter(kitchenSock, "kitchen_new_order");
   r = await api("POST", "/api/orders/car", { body: { restaurantSlug: slug, customerName: "Car Dude", carBrand: "Swift", carColor: "Red", carLicensePlate: "DL12X1234", tableSessionId: carSession, items: [{ menuItemId: itemB.id, quantity: 1 }] } });
   const car2 = r.json?.order;
   check("car order round 2 -> 201 (joined session)", r.status === 201 && !!car2?.id, `status=${r.status}`);
-  await evCarNew2.catch(() => {});
+  ev = await evCarNew2;
+  check("CAR GATE: round 2 (open tab) DOES push kitchen_new_order", ev.orderId === car2.id);
 
   r = await api("GET", `/api/staff/kitchen/active-orders?restaurantSlug=${slug}`, { cookie: `swifttab_staff_session=${kitchenCookie}` });
   check("CAR GATE: round 2 visible after paid round", r.status === 200 && r.json?.orders?.some((o) => o.id === car2.id), `count=${r.json?.orders?.length}`);

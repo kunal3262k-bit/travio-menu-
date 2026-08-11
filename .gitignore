@@ -39,3 +39,6 @@ public/uploads/
  
 # test artifacts
 scratch/
+
+# serena project metadata (stored in ~/.serena/projects)
+.serena/

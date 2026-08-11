@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rate-limit";
 import { getBusinessDayStart } from "@/src/shared/utils/dateUtils";
 import { emitOrderCreated } from "@/lib/socket";
+import { shouldEmitKitchenNewOrder } from "@/lib/kitchenFeed";
 
 export async function POST(request: NextRequest) {
   try {
@@ -205,7 +206,11 @@ export async function POST(request: NextRequest) {
       });
     });
 
-    emitOrderCreated(restaurant.id, order.id);
+    // Server-side push: notify kitchen + waiter rooms that a new order exists.
+    // Kitchen alert is gated so unpaid round-1 CAR/TAKEAWAY tickets (hidden by
+    // the payment gate) never alarm the KDS. Waiter is always notified.
+    const emitKitchen = await shouldEmitKitchenNewOrder(order);
+    emitOrderCreated(restaurant.id, order.id, { kitchen: emitKitchen });
 
     return NextResponse.json({ order, isJoinedSession, joinedHostName }, { status: 201 });
   } catch (error: any) {

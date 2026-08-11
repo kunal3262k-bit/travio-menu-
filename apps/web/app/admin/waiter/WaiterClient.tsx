@@ -81,6 +81,11 @@ export default function WaiterClient({
       triggerNotification("Waiter Called", "A customer is requesting assistance.");
     });
 
+    // A request resolved on a staff device must vanish here too.
+    socket.on("waiter_request_resolved", () => {
+      router.refresh();
+    });
+
     socket.on("payment_claimed", () => {
       router.refresh();
       void playSound("payment");

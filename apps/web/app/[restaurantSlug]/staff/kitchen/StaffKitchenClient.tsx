@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { io, Socket } from "socket.io-client";
 import { ChefHat, LogOut, Check, UtensilsCrossed, AlertTriangle, Bell, RefreshCw, Sun } from "lucide-react";
 import { useNotificationSound } from "@/lib/sound";
-import { mergeAlertIds, dropAlertIds } from "@/lib/orderAlert";
+import { mergeAlertIds, dropAlertIds, reconcileAlertIds } from "@/lib/orderAlert";
 import { useScreenWakeLock } from "@/lib/useScreenWakeLock";
 
 export default function StaffKitchenClient({
@@ -41,6 +41,24 @@ export default function StaffKitchenClient({
     setUnacknowledged((prev) => dropAlertIds(prev, [orderId]));
   };
 
+  // Reconcile alert claims against the CURRENT actionable feed on every
+  // successful refetch. `unacknowledged` is authoritative: an id may only
+  // remain while its order is still RECEIVED in the gated KDS feed and has
+  // not been acknowledged. Orders that advanced, were paid, cancelled, or got
+  // gated out (unpaid CAR round 1) drop their stale alert claim here.
+  const reconcileAlerts = (freshOrders: any[]) => {
+    const receivedIds = freshOrders
+      .filter((o: any) => o.status === "RECEIVED")
+      .map((o: any) => o.id);
+    const next = reconcileAlertIds(receivedIds, acknowledgedRef.current);
+    setUnacknowledged((prev) => {
+      if (prev.length === next.length && prev.every((id, i) => id === next[i])) {
+        return prev;
+      }
+      return next;
+    });
+  };
+
   // 1. Session verification & 2-hour inactivity check
   useEffect(() => {
     const rawSession = localStorage.getItem(`staff_session_${restaurant.slug}`);
@@ -71,10 +89,7 @@ export default function StaffKitchenClient({
             const data = await res.json();
             const freshOrders = data.orders || [];
             setOrders(freshOrders);
-            const receivedIds = freshOrders.filter((o: any) => o.status === "RECEIVED").map((o: any) => o.id);
-            if (receivedIds.length > 0) {
-              setUnacknowledged((prev) => mergeAlertIds(prev, receivedIds, acknowledgedRef.current));
-            }
+            reconcileAlerts(freshOrders);
           }
         } catch (e) {}
       }
@@ -130,11 +145,9 @@ export default function StaffKitchenClient({
           const freshOrders = data.orders || [];
           setOrders(freshOrders);
 
-          // Track any RECEIVED orders as unacknowledged so alerts play upon unlock
-          const receivedIds = freshOrders.filter((o: any) => o.status === "RECEIVED").map((o: any) => o.id);
-          if (receivedIds.length > 0) {
-            setUnacknowledged((prev) => mergeAlertIds(prev, receivedIds, acknowledgedRef.current));
-          }
+          // Reconcile alert claims against the authoritative feed: RECEIVED
+          // orders alert unless acknowledged; everything else is dropped.
+          reconcileAlerts(freshOrders);
         }
       } catch (err) {}
     };

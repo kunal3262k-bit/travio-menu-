@@ -4,6 +4,7 @@ import { createOrderSchema } from "@/lib/validation";
 import { resolveRestaurantTable } from "@/lib/tenant";
 import { rateLimit } from "@/lib/rate-limit";
 import { emitOrderCreated } from "@/lib/socket";
+import { shouldEmitKitchenNewOrder } from "@/lib/kitchenFeed";
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for") ?? "local";
@@ -146,7 +147,9 @@ export async function POST(request: NextRequest) {
   });
 
   // Server-side push: notify kitchen + waiter rooms that a new order exists.
-  emitOrderCreated(context.restaurant.id, order.id);
+  // Kitchen alert is gated so tickets hidden by the CAR payment gate never alarm the KDS.
+  const emitKitchen = await shouldEmitKitchenNewOrder(order);
+  emitOrderCreated(context.restaurant.id, order.id, { kitchen: emitKitchen });
 
   return NextResponse.json({ order }, { status: 201 });
 }

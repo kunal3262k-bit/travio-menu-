@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { io, Socket } from "socket.io-client";
 import { Bell, LogOut, CheckCircle, Car, AlertCircle, Clock, CreditCard, Check, X, Sun } from "lucide-react";
 import { useNotificationSound } from "@/lib/sound";
-import { mergeAlertIds, dropAlertIds } from "@/lib/orderAlert";
+import { mergeAlertIds, retainAlertIds } from "@/lib/orderAlert";
 import { useScreenWakeLock } from "@/lib/useScreenWakeLock";
 
 export default function StaffWaiterClient({
@@ -104,6 +104,11 @@ export default function StaffWaiterClient({
       }
     });
 
+    // A request resolved on another device must stop alerting this device too.
+    socket.on("waiter_request_resolved", ({ requestId }) => {
+      setRequests((prev) => prev.filter((r) => r.id !== requestId));
+    });
+
     socket.on("payment_claimed", (data) => {
       setUnacknowledged((prev) => mergeAlertIds(prev, [data?.orderId || data?.tableId], new Set()));
       refreshData();
@@ -150,11 +155,18 @@ export default function StaffWaiterClient({
         setOrders(data.orders || []);
         setActiveTables(data.tables || []);
         setRequests(data.requests || []);
-        // Orders settled on ANY panel must stop alarming this panel too.
-        const paidKeys = (data.orders || [])
-          .filter((o: any) => o.paymentStatus === "PAID")
-          .flatMap((o: any) => [o.id, o.tableId]);
-        setUnacknowledged((prev) => dropAlertIds(prev, paidKeys));
+        // Reconcile payment-claim alerts against the CURRENT actionable state.
+        // A claim may only keep ringing while its order is still CLAIMED in
+        // the active feed — paid/settled/cancelled/completed orders drop their
+        // claim here, so a stale tableId can never ring forever.
+        const claimedOrders = (data.orders || []).filter((o: any) => o.paymentStatus === "CLAIMED");
+        const claimedTableIds: string[] = claimedOrders.map((o: any) => o.tableId).filter((id: any) => !!id);
+        const claimedOrderIds: string[] = claimedOrders.map((o: any) => o.id).filter((id: any) => !!id);
+        const actionable = new Set([...claimedTableIds, ...claimedOrderIds]);
+        setUnacknowledged((prev) => {
+          const next = retainAlertIds(prev, actionable);
+          return next.length === prev.length ? prev : next;
+        });
         return data;
       }
     } catch (e) {}
