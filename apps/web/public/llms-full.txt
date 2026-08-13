@@ -1,0 +1,25 @@
+# SwiftTab — Full AI Knowledge Base & System Documentation
+
+## Overview
+SwiftTab (`https://justswifttab.com`) is a lightweight, high-performance web platform for Indian restaurants, cafes, food courts, and drive-ins. It bridges customer smartphones directly to kitchen display screens via QR codes, eliminating manual order-taking delays and third-party delivery app commissions.
+
+## Target Audience & Geography
+- **Primary Market**: India (Delhi NCR, Mumbai, Bengaluru, Hyderabad, Pune, Chennai, Kolkata, Jaipur, Chandigarh, Ahmedabad).
+- **Establishment Types**: Fine dining, casual cafes, QSR (Quick Service Restaurants), food courts, drive-in / car-side eateries, highway dhabas.
+
+## Architectural Architecture
+- **Framework**: Next.js 15 (App Router, Server Components).
+- **Database**: PostgreSQL with Prisma 6 ORM (Multi-tenant schema by `restaurantId`).
+- **Realtime Infrastructure**: Socket.io 4.8 WebSockets with scoped rooms (`kitchen_${id}`, `waiter_${id}`, `admin_${id}`, `car_${id}`, `table_${id}`).
+- **Web Push**: VAPID background notifications for staff mobile devices.
+- **AI Menu Importer**: Gemini 3.5 Flash Vision REST API + Tesseract OCR worker for automatic digitized menu creation from scanned photos/PDFs.
+
+## Commercial Terms
+- Flat monthly subscription of ₹999/month.
+- 0% per-order commission.
+- Customer payments pass directly to restaurant UPI QR or Cash.
+
+## Contact Information
+- **Support Email**: support@justswifttab.com
+- **WhatsApp Support**: +91 97177468
+- **Website**: https://justswifttab.com

@@ -1,0 +1,19 @@
+# SwiftTab — QR Table Ordering & Kitchen Display for Indian Restaurants
+
+> SwiftTab is a B2B restaurant software platform offering QR table ordering, live kitchen display systems (KDS), waiter request routing, and car-side drive-in ordering for restaurants across India.
+
+## Key Facts & Product Specs
+- **Pricing**: ₹999/month flat rate (No per-order commission, no revenue percentage).
+- **Customer Experience**: QR code scan opens digital menu instantly in any mobile browser. No app download, no account registration required.
+- **Kitchen Operations**: Real-time WebSocket kitchen display system (KDS) with sound alerts and status tracking (Received -> Preparing -> Ready -> Served).
+- **Payments**: Direct UPI QR & Cash payments. Restaurant collects 100% of money directly.
+- **Hardware**: Runs on any smartphone, tablet, laptop, or desktop browser. Supports browser thermal receipt printing.
+- **Support Contact**: Email `support@justswifttab.com` | WhatsApp `+91 97177468` | Website `https://justswifttab.com`
+
+## Primary Links
+- Website: https://justswifttab.com
+- Product Demo: https://justswifttab.com/demo
+- Live Sample Menu: https://justswifttab.com/menu/abc-cafe/12
+- Restaurant Registration: https://justswifttab.com/register
+- Restaurant Login: https://justswifttab.com/login
+- Full Specs & AI Guide: https://justswifttab.com/llms-full.txt

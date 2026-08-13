@@ -63,22 +63,35 @@ export const metadata: Metadata = {
   },
   other: {
     "apple-mobile-web-app-capable": "yes",
+    "geo.region": "IN-DL",
+    "geo.placename": "New Delhi, India",
+    "geo.position": "28.6139;77.2090",
+    "ICBM": "28.6139, 77.2090",
   },
   icons: {
     icon: [
-      { url: "/logo-icon.png" },
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/logo-icon.png", type: "image/png", sizes: "48x48 96x96 192x192" },
       { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
       { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
     ],
-    shortcut: "/logo-icon.png",
-    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+    shortcut: "/favicon.ico",
+    apple: [{ url: "/logo-icon.png", sizes: "180x180", type: "image/png" }],
   },
 };
+
+import { VisitorTracker } from "@/src/shared/ui/analytics/VisitorTracker";
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en-IN" className={inter.variable}>
+      <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/logo-icon.png" type="image/png" sizes="48x48 96x96 192x192" />
+        <link rel="apple-touch-icon" href="/logo-icon.png" />
+      </head>
       <body className="font-sans antialiased">
+        <VisitorTracker />
         <Providers>{children}</Providers>
       </body>
     </html>
