@@ -117,7 +117,7 @@ const faqs = [
   },
   {
     q: "Is there a contract or commitment? How does the 3-day trial work?",
-    a: "No long-term contract or lock-in. Pay ₹999 upfront to get your digital menu setup and sample printed table QR codes. Try it live at your tables for 3 days. If you are not completely satisfied with the order speed and staff time saved, we offer a full money-back refund (less sample QR print costs). Cancel anytime.",
+    a: "No long-term contract or lock-in. Pay ₹999 upfront to get your digital menu and table QR setup. Try it live at your tables for 3 days. If you are not completely satisfied with the order speed and staff time saved, we offer a full money-back refund (less nominal QR printing charges). Cancel anytime.",
   },
   {
     q: "What happens if the internet connection drops?",
@@ -417,7 +417,7 @@ export default function Home() {
             <div className="mt-6 rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-emerald-950">
               <p className="font-bold text-sm">🛡️ 3-Day Risk-Free Live Trial Guarantee</p>
               <p className="mt-1 text-xs text-emerald-900/80 leading-5">
-                Pay ₹999 upfront. We set up your menu and provide your printed sample QR codes. Test it live at your tables for 3 days — if you&apos;re not satisfied, get a refund (less sample QR print costs). No long-term contract, cancel anytime.
+                Pay ₹999 upfront. We set up your digital menu and QR ordering system. Test it live at your tables for 3 days — if you&apos;re not satisfied, get a refund (less nominal QR printing charges). No long-term contract, cancel anytime.
               </p>
             </div>
 
