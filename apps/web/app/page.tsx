@@ -171,6 +171,9 @@ export default function Home() {
             <Link href="/demo" className="text-sm font-semibold text-gray-600 hover:text-emerald-900">
               Demo
             </Link>
+            <Link href="/menu/abc-cafe/12" className="text-sm font-semibold text-gray-600 hover:text-emerald-900">
+              Sample QR Menu
+            </Link>
             <ContactLink className="text-sm font-semibold text-gray-600 hover:text-emerald-900" />
             <Link href="/login" className="py-3 text-sm font-semibold text-gray-600 hover:text-emerald-900">
               Restaurant Login
@@ -368,7 +371,7 @@ export default function Home() {
             <HardwareRow
               icon={Printer}
               title="Printing works with your printer"
-              text="Kitchen tickets and bills are printed from the staff device using your existing printer."
+              text="Kitchen tickets and bills are printed directly using your device's browser print capability (supports standard thermal and desktop printers)."
             />
           </div>
           <div className="mt-10 rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-center">

@@ -13,5 +13,5 @@
  * contact path is ever rendered to visitors. As soon as a real value is set
  * here, the header, footer, and CTA contact links appear automatically.
  */
-export const SUPPORT_EMAIL: string = ""; // e.g. "support@swifttab.com"
-export const SUPPORT_WHATSAPP: string = ""; // e.g. "+91 90000 00000" or "919000000000"
+export const SUPPORT_EMAIL: string = "support@justswifttab.com";
+export const SUPPORT_WHATSAPP: string = "+9197177468";

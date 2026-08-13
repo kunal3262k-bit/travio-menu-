@@ -123,6 +123,25 @@ export function CustomerMenu({ restaurant }: { restaurant: RestaurantView }) {
     else setGreeting("Welcome — here's our late night menu");
   }, []);
 
+  async function sendWaiterRequest(type: "CALL_WAITER" | "REQUEST_BILL") {
+    try {
+      const res = await fetch("/api/waiter-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          restaurantSlug: restaurant.slug,
+          tableNumber: restaurant.tableNumber,
+          type,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to send request");
+      const label = type === "CALL_WAITER" ? "Waiter call" : "Bill request";
+      showNotice(`${label} sent for Table ${restaurant.tableNumber}.`);
+    } catch {
+      showNotice("Unable to send request. Please try again.");
+    }
+  }
+
   return (
     <main className="min-h-svh bg-[#f8f4ed] pb-36">
       <header className="sticky top-0 z-20 border-b border-stone-300/70 bg-[#f8f4ed]/95 px-4 py-3 backdrop-blur">
@@ -135,10 +154,18 @@ export function CustomerMenu({ restaurant }: { restaurant: RestaurantView }) {
             <p className="text-sm font-medium text-stone-500 mt-0.5">{greeting}</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="ghost" aria-label="Call waiter" onClick={() => showNotice(`Waiter request sent for Table ${restaurant.tableNumber}.`)}>
+            <Button
+              variant="ghost"
+              aria-label="Call waiter"
+              onClick={() => sendWaiterRequest("CALL_WAITER")}
+            >
               <Bell className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" aria-label="Request bill" onClick={() => showNotice(`Bill request sent for Table ${restaurant.tableNumber}.`)}>
+            <Button
+              variant="ghost"
+              aria-label="Request bill"
+              onClick={() => sendWaiterRequest("REQUEST_BILL")}
+            >
               <ReceiptText className="h-4 w-4" />
             </Button>
           </div>

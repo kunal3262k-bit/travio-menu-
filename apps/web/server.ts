@@ -83,9 +83,13 @@ app.prepare().then(async () => {
     }
   });
 
+  const allowedOrigin = dev
+    ? "*"
+    : (process.env.APP_URL || "*");
+
   const io = new Server(httpServer, {
     cors: {
-      origin: "*",
+      origin: allowedOrigin,
       methods: ["GET", "POST"]
     },
   });
