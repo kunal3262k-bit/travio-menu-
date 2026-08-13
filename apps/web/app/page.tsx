@@ -116,6 +116,10 @@ const faqs = [
     a: "Sign up, add your menu, print your QR codes, and open the kitchen screen. Most restaurants go live the same day once their menu is ready.",
   },
   {
+    q: "Is there a contract or commitment? How does the 3-day trial work?",
+    a: "No long-term contract or lock-in. Pay ₹999 upfront to get your digital menu setup and sample printed table QR codes. Try it live at your tables for 3 days. If you are not completely satisfied with the order speed and staff time saved, we offer a full money-back refund (less sample QR print costs). Cancel anytime.",
+  },
+  {
     q: "What happens if the internet connection drops?",
     a: "SwiftTab is a live, online system — ordering, the kitchen display, and staff screens need a working internet connection. If the connection drops, you can fall back on your usual verbal ordering until it returns.",
   },
@@ -409,14 +413,22 @@ export default function Home() {
                 </li>
               ))}
             </ul>
+
+            <div className="mt-6 rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-emerald-950">
+              <p className="font-bold text-sm">🛡️ 3-Day Risk-Free Live Trial Guarantee</p>
+              <p className="mt-1 text-xs text-emerald-900/80 leading-5">
+                Pay ₹999 upfront. We set up your menu and provide your printed sample QR codes. Test it live at your tables for 3 days — if you&apos;re not satisfied, get a refund (less sample QR print costs). No long-term contract, cancel anytime.
+              </p>
+            </div>
+
             <Link
               href="/register"
-              className="mt-8 block w-full rounded-xl bg-emerald-700 py-4 text-center text-lg font-bold text-white transition hover:bg-emerald-800"
+              className="mt-6 block w-full rounded-xl bg-emerald-700 py-4 text-center text-lg font-bold text-white transition hover:bg-emerald-800"
             >
-              Get started at ₹999/month
+              Start 3-Day Trial at ₹999
             </Link>
             <p className="mt-3 text-center text-xs text-gray-500">
-              Start free — sign up and set up your menu, QR codes, and kitchen screen before committing.
+              No long-term contract · 3-day money-back guarantee · Cancel anytime
             </p>
           </div>
         </div>
