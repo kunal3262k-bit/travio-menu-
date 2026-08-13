@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import DemoModal from "./components/DemoModal";
 import ContactLink from "./components/ContactLink";
+import Navbar from "./components/Navbar";
 import { SUPPORT_EMAIL, SUPPORT_WHATSAPP } from "@/lib/site-config";
 import { demoOrders, demoRestaurant } from "@/lib/demo-data";
 import { formatMoney } from "@/lib/utils";
@@ -165,32 +166,7 @@ export default function Home() {
       />
 
       {/* Navigation */}
-      <nav className="border-b border-gray-100">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <Link href="/" className="flex items-center gap-2">
-            <Image src="/logo-icon.png" alt="" width={179} height={166} className="h-10 w-auto lg:h-12" priority />
-            <span className="text-xl font-bold tracking-tight text-emerald-950 lg:text-2xl">SwiftTab</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link href="/demo" className="text-sm font-semibold text-gray-600 hover:text-emerald-900">
-              Demo
-            </Link>
-            <Link href="/menu/abc-cafe/12" className="text-sm font-semibold text-gray-600 hover:text-emerald-900">
-              Sample QR Menu
-            </Link>
-            <ContactLink className="text-sm font-semibold text-gray-600 hover:text-emerald-900" />
-            <Link href="/login" className="py-3 text-sm font-semibold text-gray-600 hover:text-emerald-900">
-              Restaurant Login
-            </Link>
-            <Link
-              href="/register"
-              className="rounded-lg bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800"
-            >
-              Get Started
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero */}
       <section className="relative overflow-hidden bg-[#f8f9fa]">
@@ -236,17 +212,19 @@ export default function Home() {
 
       {/* Product flow strip */}
       <section className="border-y border-gray-100 bg-white">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-6 py-8 text-sm font-semibold text-gray-700 md:grid-cols-7">
-          {["Scan QR", "Browse menu", "Place order", "Order hits kitchen", "Kitchen prepares", "Staff serve & confirm payment", "Customer enjoys"].map(
-            (step, i) => (
-              <div key={step} className="flex items-center gap-2">
-                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-emerald-100 text-xs font-black text-emerald-800">
-                  {i + 1}
-                </span>
-                <span>{step}</span>
-              </div>
-            )
-          )}
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
+          <div className="flex items-center gap-4 overflow-x-auto pb-2 scrollbar-none md:grid md:grid-cols-7 md:gap-6 md:pb-0">
+            {["Scan QR", "Browse menu", "Place order", "Order hits kitchen", "Kitchen prepares", "Staff serve & confirm payment", "Customer enjoys"].map(
+              (step, i) => (
+                <div key={step} className="flex shrink-0 items-center gap-2 text-xs font-semibold text-gray-700 sm:text-sm">
+                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-emerald-100 text-xs font-black text-emerald-800">
+                    {i + 1}
+                  </span>
+                  <span className="whitespace-nowrap md:whitespace-normal">{step}</span>
+                </div>
+              )
+            )}
+          </div>
         </div>
       </section>
 
@@ -577,7 +555,7 @@ function ProductPreview({
     <div className="relative">
       <div className="grid grid-cols-1 items-end gap-4 sm:grid-cols-5 lg:gap-6">
         {/* Customer phone */}
-        <div className="col-span-1 rounded-[2rem] border-[10px] border-slate-900 bg-[#f8f4ed] p-4 shadow-2xl sm:col-span-3">
+        <div className="col-span-1 rounded-[1.5rem] border-4 border-slate-900 bg-[#f8f4ed] p-3 shadow-2xl sm:col-span-3 sm:rounded-[2rem] sm:border-[10px] sm:p-4">
           <div className="flex items-center justify-between border-b border-stone-300 px-2 pb-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-800">

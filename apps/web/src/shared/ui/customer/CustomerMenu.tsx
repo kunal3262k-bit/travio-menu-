@@ -1,7 +1,19 @@
 "use client";
 
 import Image from "next/image";
-import { Bell, CheckCircle2, Flame, Minus, Plus, ReceiptText, ShoppingBag, Utensils } from "lucide-react";
+import {
+  Bell,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Flame,
+  Minus,
+  Plus,
+  ReceiptText,
+  ShoppingBag,
+  Utensils,
+  X,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { formatMoney } from "@/lib/utils";
@@ -34,10 +46,14 @@ export function CustomerMenu({ restaurant }: { restaurant: RestaurantView }) {
   const [sessionDailyOrderNumber, setSessionDailyOrderNumber] = useState<number | null>(null);
   const [rounds, setRounds] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<string>(restaurant.categories[0]?.id || "");
   const [idempotencyKey, setIdempotencyKey] = useState(() => Math.random().toString(36).substring(2) + Date.now().toString(36));
+
   const items = restaurant.categories.flatMap((category) => category.items);
   const itemById = new Map(items.map((item) => [item.id, item]));
   const cartLines = Object.values(cart);
+  const totalItemCount = cartLines.reduce((sum, line) => sum + line.quantity, 0);
 
   const subtotal = cartLines.reduce((total, line) => total + line.item.pricePaise * line.quantity, 0);
   const gst = Math.round(subtotal * 0.05);
@@ -104,7 +120,8 @@ export function CustomerMenu({ restaurant }: { restaurant: RestaurantView }) {
 
       showNotice(orderMessage);
       setCart({}); // Clear cart on success
-      setIdempotencyKey(Math.random().toString(36).substring(2) + Date.now().toString(36)); // Rotate key for next possible order
+      setIsMobileCartOpen(false); // Close mobile bottom sheet
+      setIdempotencyKey(Math.random().toString(36).substring(2) + Date.now().toString(36));
     } catch (error: any) {
       alert(error.message);
     } finally {
@@ -112,7 +129,7 @@ export function CustomerMenu({ restaurant }: { restaurant: RestaurantView }) {
     }
   }
 
-  const estimatedWait = useMemo(() => (cartLines.length ? "18-22 min" : "Add items to estimate"), [cartLines.length]);
+  const estimatedWait = useMemo(() => (cartLines.length ? "18-22 min wait" : "Add items to estimate"), [cartLines.length]);
 
   const [greeting, setGreeting] = useState("Here's our menu");
   useEffect(() => {
@@ -143,77 +160,140 @@ export function CustomerMenu({ restaurant }: { restaurant: RestaurantView }) {
   }
 
   return (
-    <main className="min-h-svh bg-[#f8f4ed] pb-36">
-      <header className="sticky top-0 z-20 border-b border-stone-300/70 bg-[#f8f4ed]/95 px-4 py-3 backdrop-blur">
+    <main className="min-h-svh bg-[#f8f4ed] pb-32 lg:pb-12">
+      {/* Sticky Header */}
+      <header className="sticky top-0 z-30 border-b border-stone-300/70 bg-[#f8f4ed]/95 px-4 py-3 backdrop-blur-md">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-800">
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-800">
               {restaurant.tableNumber ? `Table ${restaurant.tableNumber}` : "Drive-In Menu"}
             </p>
-            <h1 className="text-2xl font-semibold text-stone-950">{restaurant.name}</h1>
-            <p className="text-sm font-medium text-stone-500 mt-0.5">{greeting}</p>
+            <h1 className="text-xl font-bold text-stone-950 sm:text-2xl">{restaurant.name}</h1>
+            <p className="text-xs font-medium text-stone-500 sm:text-sm">{greeting}</p>
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              aria-label="Call waiter"
+          <div className="flex items-center gap-2">
+            <button
               onClick={() => sendWaiterRequest("CALL_WAITER")}
+              className="flex items-center gap-1.5 rounded-lg border border-stone-300 bg-white px-3 py-2 text-xs font-bold text-stone-800 shadow-sm transition hover:bg-emerald-50 hover:text-emerald-900 active:scale-95"
+              aria-label="Call waiter"
             >
-              <Bell className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              aria-label="Request bill"
+              <Bell className="h-4 w-4 text-emerald-700" />
+              <span className="hidden sm:inline">Call Waiter</span>
+            </button>
+            <button
               onClick={() => sendWaiterRequest("REQUEST_BILL")}
+              className="flex items-center gap-1.5 rounded-lg border border-stone-300 bg-white px-3 py-2 text-xs font-bold text-stone-800 shadow-sm transition hover:bg-emerald-50 hover:text-emerald-900 active:scale-95"
+              aria-label="Request bill"
             >
-              <ReceiptText className="h-4 w-4" />
-            </Button>
+              <ReceiptText className="h-4 w-4 text-emerald-700" />
+              <span className="hidden sm:inline">Request Bill</span>
+            </button>
           </div>
         </div>
       </header>
 
+      {/* Sticky Mobile Category Navigation Pills */}
+      <div className="sticky top-[61px] z-20 border-b border-stone-300/70 bg-[#f8f4ed]/95 px-4 py-2.5 backdrop-blur-md">
+        <div className="mx-auto flex max-w-5xl items-center gap-2 overflow-x-auto scrollbar-none">
+          {restaurant.categories.map((category) => {
+            const isActive = activeCategory === category.id;
+            return (
+              <a
+                key={category.id}
+                href={`#category-${category.id}`}
+                onClick={() => setActiveCategory(category.id)}
+                className={`whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-bold transition active:scale-95 ${
+                  isActive
+                    ? "bg-emerald-800 text-white shadow-sm"
+                    : "border border-stone-300 bg-white text-stone-700 hover:border-emerald-700 hover:bg-emerald-50"
+                }`}
+              >
+                {category.name} ({category.items.length})
+              </a>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Floating Notice Banner */}
       {notice && (
-        <div className="fixed inset-x-4 top-20 z-40 mx-auto max-w-md rounded-lg border border-emerald-200 bg-white px-4 py-3 text-sm font-semibold text-emerald-900 shadow-lg">
-          <CheckCircle2 className="mr-2 inline h-4 w-4" />
-          {notice}
+        <div className="fixed inset-x-4 top-24 z-50 mx-auto max-w-md rounded-xl border border-emerald-300 bg-white p-4 text-sm font-bold text-emerald-950 shadow-2xl animate-in fade-in slide-in-from-top-4">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
+            <span>{notice}</span>
+          </div>
         </div>
       )}
 
+      {/* Main Menu Layout */}
       <section className="mx-auto grid max-w-5xl gap-8 px-4 py-6 lg:grid-cols-[1fr_340px]">
-        <div className="space-y-8">
+        <div className="space-y-10">
           {restaurant.categories.map((category) => (
-            <section key={category.id}>
-              <h2 className="mb-4 text-xl font-semibold text-stone-950">{category.name}</h2>
-              <div className="space-y-3">
+            <section key={category.id} id={`category-${category.id}`} className="scroll-mt-32">
+              <h2 className="mb-4 text-lg font-bold text-stone-950 sm:text-xl">{category.name}</h2>
+              <div className="space-y-4">
                 {category.items.map((item) => {
                   const quantity = cart[item.id]?.quantity ?? 0;
                   return (
-                    <article key={item.id} className="grid grid-cols-[104px_1fr] gap-4 border-b border-stone-300 pb-4">
-                      <div className="relative h-28 overflow-hidden rounded-lg bg-stone-200">
-                        <Image src={item.imageUrl} alt={item.name} fill sizes="104px" className="object-cover" />
+                    <article
+                      key={item.id}
+                      className="grid grid-cols-[80px_1fr] gap-3.5 border-b border-stone-300/80 pb-4 sm:grid-cols-[104px_1fr] sm:gap-4"
+                    >
+                      <div className="relative h-20 w-20 overflow-hidden rounded-xl bg-stone-200 sm:h-28 sm:w-28">
+                        <Image
+                          src={item.imageUrl}
+                          alt={item.name}
+                          fill
+                          sizes="(max-width: 640px) 80px, 104px"
+                          className="object-cover"
+                        />
                       </div>
-                      <div className="min-w-0">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <h3 className="font-semibold text-stone-950">{item.name}</h3>
-                            <p className="mt-1 line-clamp-2 text-sm leading-6 text-stone-700">{item.description}</p>
-                          </div>
-                          <span className="shrink-0 text-sm font-semibold">{formatMoney(item.pricePaise)}</span>
-                        </div>
-                        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-                          <div className="flex items-center gap-2 text-xs font-semibold text-stone-600">
-                            <span className={item.foodType === "NON_VEG" ? "text-red-700" : "text-emerald-700"}>
-                              <Utensils className="inline h-3.5 w-3.5" /> {item.foodType === "NON_VEG" ? "Non veg" : "Veg"}
+                      <div className="flex flex-col justify-between min-w-0">
+                        <div>
+                          <div className="flex items-start justify-between gap-2">
+                            <h3 className="font-bold text-stone-950 text-sm sm:text-base leading-snug">
+                              {item.name}
+                            </h3>
+                            <span className="shrink-0 text-sm font-bold text-stone-900">
+                              {formatMoney(item.pricePaise)}
                             </span>
-                            {item.spicyLevel > 0 && <span><Flame className="inline h-3.5 w-3.5 text-red-700" /> Spicy</span>}
                           </div>
-                          <div className="flex items-center rounded-lg border border-stone-300">
-                            <button className="focus-ring p-2" onClick={() => updateQuantity(item, -1)} aria-label={`Remove ${item.name}`}>
-                              <Minus className="h-4 w-4" />
+                          <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-stone-600 sm:text-sm">
+                            {item.description}
+                          </p>
+                        </div>
+                        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 text-[11px] font-bold text-stone-600 sm:text-xs">
+                            <span
+                              className={item.foodType === "NON_VEG" ? "text-red-700" : "text-emerald-700"}
+                            >
+                              <Utensils className="inline h-3 w-3 sm:h-3.5 sm:w-3.5" />{" "}
+                              {item.foodType === "NON_VEG" ? "Non veg" : "Veg"}
+                            </span>
+                            {item.spicyLevel > 0 && (
+                              <span>
+                                <Flame className="inline h-3 w-3 text-red-700 sm:h-3.5 sm:w-3.5" /> Spicy
+                              </span>
+                            )}
+                          </div>
+                          {/* Quantity Selector */}
+                          <div className="flex items-center rounded-xl border border-stone-300 bg-white shadow-sm">
+                            <button
+                              className="focus-ring flex h-8 w-8 items-center justify-center rounded-l-xl text-stone-700 transition hover:bg-stone-100 active:scale-95"
+                              onClick={() => updateQuantity(item, -1)}
+                              aria-label={`Remove ${item.name}`}
+                            >
+                              <Minus className="h-3.5 w-3.5" />
                             </button>
-                            <span className="w-8 text-center text-sm font-semibold">{quantity}</span>
-                            <button className="focus-ring p-2" onClick={() => updateQuantity(item, 1)} aria-label={`Add ${item.name}`}>
-                              <Plus className="h-4 w-4" />
+                            <span className="w-7 text-center text-xs font-bold text-stone-900">
+                              {quantity}
+                            </span>
+                            <button
+                              className="focus-ring flex h-8 w-8 items-center justify-center rounded-r-xl text-stone-700 transition hover:bg-stone-100 active:scale-95"
+                              onClick={() => updateQuantity(item, 1)}
+                              aria-label={`Add ${item.name}`}
+                            >
+                              <Plus className="h-3.5 w-3.5" />
                             </button>
                           </div>
                         </div>
@@ -226,39 +306,88 @@ export function CustomerMenu({ restaurant }: { restaurant: RestaurantView }) {
           ))}
         </div>
 
+        {/* Desktop Sidebar Cart Panel */}
         <aside className="hidden lg:block">
-          <CartPanel
-            cartLines={cartLines}
-            subtotal={subtotal}
-            gst={gst}
-            total={total}
-            estimatedWait={estimatedWait}
-            recommendations={recommendations}
-            addItem={(item) => updateQuantity(item, 1)}
-            onPlaceOrder={placeRealOrder}
-            isSubmitting={isSubmitting}
-            sessionDailyOrderNumber={sessionDailyOrderNumber}
-            rounds={rounds}
-          />
+          <div className="sticky top-32">
+            <CartPanel
+              cartLines={cartLines}
+              subtotal={subtotal}
+              gst={gst}
+              total={total}
+              estimatedWait={estimatedWait}
+              recommendations={recommendations}
+              addItem={(item) => updateQuantity(item, 1)}
+              onPlaceOrder={placeRealOrder}
+              isSubmitting={isSubmitting}
+              sessionDailyOrderNumber={sessionDailyOrderNumber}
+              rounds={rounds}
+            />
+          </div>
         </aside>
       </section>
 
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-stone-300 bg-[#f8f4ed] p-4 lg:hidden">
-        <CartPanel
-          cartLines={cartLines}
-          subtotal={subtotal}
-          gst={gst}
-          total={total}
-          estimatedWait={estimatedWait}
-          recommendations={recommendations}
-          addItem={(item) => updateQuantity(item, 1)}
-          onPlaceOrder={placeRealOrder}
-          isSubmitting={isSubmitting}
-          sessionDailyOrderNumber={sessionDailyOrderNumber}
-          rounds={rounds}
-          compact
-        />
-      </div>
+      {/* Mobile Floating Cart Bar (Visible on Mobile when items are added) */}
+      {(totalItemCount > 0 || sessionDailyOrderNumber) && (
+        <div className="fixed inset-x-4 bottom-4 z-40 lg:hidden">
+          <button
+            onClick={() => setIsMobileCartOpen(true)}
+            className="flex w-full items-center justify-between rounded-2xl bg-emerald-800 px-4 py-3.5 text-white shadow-2xl transition hover:bg-emerald-900 active:scale-[0.98]"
+          >
+            <div className="flex items-center gap-3">
+              <span className="grid h-8 w-8 place-items-center rounded-xl bg-emerald-700 text-xs font-black text-white">
+                {totalItemCount}
+              </span>
+              <div className="text-left">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-200">
+                  {sessionDailyOrderNumber ? `Order #${sessionDailyOrderNumber}` : "View Cart"}
+                </p>
+                <p className="text-sm font-bold">{formatMoney(total)} <span className="text-xs font-normal text-emerald-200">incl. GST</span></p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 text-xs font-bold text-emerald-100">
+              <span>Review Order</span>
+              <ChevronUp className="h-4 w-4" />
+            </div>
+          </button>
+        </div>
+      )}
+
+      {/* Mobile Slide-Up Bottom Sheet Modal */}
+      {isMobileCartOpen && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-end bg-slate-900/60 backdrop-blur-sm lg:hidden animate-in fade-in duration-200">
+          <div className="flex max-h-[85vh] flex-col rounded-t-3xl bg-white p-5 shadow-2xl animate-in slide-in-from-bottom duration-200">
+            <div className="flex items-center justify-between border-b border-stone-200 pb-3">
+              <div className="flex items-center gap-2">
+                <ShoppingBag className="h-5 w-5 text-emerald-700" />
+                <h2 className="text-lg font-bold text-stone-950">Your Order</h2>
+              </div>
+              <button
+                onClick={() => setIsMobileCartOpen(false)}
+                className="rounded-full p-2 text-stone-500 hover:bg-stone-100 hover:text-stone-900"
+                aria-label="Close cart"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto py-4 space-y-4">
+              <CartPanel
+                cartLines={cartLines}
+                subtotal={subtotal}
+                gst={gst}
+                total={total}
+                estimatedWait={estimatedWait}
+                recommendations={recommendations}
+                addItem={(item) => updateQuantity(item, 1)}
+                onPlaceOrder={placeRealOrder}
+                isSubmitting={isSubmitting}
+                sessionDailyOrderNumber={sessionDailyOrderNumber}
+                rounds={rounds}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
@@ -275,7 +404,6 @@ function CartPanel({
   sessionDailyOrderNumber,
   rounds,
   isSubmitting,
-  compact
 }: {
   cartLines: CartLine[];
   subtotal: number;
@@ -288,39 +416,51 @@ function CartPanel({
   isSubmitting?: boolean;
   sessionDailyOrderNumber: number | null;
   rounds: number;
-  compact?: boolean;
 }) {
   return (
-    <div className="rounded-lg border border-stone-300 bg-white p-4 shadow-sm">
-      <div className="flex items-center justify-between">
-        <h2 className="flex items-center gap-2 font-semibold"><ShoppingBag className="h-4 w-4" /> Cart</h2>
-        <span className="text-sm text-stone-600">{estimatedWait}</span>
+    <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+      <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+        <h2 className="flex items-center gap-2 font-bold text-stone-950">
+          <ShoppingBag className="h-4 w-4 text-emerald-700" /> Cart Summary
+        </h2>
+        <span className="text-xs font-semibold text-stone-500">{estimatedWait}</span>
       </div>
-      {!compact && (
-        <div className="mt-4 space-y-3">
-          {cartLines.length === 0 && <p className="text-sm text-stone-600">Add items to start an order.</p>}
-          {cartLines.map((line) => (
-            <div key={line.item.id} className="flex justify-between gap-3 text-sm">
-              <span>{line.quantity} x {line.item.name}</span>
-              <span className="font-semibold">{formatMoney(line.item.pricePaise * line.quantity)}</span>
-            </div>
-          ))}
-        </div>
-      )}
-      {recommendations.length > 0 && !compact && (
+
+      <div className="mt-4 space-y-3">
+        {cartLines.length === 0 && (
+          <p className="text-sm font-medium text-stone-500 py-2 text-center">Your cart is empty. Tap + on menu items to add.</p>
+        )}
+        {cartLines.map((line) => (
+          <div key={line.item.id} className="flex items-center justify-between gap-3 text-sm">
+            <span className="font-semibold text-stone-800">
+              {line.quantity} × {line.item.name}
+            </span>
+            <span className="font-bold text-stone-950">{formatMoney(line.item.pricePaise * line.quantity)}</span>
+          </div>
+        ))}
+      </div>
+
+      {recommendations.length > 0 && (
         <div className="mt-5 border-t border-stone-200 pt-4">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-800">Recommended</p>
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-emerald-800">
+            Recommended Add-ons
+          </p>
           <div className="space-y-2">
             {recommendations.map((item) => (
-              <button key={item.id} className="focus-ring flex w-full items-center justify-between rounded-lg bg-stone-100 px-3 py-2 text-left text-sm" onClick={() => addItem(item)}>
-                <span>{item.name}</span>
-                <Plus className="h-4 w-4" />
+              <button
+                key={item.id}
+                className="focus-ring flex w-full items-center justify-between rounded-xl bg-stone-100 px-3.5 py-2.5 text-left text-xs font-bold text-stone-800 transition hover:bg-emerald-50 hover:text-emerald-900"
+                onClick={() => addItem(item)}
+              >
+                <span>{item.name} ({formatMoney(item.pricePaise)})</span>
+                <Plus className="h-4 w-4 text-emerald-700" />
               </button>
             ))}
           </div>
         </div>
       )}
-      <div className="mt-4 border-t border-stone-200 pt-4 space-y-2 text-sm">
+
+      <div className="mt-5 border-t border-stone-200 pt-4 space-y-2 text-xs font-semibold">
         <div className="flex items-center justify-between text-stone-600">
           <span>Subtotal</span>
           <span>{formatMoney(subtotal)}</span>
@@ -329,18 +469,24 @@ function CartPanel({
           <span>Taxes (5% GST)</span>
           <span>{formatMoney(gst)}</span>
         </div>
-        <div className="flex items-center justify-between font-bold text-lg pt-2 border-t border-stone-100 mt-2">
+        <div className="flex items-center justify-between text-base font-black text-stone-950 pt-2 border-t border-stone-100">
           <span>Total</span>
           <span>{formatMoney(total)}</span>
         </div>
       </div>
+
       {sessionDailyOrderNumber && (
-        <div className="mt-4 rounded-lg bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-900">
-          Order #{sessionDailyOrderNumber} {rounds > 1 ? `(Round ${rounds}) ` : ""}received. Status: Preparing.
+        <div className="mt-4 rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-xs font-bold text-emerald-950">
+          ✓ Order #{sessionDailyOrderNumber} {rounds > 1 ? `(Round ${rounds}) ` : ""}sent to kitchen. Status: Preparing.
         </div>
       )}
-      <Button className="mt-4 w-full" disabled={cartLines.length === 0 || isSubmitting} onClick={onPlaceOrder}>
-        {isSubmitting ? "Sending..." : (sessionDailyOrderNumber ? "Order Sent" : "Place Order")}
+
+      <Button
+        className="mt-5 h-12 w-full rounded-xl bg-emerald-700 text-base font-bold text-white transition hover:bg-emerald-800 shadow-md"
+        disabled={cartLines.length === 0 || isSubmitting}
+        onClick={onPlaceOrder}
+      >
+        {isSubmitting ? "Sending to Kitchen..." : sessionDailyOrderNumber ? "Send Additional Order" : "Place Order Now"}
       </Button>
     </div>
   );
