@@ -417,16 +417,16 @@ export default function Home() {
         <div className="mx-auto max-w-3xl">
           <p className="text-center text-sm font-bold uppercase tracking-widest text-emerald-700">FAQ</p>
           <h2 className="mt-3 text-center text-3xl font-black tracking-tight md:text-4xl">Questions restaurant owners ask</h2>
-          <div className="mt-10 divide-y divide-gray-200 border-y border-gray-200">
+          <div className="mt-10 space-y-3.5">
             {faqs.map((faq) => (
-              <details key={faq.q} className="group py-5">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-bold marker:hidden">
-                  {faq.q}
-                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-emerald-100 text-emerald-800 transition group-open:rotate-45">
+              <details key={faq.q} className="group rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:border-emerald-200">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-bold text-slate-900 marker:hidden">
+                  <span>{faq.q}</span>
+                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-emerald-100 text-emerald-800 transition group-open:rotate-45">
                     <Plus className="h-4 w-4" />
                   </span>
                 </summary>
-                <p className="mt-3 leading-7 text-gray-600">{faq.a}</p>
+                <p className="mt-3 leading-7 text-gray-600 text-sm sm:text-base border-t border-gray-100 pt-3">{faq.a}</p>
               </details>
             ))}
           </div>
