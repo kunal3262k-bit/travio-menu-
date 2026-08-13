@@ -164,17 +164,17 @@ export function CustomerMenu({ restaurant }: { restaurant: RestaurantView }) {
       <header className="sticky top-0 z-30 border-b border-stone-300/70 bg-[#f8f4ed]/95 px-4 py-3 backdrop-blur-md">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <div>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-800/40 bg-emerald-950 px-2.5 py-0.5 text-[11px] font-bold font-mono tracking-wide text-emerald-200 shadow-sm">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-900 shadow-sm">
+              <span className="h-2 w-2 rounded-full bg-emerald-600 animate-pulse" />
               {restaurant.tableNumber ? `TABLE ${restaurant.tableNumber}` : "DRIVE-IN MENU"}
             </span>
-            <h1 className="mt-1 text-xl font-extrabold text-stone-950 sm:text-2xl">{restaurant.name}</h1>
+            <h1 className="mt-1 text-xl font-bold text-stone-950 sm:text-2xl">{restaurant.name}</h1>
             <p className="text-xs font-medium text-stone-600 sm:text-sm">{greeting}</p>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => sendWaiterRequest("CALL_WAITER")}
-              className="flex items-center gap-1.5 rounded-full border border-emerald-700/30 bg-emerald-900/10 px-3 py-1.5 text-xs font-bold text-emerald-900 shadow-sm transition hover:bg-emerald-800 hover:text-white active:scale-95"
+              className="flex items-center gap-1.5 rounded-full border border-emerald-700/30 bg-emerald-900/10 px-3.5 py-2 text-xs font-bold text-emerald-900 shadow-sm transition hover:bg-emerald-700 hover:text-white active:scale-95"
               aria-label="Call waiter"
             >
               <Bell className="h-3.5 w-3.5 text-emerald-700" />
@@ -182,7 +182,7 @@ export function CustomerMenu({ restaurant }: { restaurant: RestaurantView }) {
             </button>
             <button
               onClick={() => sendWaiterRequest("REQUEST_BILL")}
-              className="flex items-center gap-1.5 rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-bold text-stone-800 shadow-sm transition hover:bg-stone-100 active:scale-95"
+              className="flex items-center gap-1.5 rounded-full border border-stone-300 bg-white px-3.5 py-2 text-xs font-bold text-stone-800 shadow-sm transition hover:bg-stone-100 active:scale-95"
               aria-label="Request bill"
             >
               <ReceiptText className="h-3.5 w-3.5 text-stone-700" />
@@ -192,7 +192,7 @@ export function CustomerMenu({ restaurant }: { restaurant: RestaurantView }) {
         </div>
       </header>
 
-      {/* Sticky Mobile Category Navigation Pills with Edge Fade Mask */}
+      {/* Sticky Mobile Category Navigation Pills with Brand Colors */}
       <div className="sticky top-[69px] z-20 border-b border-stone-300/70 bg-[#f8f4ed]/95 backdrop-blur-md">
         <div className="relative mx-auto max-w-5xl">
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-none px-4 py-2.5">
@@ -205,7 +205,7 @@ export function CustomerMenu({ restaurant }: { restaurant: RestaurantView }) {
                   onClick={() => setActiveCategory(category.id)}
                   className={`whitespace-nowrap rounded-full px-4 py-1.5 text-xs font-bold transition active:scale-95 ${
                     isActive
-                      ? "bg-emerald-800 text-white shadow-md"
+                      ? "bg-emerald-700 text-white shadow-sm"
                       : "border border-stone-300 bg-white text-stone-700 hover:border-emerald-700 hover:bg-emerald-50"
                   }`}
                 >
@@ -233,7 +233,7 @@ export function CustomerMenu({ restaurant }: { restaurant: RestaurantView }) {
         <div className="space-y-10">
           {restaurant.categories.map((category) => (
             <section key={category.id} id={`category-${category.id}`} className="scroll-mt-36">
-              <h2 className="mb-4 text-lg font-black text-stone-950 sm:text-xl">{category.name}</h2>
+              <h2 className="mb-4 text-lg font-bold text-stone-950 sm:text-xl">{category.name}</h2>
               <div className="space-y-4">
                 {category.items.map((item) => {
                   const quantity = cart[item.id]?.quantity ?? 0;
@@ -256,10 +256,10 @@ export function CustomerMenu({ restaurant }: { restaurant: RestaurantView }) {
                       <div className="flex flex-col justify-between min-w-0">
                         <div>
                           <div className="flex items-start justify-between gap-2">
-                            <h3 className="font-extrabold text-stone-950 text-base leading-snug">
+                            <h3 className="font-bold text-stone-950 text-base leading-snug">
                               {item.name}
                             </h3>
-                            <span className="shrink-0 text-base font-extrabold text-stone-950">
+                            <span className="shrink-0 text-base font-bold text-stone-950">
                               {formatMoney(item.pricePaise)}
                             </span>
                           </div>
@@ -279,28 +279,28 @@ export function CustomerMenu({ restaurant }: { restaurant: RestaurantView }) {
                             )}
                           </div>
 
-                          {/* High-Contrast Touch Quantity Selector */}
+                          {/* Brand-Matched Quantity Selector */}
                           {quantity === 0 ? (
                             <button
                               onClick={() => updateQuantity(item, 1)}
-                              className="flex items-center gap-1.5 rounded-xl border border-emerald-700 bg-emerald-50/80 px-3.5 py-1.5 text-xs font-black text-emerald-800 shadow-sm transition hover:bg-emerald-700 hover:text-white active:scale-95"
+                              className="flex items-center gap-1.5 rounded-xl border border-emerald-700 bg-white px-3.5 py-1.5 text-xs font-bold text-emerald-800 shadow-sm transition hover:bg-emerald-700 hover:text-white active:scale-95"
                             >
                               <Plus className="h-3.5 w-3.5" /> ADD
                             </button>
                           ) : (
-                            <div className="flex items-center rounded-xl bg-emerald-800 text-white shadow-md">
+                            <div className="flex items-center rounded-xl bg-emerald-700 text-white shadow-md">
                               <button
-                                className="flex h-8 w-8 items-center justify-center rounded-l-xl text-emerald-100 transition hover:bg-emerald-700 active:scale-95"
+                                className="flex h-8 w-8 items-center justify-center rounded-l-xl text-white transition hover:bg-emerald-800 active:scale-95"
                                 onClick={() => updateQuantity(item, -1)}
                                 aria-label={`Remove ${item.name}`}
                               >
                                 <Minus className="h-3.5 w-3.5" />
                               </button>
-                              <span className="w-7 text-center text-xs font-black text-white">
+                              <span className="w-7 text-center text-xs font-bold text-white">
                                 {quantity}
                               </span>
                               <button
-                                className="flex h-8 w-8 items-center justify-center rounded-r-xl text-emerald-100 transition hover:bg-emerald-700 active:scale-95"
+                                className="flex h-8 w-8 items-center justify-center rounded-r-xl text-white transition hover:bg-emerald-800 active:scale-95"
                                 onClick={() => updateQuantity(item, 1)}
                                 aria-label={`Add ${item.name}`}
                               >
@@ -338,25 +338,25 @@ export function CustomerMenu({ restaurant }: { restaurant: RestaurantView }) {
         </aside>
       </section>
 
-      {/* Floating Mobile Cart Bar (Visible on Mobile when items are added) */}
+      {/* Floating Mobile Cart Bar (Brand Emerald Green) */}
       {(totalItemCount > 0 || sessionDailyOrderNumber) && (
         <div className="fixed inset-x-4 bottom-4 z-40 lg:hidden">
           <button
             onClick={() => setIsMobileCartOpen(true)}
-            className="flex w-full items-center justify-between rounded-2xl bg-emerald-900 px-4 py-3.5 text-white shadow-2xl transition hover:bg-emerald-950 active:scale-[0.98]"
+            className="flex w-full items-center justify-between rounded-2xl bg-emerald-700 px-4 py-3.5 text-white shadow-2xl transition hover:bg-emerald-800 active:scale-[0.98]"
           >
             <div className="flex items-center gap-3">
-              <span className="grid h-8 w-8 place-items-center rounded-xl bg-emerald-700 text-xs font-black text-white">
+              <span className="grid h-8 w-8 place-items-center rounded-xl bg-emerald-800 text-xs font-black text-white">
                 {totalItemCount}
               </span>
               <div className="text-left">
-                <p className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-300">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-100">
                   {sessionDailyOrderNumber ? `Order #${sessionDailyOrderNumber}` : "View Cart"}
                 </p>
-                <p className="text-sm font-extrabold">{formatMoney(total)} <span className="text-xs font-medium text-emerald-200">incl. GST</span></p>
+                <p className="text-sm font-bold">{formatMoney(total)} <span className="text-xs font-normal text-emerald-100">incl. GST</span></p>
               </div>
             </div>
-            <div className="flex items-center gap-1 text-xs font-bold text-emerald-200">
+            <div className="flex items-center gap-1 text-xs font-bold text-emerald-100">
               <span>Review Order</span>
               <ChevronUp className="h-4 w-4" />
             </div>
@@ -366,12 +366,12 @@ export function CustomerMenu({ restaurant }: { restaurant: RestaurantView }) {
 
       {/* Mobile Slide-Up Bottom Sheet Modal */}
       {isMobileCartOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end bg-slate-950/70 backdrop-blur-md lg:hidden animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex flex-col justify-end bg-slate-900/60 backdrop-blur-sm lg:hidden animate-in fade-in duration-200">
           <div className="flex max-h-[85vh] flex-col rounded-t-3xl bg-white p-5 shadow-2xl animate-in slide-in-from-bottom duration-200">
             <div className="flex items-center justify-between border-b border-stone-200 pb-3.5">
               <div className="flex items-center gap-2">
-                <ShoppingBag className="h-5 w-5 text-emerald-800" />
-                <h2 className="text-lg font-extrabold text-stone-950">Your Order</h2>
+                <ShoppingBag className="h-5 w-5 text-emerald-700" />
+                <h2 className="text-lg font-bold text-stone-950">Your Order</h2>
               </div>
               <button
                 onClick={() => setIsMobileCartOpen(false)}
@@ -470,7 +470,7 @@ function CartPanel({
             <span className="font-bold text-stone-900">
               {line.quantity} × {line.item.name}
             </span>
-            <span className="font-extrabold text-stone-950">{formatMoney(line.item.pricePaise * line.quantity)}</span>
+            <span className="font-bold text-stone-950">{formatMoney(line.item.pricePaise * line.quantity)}</span>
           </div>
         ))}
       </div>
@@ -506,7 +506,7 @@ function CartPanel({
           <span>Taxes (5% GST)</span>
           <span>{formatMoney(gst)}</span>
         </div>
-        <div className="flex items-center justify-between text-lg font-black text-stone-950 pt-2 border-t border-stone-100">
+        <div className="flex items-center justify-between text-lg font-bold text-stone-950 pt-2 border-t border-stone-100">
           <span>Total</span>
           <span>{formatMoney(total)}</span>
         </div>
@@ -521,7 +521,7 @@ function CartPanel({
 
       {/* Primary Action Button */}
       <Button
-        className="h-13 w-full rounded-2xl bg-emerald-800 text-base font-black text-white transition hover:bg-emerald-900 shadow-xl active:scale-[0.98]"
+        className="h-13 w-full rounded-2xl bg-emerald-700 text-base font-bold text-white transition hover:bg-emerald-800 shadow-xl active:scale-[0.98]"
         disabled={cartLines.length === 0 || isSubmitting}
         onClick={onPlaceOrder}
       >
