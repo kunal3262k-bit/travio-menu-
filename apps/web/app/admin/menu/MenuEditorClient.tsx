@@ -2,13 +2,21 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { runClientOcr } from "@/lib/clientMenuOcr";
 
-export default function MenuEditorClient({ initialCategories }: { initialCategories: any[] }) {
+export default function MenuEditorClient({ 
+  initialCategories,
+  restaurantSlug 
+}: { 
+  initialCategories: any[];
+  restaurantSlug?: string;
+}) {
   const router = useRouter();
   const [categories, setCategories] = useState<any[]>(initialCategories);
   const [isSaving, setIsSaving] = useState(false);
   const [uploadingImageId, setUploadingImageId] = useState<string | null>(null);
   const [isAiExtracting, setIsAiExtracting] = useState(false);
+  const [aiStatus, setAiStatus] = useState<string>("");
 
   // Auto-save logic can be built on top of this handleSave
   const handleSave = async (updatedCats: any[]) => {
@@ -137,7 +145,7 @@ export default function MenuEditorClient({ initialCategories }: { initialCategor
       img.onload = () => {
         const canvas = document.createElement("canvas");
         let { width, height } = img;
-        const maxDim = 1000;
+        const maxDim = 1200;
         if (width > maxDim || height > maxDim) {
           if (width > height) {
             height = Math.round((height * maxDim) / width);
@@ -154,7 +162,7 @@ export default function MenuEditorClient({ initialCategories }: { initialCategor
         canvas.toBlob(
           (blob) => resolve(blob || file),
           "image/jpeg",
-          0.8
+          0.85
         );
       };
       img.onerror = () => resolve(file);
@@ -167,55 +175,78 @@ export default function MenuEditorClient({ initialCategories }: { initialCategor
     if (!file) return;
 
     setIsAiExtracting(true);
+    setAiStatus("Preparing menu image...");
     try {
       const compressedBlob = await compressClientImage(file);
-      const formData = new FormData();
-      formData.append("image", compressedBlob, "menu.jpg");
+      let extractedData: any[] = [];
 
-      const res = await fetch("/api/menu/import", {
-        method: "POST",
-        body: formData
-      });
+      // 1. Try server import endpoint first
+      try {
+        setAiStatus("Analyzing with AI Vision...");
+        const formData = new FormData();
+        formData.append("image", compressedBlob, "menu.jpg");
 
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || err.message || "Extraction failed");
+        const res = await fetch("/api/menu/import", {
+          method: "POST",
+          body: formData
+        });
+
+        if (res.ok) {
+          const json = await res.json();
+          if (json.data?.categories && Array.isArray(json.data.categories)) {
+            extractedData = json.data.categories;
+          }
+        }
+      } catch (serverErr) {
+        console.warn("Server AI import failed, falling back to client OCR:", serverErr);
       }
 
-      const { data } = await res.json();
-      
-      if (data && data.categories && Array.isArray(data.categories)) {
-        // Map AI data to our schema format with safe fallbacks
-        const newExtractedCategories = data.categories.map((cat: any) => ({
-          id: Date.now().toString() + Math.random().toString(),
-          name: cat.categoryName || cat.name || "Appetizers",
-          isNew: true,
-          items: (cat.items || []).map((item: any, idx: number) => {
-            const rawPrice = Number(item.price);
-            const safePricePaise = isNaN(rawPrice) || rawPrice <= 0 ? 15000 : Math.round(rawPrice * 100);
-            return {
-              id: Date.now().toString() + Math.random().toString() + idx,
-              name: item.name || "Special Dish",
-              description: item.description || "",
-              pricePaise: safePricePaise,
-              foodType: item.isVeg === true ? "VEG" : item.isVeg === false ? "NON_VEG" : "VEG",
-              spicyLevel: 0,
-              isNew: true
-            };
-          })
-        }));
-
-        if (newExtractedCategories.length > 0) {
-          const combinedCategories = [...categories, ...newExtractedCategories];
-          setCategories(combinedCategories);
-          handleSave(combinedCategories);
-          alert("✨ AI successfully extracted your menu! Please review the prices and categories.");
+      // 2. On-device WebAssembly OCR fallback if server has no key or returned error
+      if (extractedData.length === 0) {
+        setAiStatus("Running on-device scanner (no cloud key required)...");
+        const clientResults = await runClientOcr(compressedBlob, (status) => {
+          setAiStatus(status);
+        });
+        if (clientResults.length > 0) {
+          extractedData = clientResults;
         }
       }
+
+      if (extractedData.length === 0) {
+        throw new Error("Could not detect menu items. Please take a clearer photo or add items manually.");
+      }
+
+      // Map AI data to our schema format with safe fallbacks
+      const newExtractedCategories = extractedData.map((cat: any) => ({
+        id: Date.now().toString() + Math.random().toString(),
+        name: cat.categoryName || cat.name || "Specialties",
+        isNew: true,
+        items: (cat.items || []).map((item: any, idx: number) => {
+          const rawPrice = Number(item.price);
+          const safePricePaise = isNaN(rawPrice) || rawPrice <= 0 ? 15000 : Math.round(rawPrice * 100);
+          return {
+            id: Date.now().toString() + Math.random().toString() + idx,
+            name: item.name || "Special Dish",
+            description: item.description || "",
+            pricePaise: safePricePaise,
+            foodType: item.isVeg === true ? "VEG" : item.isVeg === false ? "NON_VEG" : "VEG",
+            spicyLevel: 0,
+            isNew: true
+          };
+        })
+      }));
+
+      if (newExtractedCategories.length > 0) {
+        const combinedCategories = [...categories, ...newExtractedCategories];
+        setCategories(combinedCategories);
+        handleSave(combinedCategories);
+        alert("✨ Successfully extracted your menu! You can now review, edit prices, or add photos.");
+      }
     } catch (error: any) {
-      alert("AI Extraction failed: " + error.message);
+      alert("Menu scan: " + error.message);
     } finally {
       setIsAiExtracting(false);
+      setAiStatus("");
       if (e.target) e.target.value = '';
     }
   };
@@ -253,7 +284,7 @@ export default function MenuEditorClient({ initialCategories }: { initialCategor
             {isAiExtracting ? (
               <>
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Analyzing File...
+                <span>{aiStatus || "Scanning Menu..."}</span>
               </>
             ) : (
               "+ Upload Menu (Image/PDF)"

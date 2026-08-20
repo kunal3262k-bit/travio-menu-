@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import CustomerMenu from "./CustomerMenu";
+import CustomerMenu from "@/components/customer/CustomerMenu";
 import { ScanTracker } from "../../../../components/ScanTracker";
 
 export default async function TablePage({ 
@@ -26,6 +26,10 @@ export default async function TablePage({
       },
       tables: {
         where: { number: parseInt(tableNumber, 10) }
+      },
+      upsellRules: {
+        where: { active: true },
+        orderBy: { priority: 'asc' }
       }
     }
   });

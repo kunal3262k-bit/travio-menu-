@@ -173,16 +173,14 @@ export default function Home() {
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 py-16 lg:grid-cols-2 lg:py-24">
           <div>
             <p className="mb-4 inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-emerald-800">
-              <QrCode className="h-3.5 w-3.5" /> QR ordering for Indian restaurants
+              <QrCode className="h-3.5 w-3.5" /> Zero Commission · ₹999/mo Flat · Go Live Today
             </p>
             <h1 className="text-3xl font-black leading-[1.1] tracking-tight text-slate-900 md:text-5xl lg:text-6xl">
-              Your customers order from the table.
-              <span className="text-emerald-700"> Your kitchen gets it instantly.</span>
+              Turn Tables 2x Faster.
+              <span className="text-emerald-700"> Never Lose an Order in the Rush.</span>
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-8 text-gray-600">
-              Place a QR code on each table. Customers scan it with their phone, browse your menu, and order without
-              waiting for a waiter. Orders reach the kitchen in real time, and your staff stay in control of service,
-              payment, and the dining room.
+              Let guests scan, browse mouthwatering photo menus, and order instantly from their phone. Orders flash to your kitchen in real time with zero waiter delays, zero ordering mistakes, and 100% direct UPI payments.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
@@ -195,13 +193,13 @@ export default function Home() {
             </div>
             <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold text-gray-700">
               <li className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600" /> No customer app
+                <CheckCircle2 className="h-4 w-4 text-emerald-600" /> 30% Faster Table Turnover
               </li>
               <li className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600" /> No per-order commission
+                <CheckCircle2 className="h-4 w-4 text-emerald-600" /> No App Download for Guests
               </li>
               <li className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600" /> Works on any phone
+                <CheckCircle2 className="h-4 w-4 text-emerald-600" /> 0% Revenue Commission
               </li>
             </ul>
           </div>
