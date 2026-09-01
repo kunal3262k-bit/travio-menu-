@@ -2,38 +2,17 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  Activity,
   ArrowRight,
-  BarChart3,
-  Bell,
-  CheckCircle2,
   ChevronRight,
-  Clock,
-  Compass,
-  CreditCard,
-  Eye,
-  Layers,
-  Lock,
-  MessageSquare,
-  Percent,
-  Plus,
-  QrCode,
-  RotateCcw,
-  ScanLine,
-  ShieldCheck,
-  Smartphone,
   Sparkles,
-  Split,
-  Star,
-  TrendingUp,
-  Utensils,
-  Zap,
-  Check
+  Utensils
 } from "lucide-react";
 import DemoModal from "./components/DemoModal";
 import ContactLink from "./components/ContactLink";
 import Navbar from "./components/Navbar";
-import { SUPPORT_EMAIL, SUPPORT_WHATSAPP } from "@/lib/site-config";
+import AwwwardsBentoSection from "./components/AwwwardsBentoSection";
+import AwwwardsWorkflowSection from "./components/AwwwardsWorkflowSection";
+import AwwwardsPricingSection from "./components/AwwwardsPricingSection";
 
 export const metadata: Metadata = {
   title: "SwiftTab — Next-Gen 3D QR Dining & Revenue Platform",
@@ -50,143 +29,6 @@ export const metadata: Metadata = {
     images: [{ url: "https://justswifttab.com/logo-full.png", width: 1200, height: 630, alt: "SwiftTab" }],
   },
 };
-
-const valuePillars = [
-  {
-    icon: Sparkles,
-    tag: "Visual Dining Experience",
-    title: "Studio Photography & 3D Cards",
-    description:
-      "Transform plain text items into high-resolution studio food photography. Diners tilt and interact with dishes in true 3D perspective with realistic depth, specular lighting, and steam effects.",
-    metric: "+32% Diner Engagement",
-    subMetric: "vs flat paper or PDF menus"
-  },
-  {
-    icon: Activity,
-    tag: "Nutrition & Health",
-    title: "Real-Time Nutrition & Macro Intelligence",
-    description:
-      "Cater to health-conscious diners and fitness enthusiasts with instant calorie counts, protein grams, healthy fats, net carbs, and allergen transparency across every dish.",
-    metric: "40% of Urban Diners",
-    subMetric: "actively track calories & protein"
-  },
-  {
-    icon: TrendingUp,
-    tag: "Revenue Engine",
-    title: "Smart Chef Pairing Upsells",
-    description:
-      "Automatically recommend high-margin sides, artisanal breads, and signature beverages at the exact point of ordering with context-aware social proof.",
-    metric: "+18% to +24%",
-    subMetric: "higher Average Order Value"
-  },
-  {
-    icon: ShieldCheck,
-    tag: "Reputation & CRM",
-    title: "Google Review Shield & WhatsApp CRM",
-    description:
-      "Seamlessly route 5-star ratings to Google Maps to surge public rankings. Automatically capture 1-3 star feedback privately to WhatsApp to resolve guest complaints instantly.",
-    metric: "4.8 / 5.0 Public Rating",
-    subMetric: "+ 100% verified guest contact list"
-  }
-];
-
-const workflowSteps = [
-  {
-    step: "01",
-    title: "60-Second Menu Digitization",
-    description: "Upload a photo of your current paper menu. Our intelligence engine extracts items, categories, photography, and macro profiles instantly."
-  },
-  {
-    step: "02",
-    title: "Deploy QR Stands on Tables",
-    description: "Place high-resolution acrylic QR stands across dine-in tables and car-side spots. Guests scan with any camera—zero app download required."
-  },
-  {
-    step: "03",
-    title: "Interactive 3D Ordering",
-    description: "Guests tilt their phones to inspect dishes in 3D, filter by dietary preferences, and customize preparation notes in real time."
-  },
-  {
-    step: "04",
-    title: "Instant Kitchen KDS Dispatch",
-    description: "Orders flash immediately to kitchen display screens with clear preparation chimes, table numbers, and item modifiers—eliminating delay."
-  },
-  {
-    step: "05",
-    title: "Direct UPI Settlement & Bill Split",
-    description: "Guests split bills equally or pay instantly via direct UPI QR code. 100% of revenue settles into your bank with 0% commission."
-  },
-  {
-    step: "06",
-    title: "WhatsApp Receipts & Review Boost",
-    description: "Customers receive digital itemized receipts on WhatsApp while satisfied diners are seamlessly routed to elevate your Google Maps rating."
-  }
-];
-
-const pricingPlans = [
-  {
-    name: "Starter",
-    priceInr: "₹2,999",
-    priceUsd: "$49",
-    period: "/month",
-    description: "Essential QR table ordering and real-time kitchen display for cafes and bistros.",
-    popular: false,
-    features: [
-      "Unlimited table QR ordering",
-      "Real-time Kitchen Display System (KDS)",
-      "Waiter call & bill request screens",
-      "On-device 60-second paper menu scanner",
-      "Direct UPI & Cash settlement (0% commission)",
-      "Customizable categories & sold-out toggles",
-      "Live order audio alerts"
-    ],
-    cta: "Start 3-Day Free Trial",
-    ctaLink: "/register",
-    badge: "Core Operations"
-  },
-  {
-    name: "Growth",
-    priceInr: "₹5,999",
-    priceUsd: "$89",
-    period: "/month",
-    description: "The complete visual dining & revenue engine that drives higher table spend and guest excitement.",
-    popular: true,
-    features: [
-      "Everything in Starter, plus:",
-      "Studio Food Photography Pipeline (150+ dishes)",
-      "Interactive 3D Dish Cards with Gyro Tilt & Steam",
-      "Nutrition & Macro Engine (Calories, Protein, Carbs, Fats)",
-      "Dynamic Dietary Filter Bar (High Protein, Keto, Vegan)",
-      "Smart Pairing Upsells (+20% Average Order Value)",
-      "1-Tap WhatsApp Digital Bill & Phone Capture",
-      "Live Table Nutrition Meter for Guests"
-    ],
-    cta: "Launch Growth Experience",
-    ctaLink: "/register",
-    badge: "Most Popular — Highest ROI"
-  },
-  {
-    name: "VIP Enterprise",
-    priceInr: "₹9,999",
-    priceUsd: "$149",
-    period: "/month",
-    description: "Full-scale dining experience with automated reputation shielding and multi-user bill splitting.",
-    popular: false,
-    features: [
-      "Everything in Growth, plus:",
-      "5-Star Google Review Shield (Private manager alert routing)",
-      "Multi-User Table Bill Splitter with dynamic UPI QR codes",
-      "Car-Side Drive-In Ordering with vehicle number tracking",
-      "Custom Branded Acrylic QR Table Stands (Kit included)",
-      "Advanced Platform Analytics & Dish Reorder Insights",
-      "Dedicated 24/7 VIP Phone & WhatsApp Support",
-      "Same-Day Custom Menu Digitization Service"
-    ],
-    cta: "Get VIP Enterprise",
-    ctaLink: "/register",
-    badge: "Full Power & Reputation"
-  }
-];
 
 const faqs = [
   {
@@ -385,79 +227,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 4 Core Pillars Bento Section */}
-      <section className="py-20 lg:py-32 border-b border-emerald-950/40 relative">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="max-w-2xl mb-16">
-            <span className="text-xs font-bold uppercase tracking-widest text-emerald-400">High-Impact Capabilities</span>
-            <h2 className="text-3xl sm:text-4xl font-black text-white mt-2 tracking-tight">Four Architectural Pillars That Drive Measurable Revenue.</h2>
-            <p className="text-slate-400 text-base mt-3">SwiftTab transforms table ordering from a static utility into an active dining experience.</p>
-          </div>
+      {/* Awwwards-Inspired Living Bento Section */}
+      <AwwwardsBentoSection />
 
-          <div className="grid gap-6 md:grid-cols-2">
-            {valuePillars.map((pillar, idx) => {
-              const Icon = pillar.icon;
-              return (
-                <div
-                  key={idx}
-                  className="rounded-3xl bg-[#0B1512] border border-emerald-500/15 p-8 hover:border-emerald-500/40 hover:shadow-[0_8px_30px_rgba(0,184,124,0.08)] transition-all duration-300 flex flex-col justify-between group"
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 group-hover:scale-105 transition-transform">
-                        <Icon className="w-6 h-6" />
-                      </div>
-                      <span className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-950/60 text-emerald-300 border border-emerald-500/20">
-                        {pillar.tag}
-                      </span>
-                    </div>
-                    <h3 className="text-xl font-bold text-white mb-2">{pillar.title}</h3>
-                    <p className="text-sm leading-relaxed text-slate-300">{pillar.description}</p>
-                  </div>
-
-                  <div className="mt-8 pt-6 border-t border-emerald-950/60 flex items-baseline justify-between">
-                    <div>
-                      <span className="text-xl sm:text-2xl font-black text-emerald-400 font-mono">{pillar.metric}</span>
-                      <span className="block text-xs text-slate-400 mt-0.5">{pillar.subMetric}</span>
-                    </div>
-                    <Link
-                      href="/demo"
-                      className="text-xs font-bold text-slate-300 group-hover:text-emerald-400 flex items-center gap-1 transition-colors"
-                    >
-                      <span>Explore Experience</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* 6-Step Operational Timeline */}
-      <section className="py-20 lg:py-32 border-b border-emerald-950/40 bg-[#060A09]">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <span className="text-xs font-bold uppercase tracking-widest text-emerald-400">Frictionless Workflow</span>
-            <h2 className="text-3xl sm:text-4xl font-black text-white mt-2 tracking-tight">From Scan to Kitchen in 6 Seconds.</h2>
-            <p className="text-slate-400 text-sm sm:text-base mt-3">Zero hardware complexity. Set up in minutes on any tablet, phone, or laptop browser.</p>
-          </div>
-
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {workflowSteps.map((step, idx) => (
-              <div
-                key={idx}
-                className="rounded-2xl bg-[#0B1512] border border-emerald-500/15 p-7 relative hover:border-emerald-500/35 transition-all duration-300"
-              >
-                <span className="font-mono text-2xl font-black text-emerald-500/40 mb-3 block">{step.step}</span>
-                <h3 className="text-lg font-bold text-white mb-2">{step.title}</h3>
-                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">{step.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Awwwards-Inspired 6-Step Operational Timeline */}
+      <AwwwardsWorkflowSection />
 
       {/* ROI & Comparison Section */}
       <section className="py-20 lg:py-32 border-b border-emerald-950/40">
@@ -517,67 +291,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section id="pricing" className="py-20 lg:py-32 border-b border-emerald-950/40">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <span className="text-xs font-bold uppercase tracking-widest text-emerald-400">Predictable Retainers</span>
-            <h2 className="text-3xl sm:text-4xl font-black text-white mt-2 tracking-tight">Simple, High-ROI Plans.</h2>
-            <p className="text-slate-400 text-sm sm:text-base mt-2">Zero setup fees. Zero commission on orders. 3-day risk-free live trial on all plans.</p>
-          </div>
-
-          <div className="grid gap-8 lg:grid-cols-3 items-stretch">
-            {pricingPlans.map((plan, idx) => (
-              <div
-                key={idx}
-                className={`rounded-3xl p-8 flex flex-col justify-between transition-all duration-300 ${
-                  plan.popular
-                    ? "bg-[#0E1B17] border-2 border-emerald-500 shadow-[0_0_40px_rgba(0,184,124,0.2)] relative lg:scale-105 z-10"
-                    : "bg-[#0B1512] border border-emerald-500/15"
-                }`}
-              >
-                <div>
-                  {plan.popular && (
-                    <div className="inline-block px-3 py-1 rounded-full bg-emerald-500 text-slate-950 text-[11px] font-black uppercase tracking-wider mb-4">
-                      {plan.badge}
-                    </div>
-                  )}
-                  <h3 className="text-xl font-bold text-white">{plan.name}</h3>
-                  <p className="text-xs text-slate-400 mt-1 min-h-[32px]">{plan.description}</p>
-
-                  <div className="my-6 pb-6 border-b border-emerald-950/60">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-4xl font-black text-white font-mono tracking-tight">{plan.priceInr}</span>
-                      <span className="text-sm text-slate-400 font-normal">{plan.period}</span>
-                    </div>
-                    <span className="text-xs text-slate-400 font-mono mt-0.5 block">or {plan.priceUsd} USD</span>
-                  </div>
-
-                  <ul className="space-y-3 text-xs text-slate-300 mb-8">
-                    {plan.features.map((f, fIdx) => (
-                      <li key={fIdx} className="flex items-start gap-2.5">
-                        <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <Link
-                  href={plan.ctaLink}
-                  className={`w-full py-3.5 px-4 rounded-xl text-center text-sm font-bold transition-all ${
-                    plan.popular
-                      ? "bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/25"
-                      : "bg-emerald-950/40 hover:bg-emerald-900/50 text-white border border-emerald-500/20"
-                  }`}
-                >
-                  {plan.cta}
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Awwwards-Inspired Interactive Pricing Section */}
+      <AwwwardsPricingSection />
 
       {/* FAQ Section */}
       <section className="py-20 border-b border-emerald-950/40 bg-[#060A09]">
