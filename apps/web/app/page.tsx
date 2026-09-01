@@ -2,29 +2,33 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import {
+  Activity,
+  ArrowRight,
+  BarChart3,
   Bell,
   CheckCircle2,
-  ChefHat,
+  ChevronRight,
+  Compass,
   CreditCard,
+  Eye,
   Flame,
   IndianRupee,
   Layers,
-  Menu as MenuIcon,
+  Lock,
   MessageSquare,
+  Percent,
   Plus,
-  Printer,
   QrCode,
+  RotateCcw,
   ScanLine,
   ShieldCheck,
   Smartphone,
   Sparkles,
-  Star,
-  Utensils,
-  Wallet,
-  Activity,
-  ArrowRight,
   Split,
-  Eye
+  Star,
+  TrendingUp,
+  Utensils,
+  Zap
 } from "lucide-react";
 import DemoModal from "./components/DemoModal";
 import ContactLink from "./components/ContactLink";
@@ -34,9 +38,9 @@ import { demoOrders, demoRestaurant } from "@/lib/demo-data";
 import { formatMoney } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "SwiftTab — Next-Gen 3D QR Dining & Revenue Engine for Restaurants",
+  title: "SwiftTab — Next-Gen 3D QR Dining & Revenue Platform",
   description:
-    "Transform flat menus into interactive 3D visual showcases with auto-generated AI studio food photos, live macro tracking, smart pairing upsells (+20% order value), 1-tap WhatsApp billing, and automated 5-star Google review protection.",
+    "The modern guest ordering and kitchen intelligence platform for restaurants. Auto-generated studio food photography, 3D interactive dishes, live nutrition tracking, smart pairing upsells, and 0% commission direct UPI payments.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "SwiftTab — Next-Gen 3D QR Dining & Kitchen Intelligence",
@@ -49,79 +53,79 @@ export const metadata: Metadata = {
   },
 };
 
-const xFactorFeatures = [
+const valuePillars = [
   {
     icon: Sparkles,
-    badge: "AI Food Studio & 3D Cards",
-    title: "Mouthwatering 3D Interactive Dish Cards",
+    tag: "Visual Experience",
+    title: "AI Studio Photography & 3D Cards",
     description:
-      "Turn plain text into magazine-quality studio photography with real-time 3D parallax tilt, dynamic lighting glare, steam particles on sizzling dishes, and chef's provenance stories.",
-    impact: "+32% customer engagement vs flat PDF menus",
-    color: "from-purple-500/10 to-pink-500/10 border-purple-200"
+      "Transform plain text into high-resolution commercial studio food photography. Diners tilt and interact with dishes in true 3D perspective with realistic depth, specular lighting, and steam effects.",
+    metric: "+32% Diner Engagement",
+    subMetric: "vs flat PDF/paper menus"
   },
   {
     icon: Activity,
-    badge: "Nutrition & Macro Intelligence",
-    title: "Live Calories, Protein & Dietary Filters",
+    tag: "Health & Fitness",
+    title: "Real-Time Nutrition & Macro Intelligence",
     description:
-      "Attract gym-goers, keto diners, and health-conscious guests with instant calories, protein (g), carbs, and allergen transparency, backed by a live table nutrition accumulator.",
-    impact: "Captures high-value fitness & diet demographics",
-    color: "from-emerald-500/10 to-teal-500/10 border-emerald-200"
+      "Cater to fitness enthusiasts, gym-goers, and keto diners with instant calorie counts, protein grams, healthy fats, net carbs, and allergen transparency across every dish.",
+    metric: "40% of Urban Diners",
+    subMetric: "actively track calories/protein"
   },
   {
-    icon: Flame,
-    badge: "Smart AI Pairing Upsells",
-    title: "Intelligent Add-On Suggestions",
+    icon: TrendingUp,
+    tag: "Revenue Engine",
+    title: "Smart Chef Pairing Upsells",
     description:
-      "Automatically recommend high-margin chef pairings, sides, and signature desserts before checkout with social proof ('84% of guests pair this with Garlic Naan & Cold Coffee').",
-    impact: "Proven +18% to +24% increase in Average Order Value",
-    color: "from-amber-500/10 to-orange-500/10 border-amber-200"
+      "Automatically recommend high-margin sides, artisanal breads, and signature beverages at the point of ordering with social proof ('84% of guests pair this with Garlic Naan').",
+    metric: "+18% to +24%",
+    subMetric: "higher Average Order Value"
   },
   {
-    icon: Star,
-    badge: "Reputation & CRM Engine",
-    title: "5-Star Google Review Shield & WhatsApp Bill",
+    icon: ShieldCheck,
+    tag: "Reputation & CRM",
+    title: "Google Review Shield & WhatsApp CRM",
     description:
-      "Send itemized digital receipts straight to customer WhatsApp to capture real guest numbers. Route 4–5 star ratings to Google Maps, while capturing 1–3 star complaints privately.",
-    impact: "Builds a repeat customer list and protects public ratings",
-    color: "from-blue-500/10 to-indigo-500/10 border-blue-200"
+      "Route 4-5 star ratings directly to Google Maps to surge your public score. Automatically capture 1-3 star feedback privately to WhatsApp to resolve guest complaints instantly.",
+    metric: "4.8★ Public Average",
+    subMetric: "+ 100% verified guest phone list"
   }
 ];
 
-const howItWorks = [
+const workflowSteps = [
   {
-    step: "1",
-    title: "Scan & AI Auto-Enrich",
-    text: "Upload a photo of your paper menu. Our AI instantly extracts dishes, prices, studio photos, and accurate calorie/macro profiles in under 60 seconds.",
+    step: "01",
+    title: "60-Second AI Menu Scan",
+    description: "Snap a photo of your existing paper menu. Our AI engine extracts items, categories, studio food photos, and macro profiles instantly."
   },
   {
-    step: "2",
+    step: "02",
     title: "Place QR Stands on Tables",
-    text: "Print high-res QR codes for your tables and car-side drive-in spots. Guests scan with any phone camera—no app download required.",
+    description: "Deploy high-res QR codes for dine-in tables and car-side drive-in spots. Guests scan with any camera—zero app download required."
   },
   {
-    step: "3",
-    title: "Guests Experience 3D Menu",
-    text: "Diners explore tiltable 3D dish cards, check macros, filter by dietary preferences, and add smart chef pairings in 1 tap.",
+    step: "03",
+    title: "Interactive 3D Ordering",
+    description: "Guests tilt their phones to inspect dishes in 3D, filter by dietary preferences, and customize preparation notes in real time."
   },
   {
-    step: "4",
-    title: "Orders Flash to Kitchen KDS",
-    text: "Orders instantly appear on your kitchen display with audio chimes, item modifiers, and preparation timers—zero waiter delays.",
+    step: "04",
+    title: "Instant Kitchen KDS Dispatch",
+    description: "Orders flash to the kitchen display screen with clear preparation chimes, table numbers, and item modifiers—eliminating waiter delays."
   },
   {
-    step: "5",
-    title: "Direct UPI & Table Bill Split",
-    text: "Guests split the bill equally or pay directly via their own UPI app. 100% of the money goes straight to your bank with 0% commission.",
+    step: "05",
+    title: "Direct UPI Settlement & Split",
+    description: "Guests split bills equally or pay instantly via UPI. 100% of revenue settles directly into your bank with 0% middleman commission."
   },
   {
-    step: "6",
-    title: "WhatsApp Bill & 5★ Review Boost",
-    text: "Customers receive their digital receipt on WhatsApp and happy diners are routed to leave 5-star reviews on Google Maps.",
-  },
+    step: "06",
+    title: "WhatsApp Receipts & Review Boost",
+    description: "Customers receive digital itemized receipts on WhatsApp while 5-star diners are routed to elevate your Google Maps rating."
+  }
 ];
 
-const pricingTiers = [
+const pricingPlans = [
   {
     name: "Starter",
     priceInr: "₹2,999",
@@ -139,6 +143,7 @@ const pricingTiers = [
       "Live order audio alerts"
     ],
     cta: "Start 3-Day Free Trial",
+    ctaLink: "/register",
     badge: "Core Operations"
   },
   {
@@ -159,6 +164,7 @@ const pricingTiers = [
       "Live Table Nutrition Meter for Guests"
     ],
     cta: "Launch Growth Experience",
+    ctaLink: "/register",
     badge: "Most Popular — Highest ROI"
   },
   {
@@ -179,6 +185,7 @@ const pricingTiers = [
       "Same-Day Custom Menu Digitization Service"
     ],
     cta: "Get VIP Enterprise",
+    ctaLink: "/register",
     badge: "Full Power & Reputation"
   }
 ];
@@ -186,7 +193,7 @@ const pricingTiers = [
 const faqs = [
   {
     q: "How does the AI Studio Food Photography work?",
-    a: "When you upload your paper menu or type in dishes, our culinary AI studio engine automatically matches high-resolution, commercial-grade food photography for over 150 popular dishes. You can also generate multi-angle studio shots (front angle, top-down, close-up) or upload your own custom food photos at any time.",
+    a: "When you upload your paper menu or type in dishes, our culinary studio engine automatically matches high-resolution, commercial-grade food photography for over 150 popular dishes. You can also generate multi-angle studio shots (front angle, top-down, close-up) or upload your own custom food photos at any time.",
   },
   {
     q: "How accurate is the AI Macro & Nutrition Intelligence?",
@@ -215,15 +222,8 @@ const faqs = [
 ];
 
 export default function Home() {
-  const phoneItems = [
-    demoRestaurant.categories[0].items[0],
-    demoRestaurant.categories[0].items[1],
-    demoRestaurant.categories[1].items[0],
-  ];
-  const previewOrder = demoOrders[0];
-
   return (
-    <div className="min-h-screen bg-slate-950 text-white selection:bg-purple-600 selection:text-white">
+    <div className="min-h-screen bg-[#07090E] text-slate-100 selection:bg-emerald-500 selection:text-slate-950">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -234,7 +234,7 @@ export default function Home() {
             applicationCategory: "BusinessApplication",
             operatingSystem: "Web",
             description:
-              "Next-Gen 3D QR Table Ordering, AI Studio Food Photography, Macro Intelligence, and Kitchen Display System for modern restaurants.",
+              "The high-performance dining & revenue platform for modern restaurants. 3D interactive menus, macro tracking, KDS, and 0% commission QR ordering.",
             offers: { "@type": "Offer", price: "5999", priceCurrency: "INR", description: "Growth Monthly subscription" },
           }),
         }}
@@ -244,128 +244,193 @@ export default function Home() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-12 pb-20 lg:pt-20 lg:pb-32 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.25),rgba(255,255,255,0))]">
-        {/* Background glow accents */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-600/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-1/3 right-10 w-[400px] h-[400px] bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+      <section className="relative overflow-hidden pt-12 pb-20 lg:pt-24 lg:pb-32 border-b border-white/[0.06]">
+        {/* Subtle Architectural Grid Background */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
+        
+        {/* Subtle Emerald Ambient Glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
 
-        <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 lg:grid-cols-12 lg:gap-8">
-          <div className="lg:col-span-7 space-y-6">
-            <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-purple-900/60 to-pink-900/60 border border-purple-500/30 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-purple-300 shadow-inner">
-              <Sparkles className="h-3.5 w-3.5 text-purple-400 animate-pulse" />
-              <span>AI Studio Photography · 3D Cards · Macro Tracking · 0% Commission</span>
-            </div>
-
-            <h1 className="text-4xl font-black leading-[1.08] tracking-tight text-white sm:text-6xl">
-              Turn Flat Menus Into an <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300">
-                Unforgettable 3D Dining Experience.
-              </span>
-            </h1>
-
-            <p className="text-lg leading-relaxed text-slate-300 max-w-2xl font-medium">
-              Command higher table spends, eliminate ordering mistakes, and wow your diners with auto-generated studio food photos, live nutrition tracking, smart AI pairings (+20% average order value), 1-tap WhatsApp billing, and automated 5-star Google review protection.
-            </p>
-
-            <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-              <Link
-                href="/register"
-                className="rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 px-8 py-4 text-center text-lg font-black text-white shadow-xl shadow-purple-600/25 transition-all hover:scale-[1.02] hover:shadow-purple-600/40 active:scale-[0.98] flex items-center justify-center gap-2"
-              >
-                <span>Launch Your 3D Menu</span>
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-              <DemoModal />
-            </div>
-
-            {/* Trust Highlights */}
-            <div className="pt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 border-t border-slate-800/80">
-              <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
-                <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-                <span>60s AI Menu Import</span>
+        <div className="relative mx-auto max-w-7xl px-6">
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-8">
+            {/* Left Hero Content */}
+            <div className="lg:col-span-7 space-y-6">
+              {/* Refined Pill Badge */}
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/[0.04] border border-white/[0.1] px-4 py-1.5 text-xs font-semibold text-slate-300">
+                <span className="flex h-2 w-2 rounded-full bg-emerald-400" />
+                <span>Next-Gen Dining Engine</span>
+                <span className="text-slate-600">|</span>
+                <span className="text-emerald-400 font-bold">0% Commission</span>
               </div>
-              <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
-                <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-                <span>+22% Table Spend</span>
-              </div>
-              <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
-                <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-                <span>5★ Review Shield</span>
-              </div>
-              <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
-                <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-                <span>0% Commission</span>
-              </div>
-            </div>
-          </div>
 
-          {/* Interactive Phone & Visual Preview */}
-          <div className="lg:col-span-5 relative">
-            <ProductPreview phoneItems={phoneItems} previewOrder={previewOrder} />
-          </div>
-        </div>
-      </section>
+              {/* Authority Headline */}
+              <h1 className="text-4xl font-black leading-[1.12] tracking-tight text-white sm:text-6xl">
+                The High-Performance <br className="hidden sm:inline" />
+                <span className="text-white">Dining & Revenue Platform </span>
+                <span className="text-emerald-400">for Restaurants.</span>
+              </h1>
 
-      {/* Feature Strip */}
-      <section className="border-y border-slate-800 bg-slate-900/60 py-6">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="flex items-center gap-6 overflow-x-auto pb-2 scrollbar-none md:grid md:grid-cols-6 md:gap-4 md:pb-0 text-center">
-            {[
-              { title: "AI Food Studio", desc: "150+ HD dishes" },
-              { title: "3D Parallax Cards", desc: "Interactive depth" },
-              { title: "Live Macro Meter", desc: "Calories & protein" },
-              { title: "Smart Upsells", desc: "+20% order value" },
-              { title: "WhatsApp CRM", desc: "1-tap bill capture" },
-              { title: "Google Shield", desc: "Automated 5★ reviews" }
-            ].map((f, i) => (
-              <div key={f.title} className="flex-1 shrink-0 px-3 py-2 rounded-xl bg-slate-800/40 border border-slate-700/50">
-                <p className="text-xs font-black text-white">{f.title}</p>
-                <p className="text-[11px] text-purple-300 font-medium">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+              {/* Subtitle */}
+              <p className="text-base sm:text-lg leading-relaxed text-slate-300 max-w-2xl font-normal">
+                Replace flat paper menus with interactive 3D dish showcases, real-time calorie and protein intelligence, smart pairing upsells, and 1-tap WhatsApp digital bills — built to maximize table spend and kitchen speed.
+              </p>
 
-      {/* The 4 X-Factors Showcase */}
-      <section id="features" className="py-24 px-6 relative bg-slate-950">
-        <div className="mx-auto max-w-7xl">
-          <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-            <p className="text-xs font-bold uppercase tracking-widest text-purple-400">The SwiftTab Advantage</p>
-            <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
-              Four High-Impact X-Factors That Drive Measurable ROI
-            </h2>
-            <p className="text-slate-400 text-base sm:text-lg">
-              Move beyond basic commodity QR code menus. SwiftTab gives restaurant owners a state-of-the-art visual engine that commands higher ticket sizes and diner loyalty.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {xFactorFeatures.map((feat) => {
-              const Icon = feat.icon;
-              return (
-                <div 
-                  key={feat.title}
-                  className={`rounded-3xl border p-8 bg-gradient-to-br ${feat.color} bg-slate-900/80 backdrop-blur-xl relative overflow-hidden transition hover:border-slate-600 flex flex-col justify-between`}
+              {/* CTA Row */}
+              <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                <Link
+                  href="/register"
+                  className="rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-8 py-4 text-center text-base font-black shadow-xl shadow-emerald-500/15 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
                 >
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-800 text-purple-300 border border-purple-500/30">
-                        {feat.badge}
-                      </span>
-                      <div className="p-3 rounded-2xl bg-purple-500/10 text-purple-400">
-                        <Icon className="w-6 h-6" />
+                  <span>Start 3-Day Risk-Free Trial</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+                <DemoModal />
+              </div>
+
+              {/* Enterprise Trust Metric Bar */}
+              <div className="pt-6 grid grid-cols-2 sm:grid-cols-4 gap-4 border-t border-white/[0.08]">
+                <div>
+                  <span className="block text-xl font-black text-white font-mono">+22%</span>
+                  <span className="text-xs text-slate-400">Table Spend</span>
+                </div>
+                <div>
+                  <span className="block text-xl font-black text-white font-mono">60s</span>
+                  <span className="text-xs text-slate-400">AI Menu Setup</span>
+                </div>
+                <div>
+                  <span className="block text-xl font-black text-white font-mono">0%</span>
+                  <span className="text-xs text-slate-400">Commission</span>
+                </div>
+                <div>
+                  <span className="block text-xl font-black text-white font-mono">4.8★</span>
+                  <span className="text-xs text-slate-400">Review Shield</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Interactive Product Mockup */}
+            <div className="lg:col-span-5">
+              <div className="relative rounded-3xl bg-[#0D111A] border border-white/[0.12] p-4 shadow-2xl overflow-hidden backdrop-blur-xl">
+                {/* Window Control Bar */}
+                <div className="flex items-center justify-between pb-3 border-b border-white/[0.08] text-xs text-slate-400">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
+                  </div>
+                  <span className="font-mono text-[11px] text-slate-400">justswifttab.com/demo</span>
+                  <span className="text-[10px] text-emerald-400 font-bold px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-500/30">Live Table 4</span>
+                </div>
+
+                {/* 3D Dish Showcase Preview Widget */}
+                <div className="py-4 space-y-3">
+                  <div className="relative h-56 rounded-2xl overflow-hidden bg-gradient-to-b from-[#131824] to-[#0D111A] flex items-center justify-center border border-white/[0.08] group cursor-pointer">
+                    <div className="relative w-44 h-44 rounded-full p-2 bg-white/[0.06] border border-white/[0.15] shadow-2xl transform group-hover:scale-105 group-hover:rotate-6 transition-all duration-700">
+                      <Image
+                        src="https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=600&q=85"
+                        alt="Tandoori Paneer Tikka"
+                        fill
+                        className="object-cover rounded-full p-1"
+                      />
+                      <div className="absolute -top-1 right-2 px-2 py-0.5 rounded-full bg-amber-500 text-black text-[10px] font-black">
+                        🔥 Sizzler
                       </div>
                     </div>
-                    <h3 className="text-2xl font-black text-white">{feat.title}</h3>
-                    <p className="text-slate-300 leading-relaxed text-sm sm:text-base font-normal">
-                      {feat.description}
-                    </p>
+
+                    <div className="absolute bottom-2 left-3 right-3 flex items-center justify-between pointer-events-none">
+                      <span className="px-2 py-1 rounded-md bg-black/70 backdrop-blur-md text-[10px] font-bold text-white border border-white/10 flex items-center gap-1">
+                        <Sparkles className="w-3 h-3 text-emerald-400" /> 3D Floating Plate
+                      </span>
+                      <span className="px-2 py-1 rounded-md bg-emerald-950/80 text-emerald-300 text-[10px] font-bold border border-emerald-500/30">
+                        💪 24g Protein
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="mt-6 pt-4 border-t border-slate-800/80 flex items-center gap-2">
-                    <span className="text-xs font-bold text-emerald-400">ROI Impact:</span>
-                    <span className="text-xs font-semibold text-slate-300">{feat.impact}</span>
+                  {/* Item Details Preview */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-bold text-sm text-white">Clay Oven Paneer Tikka</h4>
+                      <p className="text-xs text-slate-400">🔥 380 kcal · 🥑 16g Fat · 🍚 12g Carbs</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-mono font-black text-emerald-400 text-base">₹340</span>
+                      <span className="block text-[10px] text-slate-400 font-semibold">+ GST</span>
+                    </div>
+                  </div>
+
+                  {/* Smart Upsell Preview Banner */}
+                  <div className="p-2.5 rounded-xl bg-emerald-950/30 border border-emerald-500/20 flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-xs">
+                      <Flame className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span className="text-slate-300 text-[11px]">84% pair with <strong>Butter Garlic Naan</strong></span>
+                    </div>
+                    <span className="text-[11px] font-bold text-emerald-400">+₹80</span>
+                  </div>
+                </div>
+
+                <div className="pt-2 text-center">
+                  <Link
+                    href="/demo"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-300 hover:text-emerald-400 transition-colors"
+                  >
+                    <span>Open Full Interactive Customer Menu</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 4 Core Value Pillars (Bento Grid) */}
+      <section className="py-20 lg:py-28 border-b border-white/[0.06]">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="max-w-2xl mb-16">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Built for Measurable ROI</span>
+            <h2 className="text-3xl sm:text-4xl font-black text-white mt-2">
+              Four High-Ticket Capabilities That Drive Higher Table Spend.
+            </h2>
+            <p className="text-slate-400 text-base mt-3">
+              SwiftTab transforms ordering from a basic administrative utility into an active revenue generator.
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            {valuePillars.map((pillar, idx) => {
+              const Icon = pillar.icon;
+              return (
+                <div
+                  key={idx}
+                  className="rounded-3xl bg-[#0D111A] border border-white/[0.08] p-8 hover:border-emerald-500/40 transition-all duration-300 flex flex-col justify-between group"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="p-3 rounded-2xl bg-white/[0.04] border border-white/[0.08] text-emerald-400 group-hover:scale-110 transition-transform">
+                        <Icon className="w-6 h-6" />
+                      </div>
+                      <span className="text-xs font-semibold px-3 py-1 rounded-full bg-white/[0.04] text-slate-400 border border-white/[0.06]">
+                        {pillar.tag}
+                      </span>
+                    </div>
+
+                    <h3 className="text-xl font-bold text-white mb-2">{pillar.title}</h3>
+                    <p className="text-sm leading-relaxed text-slate-300">{pillar.description}</p>
+                  </div>
+
+                  <div className="mt-8 pt-6 border-t border-white/[0.06] flex items-baseline justify-between">
+                    <div>
+                      <span className="text-2xl font-black text-emerald-400 font-mono">{pillar.metric}</span>
+                      <span className="block text-xs text-slate-400 mt-0.5">{pillar.subMetric}</span>
+                    </div>
+                    <Link
+                      href="/demo"
+                      className="text-xs font-bold text-slate-400 group-hover:text-emerald-400 flex items-center gap-1 transition-colors"
+                    >
+                      <span>Explore Feature</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
                   </div>
                 </div>
               );
@@ -374,324 +439,202 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How it works (6 Steps) */}
-      <section id="how-it-works" className="py-24 px-6 bg-slate-900/50 border-y border-slate-800">
-        <div className="mx-auto max-w-7xl">
-          <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-            <p className="text-xs font-bold uppercase tracking-widest text-emerald-400">Instant Setup</p>
-            <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
-              From Printed Paper Menu to Live 3D Dining in 6 Steps
+      {/* 6-Step Workflow Process */}
+      <section className="py-20 lg:py-28 border-b border-white/[0.06] bg-[#0A0D14]">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Streamlined Operations</span>
+            <h2 className="text-3xl sm:text-4xl font-black text-white mt-2">
+              From Scan to Kitchen in 6 Seconds.
             </h2>
-            <p className="text-slate-400 text-base">
-              No hardware purchases, no IT specialists. Your restaurant can go live in 10 minutes.
+            <p className="text-slate-400 text-sm sm:text-base mt-3">
+              Zero hardware complexity. Set up in minutes on any tablet, phone, or laptop browser.
             </p>
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {howItWorks.map((item) => (
-              <div key={item.step} className="rounded-3xl border border-slate-800 bg-slate-900/90 p-6 relative group hover:border-purple-500/40 transition-colors">
-                <div className="mb-4 grid h-10 w-10 place-items-center rounded-2xl bg-purple-950 border border-purple-500/40 text-base font-black text-purple-300">
-                  {item.step}
-                </div>
-                <h3 className="text-lg font-bold text-white mb-2">{item.title}</h3>
-                <p className="text-sm leading-relaxed text-slate-400">{item.text}</p>
+            {workflowSteps.map((step, idx) => (
+              <div
+                key={idx}
+                className="rounded-2xl bg-[#0D111A] border border-white/[0.06] p-6 relative hover:border-white/[0.15] transition-all"
+              >
+                <span className="font-mono text-3xl font-black text-emerald-500/30 mb-3 block">
+                  {step.step}
+                </span>
+                <h3 className="text-lg font-bold text-white mb-2">{step.title}</h3>
+                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">{step.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Tiered Pricing Section */}
-      <section id="pricing" className="py-24 px-6 bg-slate-950 relative">
-        <div className="mx-auto max-w-7xl">
-          <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
-            <p className="text-xs font-bold uppercase tracking-widest text-purple-400">Transparent ROI Pricing</p>
-            <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
-              Plans Built to Pay for Themselves on Day 1
+      {/* Economics / ROI Comparison Matrix */}
+      <section className="py-20 lg:py-28 border-b border-white/[0.06]">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="rounded-3xl bg-gradient-to-b from-[#0E131F] to-[#090D16] border border-white/[0.1] p-8 sm:p-12">
+            <div className="max-w-2xl mb-10">
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">The Financial Arithmetic</span>
+              <h2 className="text-3xl font-black text-white mt-2">
+                Why Restaurant Owners Save ₹1.2 Lakhs Every Month.
+              </h2>
+              <p className="text-slate-400 text-sm sm:text-base mt-2">
+                Compare direct dine-in table ordering with third-party delivery aggregators and old-fashioned paper menus.
+              </p>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-white/[0.1] text-xs font-bold text-slate-400 uppercase">
+                    <th className="pb-4">Feature / Metric</th>
+                    <th className="pb-4 text-emerald-400">SwiftTab Growth</th>
+                    <th className="pb-4 text-slate-400">Food Aggregators</th>
+                    <th className="pb-4 text-slate-400">Laminated Paper Menus</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/[0.06] text-slate-300">
+                  <tr>
+                    <td className="py-4 font-bold text-white">Order Commission</td>
+                    <td className="py-4 text-emerald-400 font-bold">0% (Zero)</td>
+                    <td className="py-4 text-red-400">22% – 28% per order</td>
+                    <td className="py-4">0%</td>
+                  </tr>
+                  <tr>
+                    <td className="py-4 font-bold text-white">Visual Presentation</td>
+                    <td className="py-4 text-emerald-400 font-bold">Interactive 3D + Studio Photos</td>
+                    <td className="py-4">Flat 2D thumbnail</td>
+                    <td className="py-4">Plain printed text</td>
+                  </tr>
+                  <tr>
+                    <td className="py-4 font-bold text-white">Live Macro & Calorie Tracking</td>
+                    <td className="py-4 text-emerald-400 font-bold">✓ Real-time calculation</td>
+                    <td className="py-4 text-slate-500">✗ None</td>
+                    <td className="py-4 text-slate-500">✗ None</td>
+                  </tr>
+                  <tr>
+                    <td className="py-4 font-bold text-white">Average Order Value Upsell</td>
+                    <td className="py-4 text-emerald-400 font-bold">+18% to +24%</td>
+                    <td className="py-4">Aggregator keeps customer</td>
+                    <td className="py-4">0% (Relies on waiter)</td>
+                  </tr>
+                  <tr>
+                    <td className="py-4 font-bold text-white">Customer Phone & WhatsApp CRM</td>
+                    <td className="py-4 text-emerald-400 font-bold">✓ 100% Restaurant Owned</td>
+                    <td className="py-4 text-red-400">✗ Masked phone numbers</td>
+                    <td className="py-4 text-slate-500">✗ Paper feedback forms</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Transparent Tiered Pricing */}
+      <section id="pricing" className="py-20 lg:py-28 border-b border-white/[0.06]">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Transparent Pricing</span>
+            <h2 className="text-3xl sm:text-4xl font-black text-white mt-2">
+              Simple, High-ROI Retainers.
             </h2>
-            <p className="text-slate-400 text-base">
-              Zero commission on your revenue. Flat, transparent monthly pricing with a 3-day risk-free live trial guarantee.
+            <p className="text-slate-400 text-sm sm:text-base mt-2">
+              Zero setup fees. Zero commission on orders. 3-day risk-free live trial on all plans.
             </p>
           </div>
 
           <div className="grid gap-8 lg:grid-cols-3 items-stretch">
-            {pricingTiers.map((tier) => (
+            {pricingPlans.map((plan, idx) => (
               <div
-                key={tier.name}
-                className={`rounded-3xl p-8 flex flex-col justify-between transition-all relative ${
-                  tier.popular
-                    ? "bg-gradient-to-b from-slate-900 via-slate-900 to-purple-950/40 border-2 border-purple-500 shadow-2xl shadow-purple-500/20 scale-[1.03]"
-                    : "bg-slate-900/70 border border-slate-800 hover:border-slate-700"
+                key={idx}
+                className={`rounded-3xl p-8 flex flex-col justify-between transition-all duration-300 ${
+                  plan.popular
+                    ? "bg-[#0E1422] border-2 border-emerald-500/80 shadow-2xl relative scale-105 z-10"
+                    : "bg-[#0D111A] border border-white/[0.08]"
                 }`}
               >
-                {tier.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-black uppercase tracking-wider shadow-lg">
-                    {tier.badge}
-                  </div>
-                )}
-
-                <div className="space-y-6">
-                  <div>
-                    <span className="text-xs font-bold text-purple-400 uppercase tracking-wider">{tier.name}</span>
-                    <div className="mt-2 flex items-baseline gap-2">
-                      <span className="text-4xl sm:text-5xl font-black text-white">{tier.priceInr}</span>
-                      <span className="text-sm font-semibold text-slate-400">{tier.period}</span>
-                      <span className="text-xs font-medium text-slate-500">({tier.priceUsd})</span>
+                <div>
+                  {plan.popular && (
+                    <div className="inline-block px-3 py-1 rounded-full bg-emerald-500 text-slate-950 text-[11px] font-black uppercase tracking-wider mb-4">
+                      {plan.badge}
                     </div>
-                    <p className="mt-3 text-xs sm:text-sm text-slate-300 leading-relaxed">{tier.description}</p>
+                  )}
+
+                  <h3 className="text-xl font-bold text-white">{plan.name}</h3>
+                  <p className="text-xs text-slate-400 mt-1 min-h-[32px]">{plan.description}</p>
+
+                  <div className="my-6 pb-6 border-b border-white/[0.08]">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl font-black text-white font-mono">{plan.priceInr}</span>
+                      <span className="text-sm text-slate-400 font-normal">{plan.period}</span>
+                    </div>
+                    <span className="text-xs text-slate-400 font-mono mt-0.5 block">or {plan.priceUsd} USD</span>
                   </div>
 
-                  <div className="space-y-3 pt-4 border-t border-slate-800">
-                    <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Included Features:</p>
-                    <ul className="space-y-2.5">
-                      {tier.features.map((feat) => (
-                        <li key={feat} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-200">
-                          <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400 mt-0.5" />
-                          <span>{feat}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  <ul className="space-y-3 text-xs text-slate-300 mb-8">
+                    {plan.features.map((feat, fIdx) => (
+                      <li key={fIdx} className="flex items-start gap-2.5">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                        <span>{feat}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
 
-                <div className="mt-8 pt-6 border-t border-slate-800">
-                  <Link
-                    href="/register"
-                    className={`block w-full py-4 text-center text-sm font-black rounded-2xl transition-all ${
-                      tier.popular
-                        ? "bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 text-white shadow-lg hover:brightness-110"
-                        : "bg-slate-800 text-white hover:bg-slate-700 border border-slate-700"
-                    }`}
-                  >
-                    {tier.cta}
-                  </Link>
-                  <p className="mt-2 text-center text-[11px] text-slate-500">
-                    3-Day money-back live trial · Cancel anytime
-                  </p>
-                </div>
+                <Link
+                  href={plan.ctaLink}
+                  className={`w-full py-3.5 px-4 rounded-xl text-center text-sm font-bold transition-all ${
+                    plan.popular
+                      ? "bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20"
+                      : "bg-white/[0.06] hover:bg-white/[0.12] text-white"
+                  }`}
+                >
+                  {plan.cta}
+                </Link>
               </div>
             ))}
           </div>
-
-          {/* Risk Free Trial Box */}
-          <div className="mt-12 max-w-3xl mx-auto rounded-3xl bg-slate-900 border border-purple-500/30 p-6 text-center space-y-2">
-            <h4 className="text-lg font-black text-white flex items-center justify-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-emerald-400" />
-              <span>3-Day Risk-Free Live Trial Guarantee</span>
-            </h4>
-            <p className="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto leading-relaxed">
-              Test SwiftTab live at your tables for 3 full days. If you don&apos;t see faster ordering and happier guests, receive a complete refund. No contracts, zero hassle.
-            </p>
-          </div>
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section id="faq" className="py-24 px-6 bg-slate-900/40 border-t border-slate-800">
-        <div className="mx-auto max-w-3xl">
-          <div className="text-center mb-16 space-y-3">
-            <p className="text-xs font-bold uppercase tracking-widest text-emerald-400">Got Questions?</p>
-            <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
-              Frequently Asked Questions
-            </h2>
+      {/* FAQs */}
+      <section className="py-20 border-b border-white/[0.06] bg-[#0A0D14]">
+        <div className="mx-auto max-w-4xl px-6">
+          <div className="text-center mb-12">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Questions & Answers</span>
+            <h2 className="text-3xl font-black text-white mt-2">Frequently Asked Questions</h2>
           </div>
 
           <div className="space-y-4">
-            {faqs.map((faq) => (
-              <details key={faq.q} className="group rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-sm transition hover:border-purple-500/30">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-bold text-white marker:hidden">
-                  <span>{faq.q}</span>
-                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-purple-950 text-purple-300 transition group-open:rotate-45">
-                    <Plus className="h-4 w-4" />
-                  </span>
-                </summary>
-                <p className="mt-3 leading-relaxed text-slate-300 text-sm border-t border-slate-800/80 pt-3 font-normal">{faq.a}</p>
-              </details>
+            {faqs.map((faq, idx) => (
+              <div
+                key={idx}
+                className="rounded-2xl bg-[#0D111A] border border-white/[0.06] p-6 hover:border-white/[0.12] transition-colors"
+              >
+                <h3 className="text-base font-bold text-white mb-2">{faq.q}</h3>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">{faq.a}</p>
+              </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Final Action CTA */}
-      <section className="py-20 px-6 bg-gradient-to-b from-slate-900 to-slate-950 border-t border-slate-800">
-        <div className="mx-auto max-w-3xl text-center space-y-6">
-          <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white">
-            Experience the Future of Restaurant Dining Today
-          </h2>
-          <p className="text-slate-300 text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
-            Join modern restaurants elevating their guest experience and earning more on every table.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-            <Link
-              href="/register"
-              className="w-full sm:w-auto rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 px-8 py-4 text-lg font-black text-white shadow-xl hover:scale-105 transition-all"
-            >
-              Get Started Now
-            </Link>
-            <DemoModal />
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-800 bg-slate-950 px-6 py-12 text-slate-400">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid gap-8 md:grid-cols-3">
-            <div>
-              <Link href="/" className="flex items-center gap-2">
-                <Image src="/logo-icon.png" alt="SwiftTab" width={179} height={166} className="h-10 w-auto" />
-                <span className="text-xl font-bold tracking-tight text-white">SwiftTab</span>
-              </Link>
-              <p className="mt-3 max-w-xs text-xs sm:text-sm leading-6 text-slate-400">
-                Next-Gen 3D QR Table Ordering, AI Studio Photography & Kitchen Display Intelligence for modern restaurants.
-              </p>
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-300">Product</p>
-              <ul className="mt-3 space-y-2 text-xs sm:text-sm font-semibold">
-                <li>
-                  <Link href="/demo" className="hover:text-purple-400">
-                    Live 3D Customer Menu Demo
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#features" className="hover:text-purple-400">
-                    X-Factor Features
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#pricing" className="hover:text-purple-400">
-                    Tiered Pricing
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#faq" className="hover:text-purple-400">
-                    FAQ
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-slate-300">Restaurant</p>
-              <ul className="mt-3 space-y-2 text-xs sm:text-sm font-semibold">
-                <li>
-                  <Link href="/register" className="hover:text-purple-400">
-                    Create Restaurant Account
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/login" className="hover:text-purple-400">
-                    Restaurant Staff / Admin Login
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/privacy" className="hover:text-purple-400">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/terms" className="hover:text-purple-400">
-                    Terms of Service
-                  </Link>
-                </li>
-              </ul>
-            </div>
+      <footer className="py-12 bg-[#06080C] text-xs text-slate-400">
+        <div className="mx-auto max-w-7xl px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-white text-sm">SwiftTab</span>
+            <span>— Next-Gen 3D QR Dining & Kitchen Intelligence</span>
           </div>
-          <div className="mt-10 border-t border-slate-900 pt-6 text-center text-xs text-slate-500">
-            © 2026 SwiftTab (justswifttab.com). Next-Gen Restaurant Dining & Operations Engine.
+
+          <div className="flex items-center gap-6">
+            <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
+            <ContactLink className="hover:text-white transition-colors" />
           </div>
         </div>
       </footer>
-    </div>
-  );
-}
-
-function ProductPreview({
-  phoneItems,
-  previewOrder,
-}: {
-  phoneItems: typeof demoRestaurant.categories[number]["items"];
-  previewOrder: (typeof demoOrders)[number];
-}) {
-  const phoneTotalPaise = phoneItems.reduce((sum, item) => sum + item.pricePaise, 0);
-  return (
-    <div className="relative">
-      <div className="grid grid-cols-1 items-end gap-4 sm:grid-cols-5 lg:gap-6">
-        {/* Customer phone mockup */}
-        <div className="col-span-1 sm:col-span-3 rounded-[2rem] border-4 border-slate-800 bg-slate-900 p-4 shadow-2xl space-y-3">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
-                Table {demoRestaurant.tableNumber}
-              </p>
-              <h3 className="text-base font-black text-white">{demoRestaurant.name}</h3>
-            </div>
-            <div className="px-2.5 py-1 rounded-full bg-purple-900/60 border border-purple-500/30 text-[10px] font-bold text-purple-300 flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-purple-400" />
-              <span>3D Active</span>
-            </div>
-          </div>
-
-          <div className="space-y-2.5 py-1">
-            {phoneItems.map((item) => (
-              <div key={item.id} className="grid grid-cols-[60px_1fr] gap-3 rounded-2xl bg-slate-800/80 p-2.5 border border-slate-700/60 items-center">
-                <div className="relative h-16 w-15 overflow-hidden rounded-xl bg-slate-700">
-                  <Image
-                    src={item.imageUrl || ""}
-                    alt={item.name}
-                    fill
-                    sizes="60px"
-                    className="object-cover"
-                  />
-                </div>
-                <div className="flex min-w-0 flex-col justify-center space-y-0.5">
-                  <p className="text-xs font-bold text-white truncate">{item.name}</p>
-                  <p className="text-xs font-mono font-bold text-purple-300">{formatMoney(item.pricePaise)}</p>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-emerald-400">
-                      🔥 {item.calories || 480} kcal
-                    </span>
-                    <span className="text-[10px] font-bold text-purple-300">
-                      💪 {item.proteinGrams || 22}g P
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="rounded-2xl bg-gradient-to-r from-purple-900/80 to-indigo-900/80 border border-purple-500/30 p-3 text-white">
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-1.5 text-xs font-bold">
-                <Activity className="h-3.5 w-3.5 text-emerald-400" /> Live Table Nutrition
-              </span>
-              <span className="text-xs font-mono font-bold text-emerald-300">1,330 kcal · 60g P</span>
-            </div>
-            <div className="mt-2 rounded-xl bg-white px-3 py-2 text-center text-xs font-black text-slate-950 shadow">
-              Proceed to Table Order ({formatMoney(phoneTotalPaise)})
-            </div>
-          </div>
-        </div>
-
-        {/* Live Kitchen KDS Ticket mockup */}
-        <div className="hidden sm:block sm:col-span-2 space-y-3">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900 p-4 shadow-xl space-y-2">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-              <span className="text-xs font-black text-white">Live Kitchen KDS</span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-950 border border-emerald-500/40 text-emerald-400">Active</span>
-            </div>
-            <p className="text-[11px] font-bold text-purple-300">Table #{previewOrder.table} · #{previewOrder.orderNumber}</p>
-            <div className="space-y-1 text-xs text-slate-300">
-              {previewOrder.items.map((i, idx) => (
-                <div key={idx} className="flex justify-between text-[11px]">
-                  <span>{i.quantity}x {i.name}</span>
-                  <span className="text-slate-400 font-mono">Kitchen</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
