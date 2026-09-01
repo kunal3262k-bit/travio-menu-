@@ -396,11 +396,11 @@ export function Dish3DModal({
                   {/* Tap-to-Inspect Hotspots */}
                   {isInspecting && (
                     <>
-                      <div className="absolute top-1/4 left-1/3 z-30 px-2 py-1 rounded-md bg-black/80 backdrop-blur-md border border-emerald-400 text-[10px] font-bold text-emerald-300 shadow-lg animate-bounce">
-                        ✨ Artisanal Glaze
+                      <div className="absolute top-1/4 left-1/3 z-30 px-2.5 py-1 rounded-md bg-black/85 backdrop-blur-md border border-emerald-400 text-[10px] font-bold text-emerald-300 shadow-lg animate-bounce">
+                        Artisanal Glaze
                       </div>
-                      <div className="absolute bottom-1/4 right-1/4 z-30 px-2 py-1 rounded-md bg-black/80 backdrop-blur-md border border-blue-400 text-[10px] font-bold text-blue-300 shadow-lg animate-bounce">
-                        💪 {protein}g Protein Core
+                      <div className="absolute bottom-1/4 right-1/4 z-30 px-2.5 py-1 rounded-md bg-black/85 backdrop-blur-md border border-blue-400 text-[10px] font-bold text-blue-300 shadow-lg animate-bounce">
+                        {protein}g Protein Core
                       </div>
                     </>
                   )}
@@ -408,17 +408,16 @@ export function Dish3DModal({
 
                 {/* Sizzler Hot Badge */}
                 {item.isHotSizzler && (
-                  <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1 px-3 py-1 rounded-full bg-amber-500/90 text-black text-xs font-black shadow-lg backdrop-blur-md">
-                    <Flame className="w-3.5 h-3.5 fill-black" />
-                    <span>SIZZLING FRESH</span>
+                  <div className="absolute -top-2 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-500 text-slate-950 text-xs font-bold shadow-lg backdrop-blur-md">
+                    <span>Sizzling Fresh</span>
                   </div>
                 )}
               </motion.div>
 
               {/* Drag / Gyro Hint Overlay */}
               <div className="absolute bottom-3 left-4 right-4 z-20 flex items-center justify-between pointer-events-none">
-                <span className="text-[11px] font-semibold text-slate-400 bg-black/60 px-2.5 py-1 rounded-lg backdrop-blur-md border border-white/[0.06]">
-                  👆 Drag or tilt phone to rotate 3D plate
+                <span className="text-[11px] font-medium text-slate-300 bg-black/70 px-2.5 py-1 rounded-lg backdrop-blur-md border border-white/[0.08]">
+                  Drag or tilt phone to rotate in 3D
                 </span>
 
                 <button
@@ -490,8 +489,8 @@ export function Dish3DModal({
                     )}
 
                     {protein >= 25 && (
-                      <span className="px-2 py-0.5 rounded-full bg-blue-950/80 border border-blue-400/80 text-blue-300 text-xs font-bold">
-                        💪 {protein}g Protein
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-400/80 text-emerald-300 text-xs font-bold">
+                        High Protein ({protein}g)
                       </span>
                     )}
                   </div>

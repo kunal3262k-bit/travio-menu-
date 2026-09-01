@@ -18,9 +18,9 @@ export default function DemoModal() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="w-full sm:w-auto px-8 py-4 bg-gray-100 text-gray-900 rounded-xl font-bold text-lg hover:bg-gray-200 transition flex items-center justify-center gap-2"
+        className="w-full sm:w-auto px-8 py-4 rounded-xl bg-emerald-950/40 hover:bg-emerald-900/50 text-white font-bold text-base border border-emerald-500/25 transition-all flex items-center justify-center gap-2.5 hover:border-emerald-500/40"
       >
-        <PlayCircle className="w-5 h-5" /> Watch Demo
+        <PlayCircle className="w-5 h-5 text-emerald-400" /> Watch Interactive Demo
       </button>
 
       {isOpen && (

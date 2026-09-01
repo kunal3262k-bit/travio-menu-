@@ -508,8 +508,8 @@ export function CustomerMenu({
                           )}
 
                           {/* 3D Visual Pill */}
-                          <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded-md bg-black/70 backdrop-blur-sm text-[9px] font-bold text-white flex items-center gap-0.5 opacity-90 group-hover:opacity-100">
-                            <Sparkles className="w-2.5 h-2.5 text-amber-400" /> 3D
+                          <div className="absolute bottom-1.5 right-1.5 px-2 py-0.5 rounded-md bg-black/80 backdrop-blur-md text-[10px] font-bold text-white flex items-center gap-1 opacity-90 group-hover:opacity-100 border border-emerald-500/30 shadow-sm">
+                            <Sparkles className="w-2.5 h-2.5 text-emerald-400" /> 3D
                           </div>
                         </div>
 
@@ -537,13 +537,13 @@ export function CustomerMenu({
                             {/* Macro Pill */}
                             <div
                               onClick={() => setSelected3DItem(item)}
-                              className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-stone-100 hover:bg-stone-200 border border-stone-200/80 text-[11px] font-semibold text-stone-700 cursor-pointer transition-colors"
+                              className="mt-2 inline-flex items-center gap-2 px-2.5 py-0.5 rounded-lg bg-emerald-50/80 hover:bg-emerald-100 border border-emerald-200/60 text-[11px] font-semibold text-emerald-950 cursor-pointer transition-colors"
                             >
-                              <span className="text-amber-700 font-bold">🔥 {item.calories || 380} kcal</span>
-                              <span className="text-stone-300">·</span>
-                              <span className="text-blue-700 font-bold">💪 {item.proteinGrams || 24}g P</span>
-                              <span className="text-stone-300">·</span>
-                              <span className="text-emerald-700 font-bold">🥑 {item.fatGrams || 16}g F</span>
+                              <span className="font-bold text-stone-900">{item.calories || 380} kcal</span>
+                              <span className="text-emerald-300">·</span>
+                              <span className="font-bold text-emerald-800">{item.proteinGrams || 24}g Protein</span>
+                              <span className="text-emerald-300">·</span>
+                              <span className="text-stone-600">{item.fatGrams || 16}g Fat</span>
                             </div>
                           </div>
 
