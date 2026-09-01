@@ -333,7 +333,7 @@ export default function Home() {
                         className="object-cover rounded-full p-1"
                       />
                       <div className="absolute top-0 right-1 px-2.5 py-0.5 rounded-full bg-emerald-500 text-slate-950 text-[10px] font-bold">
-                        Signature Dish
+                        🔥 Sizzler Fresh
                       </div>
                     </div>
 
@@ -342,7 +342,7 @@ export default function Home() {
                         <Sparkles className="w-3 h-3 text-emerald-400" /> 3D Perspective Stage
                       </span>
                       <span className="px-2.5 py-1 rounded-md bg-emerald-950/90 text-emerald-300 text-[10px] font-bold border border-emerald-500/30">
-                        Protein 24g
+                        💪 24g Protein
                       </span>
                     </div>
                   </div>
@@ -351,7 +351,7 @@ export default function Home() {
                   <div className="flex items-center justify-between pt-1">
                     <div>
                       <h4 className="font-bold text-sm text-white">Clay Oven Paneer Tikka</h4>
-                      <p className="text-xs text-slate-400 font-medium">380 kcal · 16g Fat · 12g Carbs</p>
+                      <p className="text-xs text-slate-300 font-medium">🔥 380 kcal · 🥑 16g Fat · 🍚 12g Carbs</p>
                     </div>
                     <div className="text-right">
                       <span className="font-mono font-bold text-emerald-400 text-base">₹340</span>

@@ -537,13 +537,13 @@ export function CustomerMenu({
                             {/* Macro Pill */}
                             <div
                               onClick={() => setSelected3DItem(item)}
-                              className="mt-2 inline-flex items-center gap-2 px-2.5 py-0.5 rounded-lg bg-emerald-50/80 hover:bg-emerald-100 border border-emerald-200/60 text-[11px] font-semibold text-emerald-950 cursor-pointer transition-colors"
+                              className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-emerald-50/80 hover:bg-emerald-100 border border-emerald-200/60 text-[11px] font-semibold text-emerald-950 cursor-pointer transition-colors"
                             >
-                              <span className="font-bold text-stone-900">{item.calories || 380} kcal</span>
+                              <span className="font-bold text-amber-700">🔥 {item.calories || 380} kcal</span>
                               <span className="text-emerald-300">·</span>
-                              <span className="font-bold text-emerald-800">{item.proteinGrams || 24}g Protein</span>
+                              <span className="font-bold text-emerald-800">💪 {item.proteinGrams || 24}g P</span>
                               <span className="text-emerald-300">·</span>
-                              <span className="text-stone-600">{item.fatGrams || 16}g Fat</span>
+                              <span className="font-semibold text-stone-700">🥑 {item.fatGrams || 16}g F</span>
                             </div>
                           </div>
 
