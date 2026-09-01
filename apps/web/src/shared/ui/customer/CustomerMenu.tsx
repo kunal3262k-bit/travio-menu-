@@ -3,14 +3,19 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
+  Activity,
   Bell,
   CheckCircle2,
   ChevronUp,
   Flame,
+  MessageSquare,
   Minus,
   Plus,
   ReceiptText,
   ShoppingBag,
+  Sparkles,
+  Split,
+  Star,
   Utensils,
   X,
 } from "lucide-react";
@@ -18,15 +23,37 @@ import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { formatMoney } from "@/lib/utils";
 import { selectUpsellRecommendations } from "@/lib/upsell";
+import { estimateDishNutrition, calculateTableNutritionTotals } from "@/lib/macroEstimator";
+import { resolveDishStudioAssets } from "@/lib/aiFoodStudio";
+import { Dish3DModal, Dish3DModalItem } from "@/components/customer/Dish3DModal";
+import { DietaryFilterBar, DietaryFilterType } from "@/components/customer/DietaryFilterBar";
+import { TableNutritionMeter } from "@/components/customer/TableNutritionMeter";
+import { SmartUpsellModal } from "@/components/customer/SmartUpsellModal";
+import { WhatsAppBillModal } from "@/components/customer/WhatsAppBillModal";
+import { GoogleReviewShieldModal } from "@/components/customer/GoogleReviewShieldModal";
+import { TableBillSplitter } from "@/components/customer/TableBillSplitter";
 
 export type MenuItem = {
   id: string;
   name: string;
   description?: string | null;
   imageUrl?: string | null;
+  imageSource?: string | null;
+  imageGallery?: any;
+  aiPrompt?: string | null;
   pricePaise: number;
   foodType: string;
   spicyLevel?: number | null;
+  calories?: number | null;
+  proteinGrams?: number | null;
+  fatGrams?: number | null;
+  carbsGrams?: number | null;
+  fiberGrams?: number | null;
+  allergens?: any;
+  dietaryFlags?: any;
+  chefNote?: string | null;
+  isPopular?: boolean;
+  isHotSizzler?: boolean;
   available?: boolean;
 };
 
@@ -42,6 +69,8 @@ export type RestaurantView = {
   slug: string;
   tableNumber: number;
   openOrdersCount: number;
+  googleReviewUrl?: string | null;
+  whatsappPhone?: string | null;
   categories: Category[];
   upsellRules?: { triggerMenuItemId: string; recommendedMenuItemId: string; priority: number; active: boolean }[];
 };
@@ -61,7 +90,7 @@ export function CustomerMenu({
 }) {
   const router = useRouter();
   
-  // Normalize restaurant view whether passed as composite object or individual props
+  // Normalize restaurant view with AI macro and studio photo enrichment
   const view: RestaurantView = useMemo(() => {
     const rawCategories = categories ?? restaurant?.categories ?? [];
     return {
@@ -70,19 +99,39 @@ export function CustomerMenu({
       slug: restaurant?.slug || "",
       tableNumber: Number(table?.number ?? restaurant?.tableNumber ?? 1),
       openOrdersCount: Number(openOrdersCount ?? restaurant?.openOrdersCount ?? 0),
+      googleReviewUrl: restaurant?.googleReviewUrl || null,
+      whatsappPhone: restaurant?.whatsappPhone || null,
       categories: rawCategories.map((c: any) => ({
         id: c.id || String(Math.random()),
         name: c.name || "Menu",
-        items: (c.items || []).map((i: any) => ({
-          id: i.id || String(Math.random()),
-          name: i.name,
-          description: i.description || "",
-          imageUrl: i.imageUrl || null,
-          pricePaise: typeof i.pricePaise === "number" ? i.pricePaise : Math.round((Number(i.price) || 0) * 100),
-          foodType: i.foodType || (i.isVeg === false ? "NON_VEG" : "VEG"),
-          spicyLevel: i.spicyLevel || 0,
-          available: i.available ?? true,
-        })),
+        items: (c.items || []).map((i: any) => {
+          const defaultNutrition = estimateDishNutrition(i.name, c.name, i.description, i.foodType);
+          const defaultStudio = resolveDishStudioAssets(i.name, c.name, i.description, i.foodType);
+
+          return {
+            id: i.id || String(Math.random()),
+            name: i.name,
+            description: i.description || "",
+            imageUrl: i.imageUrl || defaultStudio.primaryUrl,
+            imageSource: i.imageSource || "AI_STUDIO",
+            imageGallery: i.imageGallery || defaultStudio.gallery,
+            aiPrompt: i.aiPrompt || defaultStudio.aiPrompt,
+            pricePaise: typeof i.pricePaise === "number" ? i.pricePaise : Math.round((Number(i.price) || 0) * 100),
+            foodType: i.foodType || (i.isVeg === false ? "NON_VEG" : "VEG"),
+            spicyLevel: i.spicyLevel ?? 0,
+            calories: i.calories ?? defaultNutrition.calories,
+            proteinGrams: i.proteinGrams ?? defaultNutrition.proteinGrams,
+            fatGrams: i.fatGrams ?? defaultNutrition.fatGrams,
+            carbsGrams: i.carbsGrams ?? defaultNutrition.carbsGrams,
+            fiberGrams: i.fiberGrams ?? defaultNutrition.fiberGrams,
+            allergens: i.allergens ?? defaultNutrition.allergens,
+            dietaryFlags: i.dietaryFlags ?? defaultNutrition.dietaryFlags,
+            chefNote: i.chefNote || defaultStudio.chefNote,
+            isPopular: i.isPopular ?? false,
+            isHotSizzler: i.isHotSizzler ?? defaultStudio.isHotSizzler,
+            available: i.available ?? true,
+          };
+        }),
       })),
       upsellRules: restaurant?.upsellRules || [],
     };
@@ -98,30 +147,77 @@ export function CustomerMenu({
   const [activeCategory, setActiveCategory] = useState<string>(view.categories[0]?.id || "");
   const [idempotencyKey, setIdempotencyKey] = useState(() => Math.random().toString(36).substring(2) + Date.now().toString(36));
 
-  const items = view.categories.flatMap((category) => category.items);
-  const itemById = new Map(items.map((item) => [item.id, item]));
+  // 3D Card & Modal States
+  const [selected3DItem, setSelected3DItem] = useState<MenuItem | null>(null);
+  const [selectedDietaryFilter, setSelectedDietaryFilter] = useState<DietaryFilterType>("ALL");
+  const [upsellModalOpen, setUpsellModalOpen] = useState(false);
+  const [upsellTriggerName, setUpsellTriggerName] = useState("");
+  const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [isSplitBillModalOpen, setIsSplitBillModalOpen] = useState(false);
+
+  const allItems = useMemo(() => view.categories.flatMap((category) => category.items), [view.categories]);
+  const itemById = useMemo(() => new Map(allItems.map((item) => [item.id, item])), [allItems]);
   const cartLines = Object.values(cart);
   const totalItemCount = cartLines.reduce((sum, line) => sum + line.quantity, 0);
 
   const subtotal = cartLines.reduce((total, line) => total + line.item.pricePaise * line.quantity, 0);
   const gst = Math.round(subtotal * 0.05);
   const total = subtotal + gst;
-  const recommendations = selectUpsellRecommendations(
-    cartLines.map((line) => ({ menuItemId: line.item.id })),
-    view.upsellRules || []
-  )
-    .map((rule) => itemById.get(rule.recommendedMenuItemId))
-    .filter(Boolean) as MenuItem[];
 
-  function updateQuantity(item: MenuItem, delta: number) {
+  // Live Table Nutrition Totals
+  const nutritionTotals = useMemo(() => calculateTableNutritionTotals(cartLines), [cartLines]);
+
+  // Upsell Recommendation Engine
+  const recommendations = useMemo(() => {
+    return selectUpsellRecommendations(
+      cartLines.map((line) => ({ menuItemId: line.item.id })),
+      view.upsellRules || []
+    )
+      .map((rule) => itemById.get(rule.recommendedMenuItemId))
+      .filter(Boolean) as MenuItem[];
+  }, [cartLines, view.upsellRules, itemById]);
+
+  // Filter items based on selected dietary filter
+  const filteredCategories = useMemo(() => {
+    if (selectedDietaryFilter === "ALL") return view.categories;
+
+    return view.categories
+      .map((cat) => {
+        const filtered = cat.items.filter((item) => {
+          const flags: string[] = Array.isArray(item.dietaryFlags) 
+            ? item.dietaryFlags 
+            : typeof item.dietaryFlags === "string" 
+              ? JSON.parse(item.dietaryFlags || "[]") 
+              : [];
+
+          if (selectedDietaryFilter === "HIGH_PROTEIN") return (item.proteinGrams || 0) >= 25 || flags.includes("HIGH_PROTEIN");
+          if (selectedDietaryFilter === "LOW_CALORIE") return (item.calories || 0) <= 400 || flags.includes("LOW_CALORIE");
+          if (selectedDietaryFilter === "KETO") return flags.includes("KETO");
+          if (selectedDietaryFilter === "VEGAN") return flags.includes("VEGAN") || item.foodType === "VEG";
+          if (selectedDietaryFilter === "GLUTEN_FREE") return flags.includes("GLUTEN_FREE");
+          return true;
+        });
+        return { ...cat, items: filtered };
+      })
+      .filter((cat) => cat.items.length > 0);
+  }, [view.categories, selectedDietaryFilter]);
+
+  function updateQuantity(item: MenuItem, delta: number, instructions = "") {
     setCart((current) => {
       const existing = current[item.id];
       const quantity = Math.max(0, (existing?.quantity ?? 0) + delta);
       const next = { ...current };
       if (quantity === 0) delete next[item.id];
-      else next[item.id] = { item, quantity, instructions: existing?.instructions ?? "" };
+      else next[item.id] = { item, quantity, instructions: instructions || existing?.instructions || "" };
       return next;
     });
+
+    // Check for upsell trigger when adding an item
+    if (delta > 0 && recommendations.length > 0 && Math.random() > 0.4) {
+      setUpsellTriggerName(item.name);
+      setUpsellModalOpen(true);
+    }
   }
 
   function showNotice(message: string) {
@@ -167,12 +263,11 @@ export function CustomerMenu({
         : `Order #${displayOrderNumber} (Round ${rounds + 1}) sent to kitchen!`;
 
       showNotice(orderMessage);
-      setCart({}); // Clear cart on success
-      setIsMobileCartOpen(false); // Close mobile bottom sheet
+      setCart({});
+      setIsMobileCartOpen(false);
       setIdempotencyKey(Math.random().toString(36).substring(2) + Date.now().toString(36));
 
       if (data.order?.id && view.slug && view.tableNumber) {
-        // Smoothly navigate to order status tracking page
         router.push(`/${view.slug}/t/${view.tableNumber}/order/${data.order.id}`);
       }
     } catch (error: any) {
@@ -217,7 +312,57 @@ export function CustomerMenu({
   }
 
   return (
-    <main className="min-h-svh bg-[#f8f4ed] pb-32 lg:pb-12 text-slate-900">
+    <main className="min-h-svh bg-[#f8f4ed] pb-36 lg:pb-16 text-slate-900">
+      {/* 3D Interactive Dish Modal */}
+      <Dish3DModal
+        item={selected3DItem}
+        isOpen={Boolean(selected3DItem)}
+        onClose={() => setSelected3DItem(null)}
+        onAddToCart={(item, qty, inst) => updateQuantity(item as MenuItem, qty, inst)}
+        initialQuantity={selected3DItem ? cart[selected3DItem.id]?.quantity || 1 : 1}
+        initialInstructions={selected3DItem ? cart[selected3DItem.id]?.instructions || "" : ""}
+      />
+
+      {/* Smart Upsell Modal */}
+      <SmartUpsellModal
+        isOpen={upsellModalOpen}
+        onClose={() => setUpsellModalOpen(false)}
+        triggerItemName={upsellTriggerName}
+        recommendedItems={recommendations}
+        onAddRecommendedItem={(item) => {
+          updateQuantity(item, 1);
+          setUpsellModalOpen(false);
+          showNotice(`Added ${item.name} to order!`);
+        }}
+      />
+
+      {/* WhatsApp Bill Modal */}
+      <WhatsAppBillModal
+        isOpen={isWhatsAppModalOpen}
+        onClose={() => setIsWhatsAppModalOpen(false)}
+        restaurantName={view.name}
+        totalPaise={total || 45000}
+        tableNumber={view.tableNumber}
+      />
+
+      {/* Google Review Shield Modal */}
+      <GoogleReviewShieldModal
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        restaurantName={view.name}
+        googleReviewUrl={view.googleReviewUrl}
+        tableNumber={view.tableNumber}
+      />
+
+      {/* Table Bill Splitter Modal */}
+      <TableBillSplitter
+        isOpen={isSplitBillModalOpen}
+        onClose={() => setIsSplitBillModalOpen(false)}
+        totalPaise={total || 45000}
+        tableNumber={view.tableNumber}
+        restaurantName={view.name}
+      />
+
       {/* Active Orders Banner */}
       {view.openOrdersCount > 0 && cartLines.length === 0 && (
         <div
@@ -268,13 +413,21 @@ export function CustomerMenu({
             </button>
           </div>
         </div>
+
+        {/* Dietary & Macro Filter Bar */}
+        <div className="mx-auto max-w-5xl pt-2">
+          <DietaryFilterBar
+            selectedFilter={selectedDietaryFilter}
+            onSelectFilter={setSelectedDietaryFilter}
+          />
+        </div>
       </header>
 
       {/* Sticky Mobile Category Navigation Pills */}
       {view.categories.length > 0 && (
-        <div className="sticky top-[69px] z-20 border-b border-stone-300/70 bg-[#f8f4ed]/95 backdrop-blur-md">
+        <div className="sticky top-[108px] z-20 border-b border-stone-300/70 bg-[#f8f4ed]/95 backdrop-blur-md">
           <div className="relative mx-auto max-w-5xl">
-            <div className="flex items-center gap-2 overflow-x-auto scrollbar-none px-4 py-2.5">
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-none px-4 py-2">
               {view.categories.map((category) => {
                 const isActive = activeCategory === category.id;
                 return (
@@ -282,7 +435,7 @@ export function CustomerMenu({
                     key={category.id}
                     href={`#category-${category.id}`}
                     onClick={() => setActiveCategory(category.id)}
-                    className={`whitespace-nowrap rounded-full px-4 py-1.5 text-xs font-bold transition active:scale-95 ${
+                    className={`whitespace-nowrap rounded-full px-3.5 py-1 text-xs font-bold transition active:scale-95 ${
                       isActive
                         ? "bg-emerald-700 text-white shadow-sm"
                         : "border border-stone-300 bg-white text-stone-700 hover:border-emerald-700 hover:bg-emerald-50"
@@ -309,16 +462,22 @@ export function CustomerMenu({
       )}
 
       {/* Main Menu Layout */}
-      <section className="mx-auto grid max-w-5xl gap-8 px-4 py-6 lg:grid-cols-[1fr_340px]">
+      <section className="mx-auto grid max-w-5xl gap-8 px-4 py-6 lg:grid-cols-[1fr_360px]">
         <div className="space-y-10">
-          {view.categories.length === 0 ? (
+          {filteredCategories.length === 0 ? (
             <div className="p-12 text-center bg-white rounded-2xl border border-stone-200 shadow-sm">
               <Utensils className="h-12 w-12 text-stone-300 mx-auto mb-3" />
-              <h3 className="text-lg font-bold text-stone-800">Menu is being prepared</h3>
-              <p className="text-sm text-stone-500 mt-1">Please ask your waiter for today&apos;s specials.</p>
+              <h3 className="text-lg font-bold text-stone-800">No items match your dietary filter</h3>
+              <p className="text-sm text-stone-500 mt-1">Try switching to &apos;All Items&apos; to view the complete menu.</p>
+              <button
+                onClick={() => setSelectedDietaryFilter("ALL")}
+                className="mt-4 px-4 py-2 rounded-xl bg-emerald-700 text-white text-xs font-bold"
+              >
+                Reset Filters
+              </button>
             </div>
           ) : (
-            view.categories.map((category) => (
+            filteredCategories.map((category) => (
               <section key={category.id} id={`category-${category.id}`} className="scroll-mt-36">
                 <h2 className="mb-4 text-lg font-bold text-stone-950 sm:text-xl">{category.name}</h2>
                 <div className="space-y-4">
@@ -327,41 +486,65 @@ export function CustomerMenu({
                     return (
                       <article
                         key={item.id}
-                        className="grid grid-cols-[88px_1fr] gap-3.5 border-b border-stone-300/80 pb-4 sm:grid-cols-[104px_1fr] sm:gap-4 bg-white/40 rounded-xl p-2 sm:p-3"
+                        className="grid grid-cols-[100px_1fr] gap-3.5 border-b border-stone-300/80 pb-4 sm:grid-cols-[116px_1fr] sm:gap-4 bg-white/70 hover:bg-white rounded-2xl p-3 shadow-sm transition-all border border-stone-200/50"
                       >
-                        {/* Image Thumbnail */}
-                        <div className="relative h-22 w-22 overflow-hidden rounded-2xl bg-stone-200 sm:h-28 sm:w-28 shadow-sm flex items-center justify-center">
+                        {/* Image Thumbnail with 3D Trigger */}
+                        <div
+                          onClick={() => setSelected3DItem(item)}
+                          className="relative h-24 w-24 sm:h-28 sm:w-28 overflow-hidden rounded-2xl bg-stone-200 shadow-sm cursor-pointer group shrink-0"
+                        >
                           {item.imageUrl ? (
                             <Image
                               src={item.imageUrl}
                               alt={item.name}
                               fill
-                              sizes="(max-width: 640px) 88px, 104px"
-                              className="object-cover"
+                              sizes="(max-width: 640px) 100px, 116px"
+                              className="object-cover group-hover:scale-108 transition-transform duration-500"
                             />
                           ) : (
                             <div className="flex h-full w-full items-center justify-center bg-stone-200 text-stone-400">
                               <Utensils className="h-7 w-7 text-stone-400" />
                             </div>
                           )}
+
+                          {/* 3D Visual Pill */}
+                          <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded-md bg-black/70 backdrop-blur-sm text-[9px] font-bold text-white flex items-center gap-0.5 opacity-90 group-hover:opacity-100">
+                            <Sparkles className="w-2.5 h-2.5 text-amber-400" /> 3D
+                          </div>
                         </div>
 
                         {/* Item Details */}
                         <div className="flex flex-col justify-between min-w-0">
                           <div>
                             <div className="flex items-start justify-between gap-2">
-                              <h3 className="font-bold text-stone-950 text-base leading-snug">
+                              <h3
+                                onClick={() => setSelected3DItem(item)}
+                                className="font-bold text-stone-950 text-base leading-snug hover:text-emerald-800 cursor-pointer"
+                              >
                                 {item.name}
                               </h3>
-                              <span className="shrink-0 text-base font-bold text-stone-950">
+                              <span className="shrink-0 text-base font-bold text-stone-950 font-mono">
                                 {formatMoney(item.pricePaise)}
                               </span>
                             </div>
+
                             {item.description && (
                               <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-stone-600 sm:text-sm">
                                 {item.description}
                               </p>
                             )}
+
+                            {/* Macro Pill */}
+                            <div
+                              onClick={() => setSelected3DItem(item)}
+                              className="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-stone-100 hover:bg-stone-200 border border-stone-200/80 text-[11px] font-semibold text-stone-700 cursor-pointer transition-colors"
+                            >
+                              <span className="text-amber-700 font-bold">🔥 {item.calories || 380} kcal</span>
+                              <span className="text-stone-300">·</span>
+                              <span className="text-blue-700 font-bold">💪 {item.proteinGrams || 24}g P</span>
+                              <span className="text-stone-300">·</span>
+                              <span className="text-emerald-700 font-bold">🥑 {item.fatGrams || 16}g F</span>
+                            </div>
                           </div>
 
                           {/* Badges & Add Button */}
@@ -417,7 +600,16 @@ export function CustomerMenu({
 
         {/* Desktop Sidebar Cart Panel */}
         <aside className="hidden lg:block">
-          <div className="sticky top-36">
+          <div className="sticky top-40 space-y-4">
+            {/* Live Table Macro Meter */}
+            <TableNutritionMeter
+              totalCalories={nutritionTotals.totalCalories}
+              totalProtein={nutritionTotals.totalProtein}
+              totalCarbs={nutritionTotals.totalCarbs}
+              totalFat={nutritionTotals.totalFat}
+              isHighProtein={nutritionTotals.isHighProteinOrder}
+            />
+
             <CartPanel
               cartLines={cartLines}
               subtotal={subtotal}
@@ -430,6 +622,9 @@ export function CustomerMenu({
               isSubmitting={isSubmitting}
               sessionDailyOrderNumber={sessionDailyOrderNumber}
               rounds={rounds}
+              onOpenWhatsAppBill={() => setIsWhatsAppModalOpen(true)}
+              onOpenSplitBill={() => setIsSplitBillModalOpen(true)}
+              onOpenReview={() => setIsReviewModalOpen(true)}
             />
           </div>
         </aside>
@@ -448,7 +643,7 @@ export function CustomerMenu({
               </span>
               <div className="text-left">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-100">
-                  {sessionDailyOrderNumber ? `Order #${sessionDailyOrderNumber}` : "View Cart"}
+                  {sessionDailyOrderNumber ? `Order #${sessionDailyOrderNumber}` : "View Table Cart"}
                 </p>
                 <p className="text-sm font-bold">
                   {formatMoney(total)} <span className="text-xs font-normal text-emerald-100">incl. GST</span>
@@ -456,8 +651,10 @@ export function CustomerMenu({
               </div>
             </div>
             <div className="flex items-center gap-1 text-xs font-bold text-emerald-100">
-              <span>Review Order</span>
-              <ChevronUp className="h-4 w-4" />
+              <span className="text-[11px] bg-emerald-800 px-2 py-0.5 rounded-md">
+                🔥 {nutritionTotals.totalCalories} kcal
+              </span>
+              <ChevronUp className="h-4 w-4 ml-1" />
             </div>
           </button>
         </div>
@@ -470,7 +667,7 @@ export function CustomerMenu({
             <div className="flex items-center justify-between border-b border-stone-200 pb-3.5">
               <div className="flex items-center gap-2">
                 <ShoppingBag className="h-5 w-5 text-emerald-700" />
-                <h2 className="text-lg font-bold text-stone-950">Your Order</h2>
+                <h2 className="text-lg font-bold text-stone-950">Your Table Order</h2>
               </div>
               <button
                 onClick={() => setIsMobileCartOpen(false)}
@@ -481,7 +678,15 @@ export function CustomerMenu({
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto py-4">
+            <div className="flex-1 overflow-y-auto py-4 space-y-4">
+              <TableNutritionMeter
+                totalCalories={nutritionTotals.totalCalories}
+                totalProtein={nutritionTotals.totalProtein}
+                totalCarbs={nutritionTotals.totalCarbs}
+                totalFat={nutritionTotals.totalFat}
+                isHighProtein={nutritionTotals.isHighProteinOrder}
+              />
+
               <CartPanel
                 cartLines={cartLines}
                 subtotal={subtotal}
@@ -494,6 +699,9 @@ export function CustomerMenu({
                 isSubmitting={isSubmitting}
                 sessionDailyOrderNumber={sessionDailyOrderNumber}
                 rounds={rounds}
+                onOpenWhatsAppBill={() => setIsWhatsAppModalOpen(true)}
+                onOpenSplitBill={() => setIsSplitBillModalOpen(true)}
+                onOpenReview={() => setIsReviewModalOpen(true)}
               />
             </div>
           </div>
@@ -538,6 +746,9 @@ function CartPanel({
   sessionDailyOrderNumber,
   rounds,
   isSubmitting,
+  onOpenWhatsAppBill,
+  onOpenSplitBill,
+  onOpenReview,
 }: {
   cartLines: CartLine[];
   subtotal: number;
@@ -550,11 +761,14 @@ function CartPanel({
   isSubmitting?: boolean;
   sessionDailyOrderNumber: number | null;
   rounds: number;
+  onOpenWhatsAppBill?: () => void;
+  onOpenSplitBill?: () => void;
+  onOpenReview?: () => void;
 }) {
   const itemCount = cartLines.reduce((sum, line) => sum + line.quantity, 0);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 bg-white p-4 sm:p-5 rounded-2xl border border-stone-200/80 shadow-sm">
       {/* Header Info */}
       <div className="flex items-center justify-between border-b border-stone-100 pb-3">
         <h3 className="text-sm font-bold text-stone-900">Items Ordered ({itemCount})</h3>
@@ -568,25 +782,30 @@ function CartPanel({
         )}
         {cartLines.map((line) => (
           <div key={line.item.id} className="flex items-center justify-between gap-3 text-sm">
-            <span className="font-bold text-stone-900">
-              {line.quantity} × {line.item.name}
-            </span>
-            <span className="font-bold text-stone-950">{formatMoney(line.item.pricePaise * line.quantity)}</span>
+            <div>
+              <span className="font-bold text-stone-900">
+                {line.quantity} × {line.item.name}
+              </span>
+              {line.instructions && (
+                <p className="text-[11px] text-stone-500 italic">Note: {line.instructions}</p>
+              )}
+            </div>
+            <span className="font-bold text-stone-950 font-mono">{formatMoney(line.item.pricePaise * line.quantity)}</span>
           </div>
         ))}
       </div>
 
       {/* Recommended Add-ons */}
       {recommendations.length > 0 && (
-        <div className="border-t border-stone-200 pt-4">
-          <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-emerald-800">
-            Recommended Add-ons
+        <div className="border-t border-stone-200 pt-3">
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.14em] text-emerald-800 flex items-center gap-1">
+            <Sparkles className="w-3 h-3 text-emerald-700" /> Popular Add-ons
           </p>
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {recommendations.map((item) => (
               <button
                 key={item.id}
-                className="focus-ring flex w-full items-center justify-between rounded-xl border border-emerald-200/60 bg-emerald-50/60 px-3.5 py-2.5 text-left text-xs font-bold text-emerald-950 transition hover:bg-emerald-100/80 active:scale-[0.98]"
+                className="flex w-full items-center justify-between rounded-xl border border-emerald-200/60 bg-emerald-50/60 px-3 py-2 text-left text-xs font-bold text-emerald-950 transition hover:bg-emerald-100/80 active:scale-[0.98]"
                 onClick={() => addItem(item)}
               >
                 <span>{item.name} ({formatMoney(item.pricePaise)})</span>
@@ -598,7 +817,7 @@ function CartPanel({
       )}
 
       {/* Pricing Breakdown */}
-      <div className="border-t border-stone-200 pt-4 space-y-2 text-xs font-semibold">
+      <div className="border-t border-stone-200 pt-3 space-y-1.5 text-xs font-semibold">
         <div className="flex items-center justify-between text-stone-600">
           <span>Subtotal</span>
           <span>{formatMoney(subtotal)}</span>
@@ -607,22 +826,50 @@ function CartPanel({
           <span>Taxes (5% GST)</span>
           <span>{formatMoney(gst)}</span>
         </div>
-        <div className="flex items-center justify-between text-lg font-bold text-stone-950 pt-2 border-t border-stone-100">
-          <span>Total</span>
-          <span>{formatMoney(total)}</span>
+        <div className="flex items-center justify-between text-base font-bold text-stone-950 pt-1.5 border-t border-stone-100">
+          <span>Total Payable</span>
+          <span className="font-mono">{formatMoney(total)}</span>
         </div>
       </div>
 
       {/* Order Status Banner */}
       {sessionDailyOrderNumber && (
-        <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-xs font-bold text-emerald-950">
+        <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-2.5 text-xs font-bold text-emerald-950">
           ✓ Order #{sessionDailyOrderNumber} {rounds > 1 ? `(Round ${rounds}) ` : ""}sent to kitchen. Status: Preparing.
         </div>
       )}
 
+      {/* Quick Tool Strip (WhatsApp Bill, Split Bill, Review) */}
+      <div className="grid grid-cols-3 gap-1.5 pt-1">
+        <button
+          type="button"
+          onClick={onOpenWhatsAppBill}
+          className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-stone-800 text-[11px] font-bold flex flex-col items-center gap-1 transition-colors"
+        >
+          <MessageSquare className="w-3.5 h-3.5 text-emerald-700" />
+          <span>WA Bill</span>
+        </button>
+        <button
+          type="button"
+          onClick={onOpenSplitBill}
+          className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-stone-800 text-[11px] font-bold flex flex-col items-center gap-1 transition-colors"
+        >
+          <Split className="w-3.5 h-3.5 text-purple-700" />
+          <span>Split Bill</span>
+        </button>
+        <button
+          type="button"
+          onClick={onOpenReview}
+          className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-stone-800 text-[11px] font-bold flex flex-col items-center gap-1 transition-colors"
+        >
+          <Star className="w-3.5 h-3.5 text-amber-600" />
+          <span>Rate Us</span>
+        </button>
+      </div>
+
       {/* Primary Action Button */}
       <Button
-        className="h-13 w-full rounded-2xl bg-emerald-700 text-base font-bold text-white transition hover:bg-emerald-800 shadow-xl active:scale-[0.98]"
+        className="h-12 w-full rounded-xl bg-emerald-700 text-sm font-bold text-white transition hover:bg-emerald-800 shadow-md active:scale-[0.98]"
         disabled={cartLines.length === 0 || isSubmitting}
         onClick={onPlaceOrder}
       >

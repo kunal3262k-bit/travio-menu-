@@ -3,6 +3,21 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { runClientOcr } from "@/lib/clientMenuOcr";
+import { resolveDishStudioAssets } from "@/lib/aiFoodStudio";
+import { estimateDishNutrition } from "@/lib/macroEstimator";
+import { 
+  Sparkles, 
+  Activity, 
+  Flame, 
+  ExternalLink, 
+  Camera, 
+  Plus, 
+  Trash2, 
+  Check, 
+  Layers, 
+  Utensils, 
+  ChefHat 
+} from "lucide-react";
 
 export default function MenuEditorClient({ 
   initialCategories,
@@ -17,8 +32,8 @@ export default function MenuEditorClient({
   const [uploadingImageId, setUploadingImageId] = useState<string | null>(null);
   const [isAiExtracting, setIsAiExtracting] = useState(false);
   const [aiStatus, setAiStatus] = useState<string>("");
+  const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
 
-  // Auto-save logic can be built on top of this handleSave
   const handleSave = async (updatedCats: any[]) => {
     setIsSaving(true);
     try {
@@ -60,6 +75,9 @@ export default function MenuEditorClient({
   };
 
   const addItem = (catId: string) => {
+    const defaultStudio = resolveDishStudioAssets("New Dish", "Starters");
+    const defaultNutrition = estimateDishNutrition("New Dish", "Starters");
+
     const newCats = categories.map(c => {
       if (c.id === catId) {
         return {
@@ -68,9 +86,17 @@ export default function MenuEditorClient({
             id: Date.now().toString(),
             name: "New Item",
             description: "",
-            pricePaise: 10000,
+            pricePaise: 15000,
             foodType: "VEG",
             spicyLevel: 0,
+            imageUrl: defaultStudio.primaryUrl,
+            imageSource: "AI_STUDIO",
+            calories: defaultNutrition.calories,
+            proteinGrams: defaultNutrition.proteinGrams,
+            fatGrams: defaultNutrition.fatGrams,
+            carbsGrams: defaultNutrition.carbsGrams,
+            allergens: defaultNutrition.allergens,
+            dietaryFlags: defaultNutrition.dietaryFlags,
             isNew: true
           }]
         };
@@ -112,8 +138,37 @@ export default function MenuEditorClient({
           items: c.items.map((i: any) => i.id === itemId ? { ...i, [field]: value } : i)
         };
       }
+      return c;
     });
     handleSave(newCats);
+  };
+
+  // 1-Click Bulk AI Auto-Enrichment for all items
+  const autoEnrichAllWithAi = () => {
+    const enriched = categories.map(cat => ({
+      ...cat,
+      items: cat.items.map((item: any) => {
+        const studio = resolveDishStudioAssets(item.name, cat.name, item.description, item.foodType);
+        const nutrition = estimateDishNutrition(item.name, cat.name, item.description, item.foodType);
+        return {
+          ...item,
+          imageUrl: item.imageUrl || studio.primaryUrl,
+          imageSource: item.imageSource || "AI_STUDIO",
+          imageGallery: studio.gallery,
+          calories: item.calories || nutrition.calories,
+          proteinGrams: item.proteinGrams || nutrition.proteinGrams,
+          fatGrams: item.fatGrams || nutrition.fatGrams,
+          carbsGrams: item.carbsGrams || nutrition.carbsGrams,
+          allergens: item.allergens || nutrition.allergens,
+          dietaryFlags: item.dietaryFlags || nutrition.dietaryFlags,
+          chefNote: item.chefNote || studio.chefNote
+        };
+      })
+    }));
+
+    setCategories(enriched);
+    handleSave(enriched);
+    alert("✨ Successfully generated AI Studio food photos, calories, and macros for all items!");
   };
 
   const handleImageUpload = async (catId: string, itemId: string, file: File) => {
@@ -131,6 +186,7 @@ export default function MenuEditorClient({
       const data = await res.json();
       
       updateItem(catId, itemId, 'imageUrl', data.url);
+      updateItem(catId, itemId, 'imageSource', 'UPLOADED');
       saveItemBlur(catId, itemId, 'imageUrl', data.url);
     } catch (error) {
       alert("Failed to upload image. Max size is 4MB.");
@@ -178,46 +234,16 @@ export default function MenuEditorClient({
     setAiStatus("Preparing menu image...");
     try {
       const compressedBlob = await compressClientImage(file);
-      let extractedData: any[] = [];
+      setAiStatus("Running AI vision and culinary intelligence engine...");
+      const clientResults = await runClientOcr(compressedBlob, (status) => {
+        setAiStatus(status);
+      });
 
-      // 1. Try server import endpoint first
-      try {
-        setAiStatus("Analyzing with AI Vision...");
-        const formData = new FormData();
-        formData.append("image", compressedBlob, "menu.jpg");
-
-        const res = await fetch("/api/menu/import", {
-          method: "POST",
-          body: formData
-        });
-
-        if (res.ok) {
-          const json = await res.json();
-          if (json.data?.categories && Array.isArray(json.data.categories)) {
-            extractedData = json.data.categories;
-          }
-        }
-      } catch (serverErr) {
-        console.warn("Server AI import failed, falling back to client OCR:", serverErr);
-      }
-
-      // 2. On-device WebAssembly OCR fallback if server has no key or returned error
-      if (extractedData.length === 0) {
-        setAiStatus("Running on-device scanner (no cloud key required)...");
-        const clientResults = await runClientOcr(compressedBlob, (status) => {
-          setAiStatus(status);
-        });
-        if (clientResults.length > 0) {
-          extractedData = clientResults;
-        }
-      }
-
-      if (extractedData.length === 0) {
+      if (!clientResults || clientResults.length === 0) {
         throw new Error("Could not detect menu items. Please take a clearer photo or add items manually.");
       }
 
-      // Map AI data to our schema format with safe fallbacks
-      const newExtractedCategories = extractedData.map((cat: any) => ({
+      const newExtractedCategories = clientResults.map((cat: any) => ({
         id: Date.now().toString() + Math.random().toString(),
         name: cat.categoryName || cat.name || "Specialties",
         isNew: true,
@@ -231,6 +257,18 @@ export default function MenuEditorClient({
             pricePaise: safePricePaise,
             foodType: item.isVeg === true ? "VEG" : item.isVeg === false ? "NON_VEG" : "VEG",
             spicyLevel: 0,
+            imageUrl: item.imageUrl,
+            imageSource: item.imageSource || "AI_STUDIO",
+            imageGallery: item.imageGallery || [],
+            calories: item.calories,
+            proteinGrams: item.proteinGrams,
+            fatGrams: item.fatGrams,
+            carbsGrams: item.carbsGrams,
+            fiberGrams: item.fiberGrams,
+            allergens: item.allergens || [],
+            dietaryFlags: item.dietaryFlags || [],
+            chefNote: item.chefNote,
+            isHotSizzler: item.isHotSizzler,
             isNew: true
           };
         })
@@ -240,10 +278,10 @@ export default function MenuEditorClient({
         const combinedCategories = [...categories, ...newExtractedCategories];
         setCategories(combinedCategories);
         handleSave(combinedCategories);
-        alert("✨ Successfully extracted your menu! You can now review, edit prices, or add photos.");
+        alert("✨ Successfully scanned your menu! AI Studio photos and macros have been assigned automatically.");
       }
     } catch (error: any) {
-      alert("Menu scan: " + error.message);
+      alert("Menu scan error: " + error.message);
     } finally {
       setIsAiExtracting(false);
       setAiStatus("");
@@ -252,174 +290,277 @@ export default function MenuEditorClient({
   };
 
   return (
-    <div className="space-y-12 pb-24">
+    <div className="space-y-8 pb-24">
       {isSaving && (
-        <div className="fixed bottom-4 right-4 bg-black text-white px-4 py-2 rounded-lg font-medium shadow-lg z-50">
+        <div className="fixed bottom-4 right-4 bg-black text-white px-4 py-2 rounded-xl font-bold shadow-2xl z-50 animate-pulse">
           Saving changes...
         </div>
       )}
 
-      {/* AI Import Top Bar */}
-      <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100 p-6 rounded-2xl shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+      {/* Top Banner with AI Import & Auto-Enrich */}
+      <div className="bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 text-white p-6 rounded-3xl shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 border border-purple-500/30">
         <div>
-          <h2 className="text-xl font-bold text-purple-900 flex items-center gap-2">
-            ✨ 45-Second AI Menu Import
+          <div className="flex items-center gap-2">
+            <span className="px-3 py-1 rounded-full bg-purple-500/30 border border-purple-400/40 text-purple-200 text-xs font-bold flex items-center gap-1">
+              <Sparkles className="w-3.5 h-3.5" /> AI Food Studio & Macro Engine
+            </span>
+            {restaurantSlug && (
+              <a
+                href={`/${restaurantSlug}/t/1`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-500/40"
+              >
+                <span>Live Table QR Preview</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            )}
+          </div>
+          <h2 className="text-2xl font-black mt-2 text-white">
+            Transform Your Menu into a 3D Visual Experience
           </h2>
-          <p className="text-purple-700 mt-1">Upload a photo or PDF of your printed menu and let AI do the data entry.</p>
+          <p className="text-purple-200 text-sm mt-1 max-w-xl">
+            Upload a photo of your paper menu to auto-generate studio food photography, 3D interactive dish cards, and live macro tracking.
+          </p>
         </div>
         
-        <div className="relative">
-          <input 
-            type="file" 
-            accept="image/*,application/pdf"
-            id="ai-upload"
-            onChange={handleAiImport}
-            disabled={isAiExtracting}
-            className="hidden"
-          />
-          <label 
-            htmlFor="ai-upload"
-            className={`cursor-pointer bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-all flex items-center gap-2 ${isAiExtracting ? 'opacity-70 cursor-not-allowed' : ''}`}
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto shrink-0">
+          <button
+            onClick={autoEnrichAllWithAi}
+            className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-sm shadow-lg flex items-center justify-center gap-2 transition-all"
           >
-            {isAiExtracting ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>{aiStatus || "Scanning Menu..."}</span>
-              </>
-            ) : (
-              "+ Upload Menu (Image/PDF)"
-            )}
-          </label>
+            <Sparkles className="w-4 h-4" />
+            <span>AI Auto-Enrich All Items</span>
+          </button>
+
+          <div className="relative w-full sm:w-auto">
+            <input 
+              type="file" 
+              accept="image/*,application/pdf"
+              id="ai-upload"
+              onChange={handleAiImport}
+              disabled={isAiExtracting}
+              className="hidden"
+            />
+            <label 
+              htmlFor="ai-upload"
+              className={`cursor-pointer w-full sm:w-auto bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-5 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 ${isAiExtracting ? 'opacity-70 cursor-not-allowed' : ''}`}
+            >
+              {isAiExtracting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-xs">{aiStatus || "Scanning Menu..."}</span>
+                </>
+              ) : (
+                <>
+                  <Camera className="w-4 h-4" />
+                  <span>Scan Paper Menu</span>
+                </>
+              )}
+            </label>
+          </div>
         </div>
       </div>
 
+      {/* Categories & Items */}
       {categories.map((category) => (
-        <div key={category.id} className="bg-white border-2 border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+        <div key={category.id} className="bg-white border-2 border-stone-200 rounded-3xl shadow-sm overflow-hidden">
           {/* Category Header */}
-          <div className="bg-gray-50 p-4 border-b flex items-center justify-between gap-4">
+          <div className="bg-stone-50 p-4 border-b border-stone-200 flex items-center justify-between gap-4">
             <input 
               value={category.name}
               onChange={(e) => updateCategory(category.id, e.target.value)}
               onBlur={(e) => saveCategoryBlur(category.id, e.target.value)}
-              className="font-black text-xl bg-transparent border-none focus:ring-0 focus:outline-none flex-1"
+              className="font-black text-xl bg-transparent border-none focus:ring-0 focus:outline-none flex-1 text-stone-900"
               placeholder="Category Name"
             />
             <button 
               onClick={() => removeCategory(category.id)}
-              className="text-red-500 hover:bg-red-50 px-3 py-1 rounded font-bold text-sm"
+              className="text-rose-600 hover:bg-rose-50 px-3 py-1.5 rounded-xl font-bold text-xs"
             >
-              Delete
+              Delete Category
             </button>
           </div>
 
-          {/* Items */}
-          <div className="divide-y border-b">
-            {category.items.map((item: any) => (
-              <div key={item.id} className="p-4 bg-white flex flex-col md:flex-row gap-4 items-start md:items-center">
-                
-                {/* Image Upload Area */}
-                <div className="relative w-full md:w-24 h-24 bg-gray-100 rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 group overflow-hidden shrink-0">
-                  {item.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <>
-                      <span className="text-xs font-bold uppercase tracking-wider mb-1">Image</span>
-                      <span className="text-[10px] opacity-75">+ Add</span>
-                    </>
-                  )}
-                  
-                  {uploadingImageId === item.id && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    </div>
-                  )}
+          {/* Items List */}
+          <div className="divide-y divide-stone-200">
+            {category.items.map((item: any) => {
+              const isExpanded = expandedItemId === item.id;
 
-                  <input 
-                    type="file" 
-                    accept="image/*"
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                    onChange={(e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        handleImageUpload(category.id, item.id, e.target.files[0]);
-                      }
-                    }}
-                  />
-                </div>
+              return (
+                <div key={item.id} className="p-4 bg-white space-y-3">
+                  <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                    {/* Image Preview & Upload */}
+                    <div className="relative w-20 h-20 bg-stone-100 rounded-2xl border border-stone-300 flex items-center justify-center overflow-hidden shrink-0 group">
+                      {item.imageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <Utensils className="w-6 h-6 text-stone-400" />
+                      )}
 
-                {/* Details */}
-                <div className="flex-1 space-y-3 w-full">
-                  <div className="flex gap-2">
-                    <input 
-                      value={item.name}
-                      onChange={(e) => updateItem(category.id, item.id, 'name', e.target.value)}
-                      onBlur={(e) => saveItemBlur(category.id, item.id, 'name', e.target.value)}
-                      className="font-bold text-lg border rounded-lg px-3 py-2 focus:border-black focus:outline-none flex-1"
-                      placeholder="Item Name"
-                    />
-                    <div className="relative">
-                      <span className="absolute left-3 top-3 text-gray-500 font-bold">₹</span>
+                      {uploadingImageId === item.id && (
+                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                      )}
+
                       <input 
-                        type="number"
-                        value={item.pricePaise / 100}
-                        onChange={(e) => updateItem(category.id, item.id, 'pricePaise', parseFloat(e.target.value || "0") * 100)}
-                        onBlur={(e) => saveItemBlur(category.id, item.id, 'pricePaise', parseFloat(e.target.value || "0") * 100)}
-                        className="font-bold text-lg border rounded-lg pl-8 pr-3 py-2 w-28 focus:border-black focus:outline-none"
-                        placeholder="Price"
+                        type="file" 
+                        accept="image/*"
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            handleImageUpload(category.id, item.id, e.target.files[0]);
+                          }
+                        }}
                       />
                     </div>
+
+                    {/* Basic Item Info */}
+                    <div className="flex-1 w-full space-y-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <input 
+                          value={item.name}
+                          onChange={(e) => updateItem(category.id, item.id, 'name', e.target.value)}
+                          onBlur={(e) => saveItemBlur(category.id, item.id, 'name', e.target.value)}
+                          className="font-bold text-base border rounded-xl px-3 py-2 focus:border-black focus:outline-none flex-1"
+                          placeholder="Dish Name"
+                        />
+                        <div className="relative">
+                          <span className="absolute left-3 top-2.5 text-stone-500 font-bold">₹</span>
+                          <input 
+                            type="number"
+                            value={item.pricePaise ? item.pricePaise / 100 : 150}
+                            onChange={(e) => updateItem(category.id, item.id, 'pricePaise', parseFloat(e.target.value || "0") * 100)}
+                            onBlur={(e) => saveItemBlur(category.id, item.id, 'pricePaise', parseFloat(e.target.value || "0") * 100)}
+                            className="font-bold text-base border rounded-xl pl-7 pr-3 py-2 w-28 focus:border-black focus:outline-none font-mono"
+                            placeholder="Price"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <select
+                            value={item.foodType || "VEG"}
+                            onChange={(e) => {
+                              updateItem(category.id, item.id, 'foodType', e.target.value);
+                              saveItemBlur(category.id, item.id, 'foodType', e.target.value);
+                            }}
+                            className="border rounded-xl px-2.5 py-1.5 text-xs font-semibold focus:outline-none bg-stone-50"
+                          >
+                            <option value="VEG">Veg 🟢</option>
+                            <option value="NON_VEG">Non-Veg 🔴</option>
+                            <option value="EGG">Egg 🟡</option>
+                          </select>
+
+                          {/* Quick Macro Pill */}
+                          <button
+                            type="button"
+                            onClick={() => setExpandedItemId(isExpanded ? null : item.id)}
+                            className="px-2.5 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 border text-xs font-bold text-stone-700 flex items-center gap-1.5"
+                          >
+                            <Activity className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>{item.calories || 380} kcal · {item.proteinGrams || 24}g P</span>
+                            <span className="text-[10px] text-stone-400">{isExpanded ? "▲ Hide" : "▼ Edit Macros"}</span>
+                          </button>
+                        </div>
+
+                        <button 
+                          onClick={() => removeItem(category.id, item.id)}
+                          className="text-rose-600 hover:bg-rose-50 px-2.5 py-1 rounded-lg font-bold text-xs"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
                   </div>
 
-                  <input 
-                    value={item.description || ""}
-                    onChange={(e) => updateItem(category.id, item.id, 'description', e.target.value)}
-                    onBlur={(e) => saveItemBlur(category.id, item.id, 'description', e.target.value)}
-                    className="text-gray-500 border rounded-lg px-3 py-2 w-full focus:border-black focus:outline-none text-sm"
-                    placeholder="Description (e.g. Contains nuts, spicy sauce)"
-                  />
+                  {/* Expandable Macro & AI Studio Editor */}
+                  {isExpanded && (
+                    <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-3 text-xs animate-fadeIn">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        <div>
+                          <label className="block text-stone-600 font-semibold mb-1">Calories (kcal)</label>
+                          <input
+                            type="number"
+                            value={item.calories || 380}
+                            onChange={(e) => updateItem(category.id, item.id, 'calories', parseInt(e.target.value || "0", 10))}
+                            onBlur={(e) => saveItemBlur(category.id, item.id, 'calories', parseInt(e.target.value || "0", 10))}
+                            className="w-full p-2 border rounded-lg font-bold bg-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-stone-600 font-semibold mb-1">Protein (g)</label>
+                          <input
+                            type="number"
+                            value={item.proteinGrams || 24}
+                            onChange={(e) => updateItem(category.id, item.id, 'proteinGrams', parseFloat(e.target.value || "0"))}
+                            onBlur={(e) => saveItemBlur(category.id, item.id, 'proteinGrams', parseFloat(e.target.value || "0"))}
+                            className="w-full p-2 border rounded-lg font-bold bg-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-stone-600 font-semibold mb-1">Fats (g)</label>
+                          <input
+                            type="number"
+                            value={item.fatGrams || 16}
+                            onChange={(e) => updateItem(category.id, item.id, 'fatGrams', parseFloat(e.target.value || "0"))}
+                            onBlur={(e) => saveItemBlur(category.id, item.id, 'fatGrams', parseFloat(e.target.value || "0"))}
+                            className="w-full p-2 border rounded-lg font-bold bg-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-stone-600 font-semibold mb-1">Carbs (g)</label>
+                          <input
+                            type="number"
+                            value={item.carbsGrams || 36}
+                            onChange={(e) => updateItem(category.id, item.id, 'carbsGrams', parseFloat(e.target.value || "0"))}
+                            onBlur={(e) => saveItemBlur(category.id, item.id, 'carbsGrams', parseFloat(e.target.value || "0"))}
+                            className="w-full p-2 border rounded-lg font-bold bg-white"
+                          />
+                        </div>
+                      </div>
 
-                  <div className="flex items-center justify-between w-full">
-                    <select
-                      value={item.foodType}
-                      onChange={(e) => {
-                        updateItem(category.id, item.id, 'foodType', e.target.value);
-                        saveItemBlur(category.id, item.id, 'foodType', e.target.value);
-                      }}
-                      className="border rounded-lg px-3 py-2 text-sm font-medium focus:border-black focus:outline-none bg-white"
-                    >
-                      <option value="VEG">Veg 🟢</option>
-                      <option value="NON_VEG">Non-Veg 🔴</option>
-                      <option value="EGG">Contains Egg 🟡</option>
-                    </select>
-                    
-                    <button 
-                      onClick={() => removeItem(category.id, item.id)}
-                      className="text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg font-bold text-sm"
-                    >
-                      Remove Item
-                    </button>
-                  </div>
+                      <div>
+                        <label className="block text-stone-600 font-semibold mb-1">Chef&apos;s Signature Note</label>
+                        <input
+                          type="text"
+                          value={item.chefNote || ""}
+                          onChange={(e) => updateItem(category.id, item.id, 'chefNote', e.target.value)}
+                          onBlur={(e) => saveItemBlur(category.id, item.id, 'chefNote', e.target.value)}
+                          placeholder="e.g. 48-hour slow-cooked in royal Awadhi spices..."
+                          className="w-full p-2 border rounded-lg bg-white"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
-          <div className="p-4 bg-gray-50">
+          {/* Add item button */}
+          <div className="p-4 bg-stone-50 border-t border-stone-200">
             <button 
               onClick={() => addItem(category.id)}
-              className="w-full border-2 border-dashed border-gray-300 hover:border-black hover:bg-gray-100 text-gray-500 hover:text-black font-bold py-3 rounded-xl transition-colors"
+              className="w-full border-2 border-dashed border-stone-300 hover:border-emerald-600 hover:bg-emerald-50 text-stone-600 hover:text-emerald-800 font-bold py-3 rounded-2xl transition-colors flex items-center justify-center gap-2"
             >
-              + Add Item to {category.name || "Category"}
+              <Plus className="w-4 h-4" />
+              <span>Add Item to {category.name || "Category"}</span>
             </button>
           </div>
         </div>
       ))}
 
+      {/* Add New Category Button */}
       <button 
         onClick={addCategory}
-        className="w-full bg-black text-white font-black text-xl py-6 rounded-2xl hover:bg-gray-800 transition-colors shadow-lg"
+        className="w-full bg-stone-900 text-white font-black text-lg py-5 rounded-2xl hover:bg-stone-800 transition-colors shadow-lg flex items-center justify-center gap-2"
       >
-        + Add New Category
+        <Plus className="w-5 h-5" />
+        <span>Add New Category</span>
       </button>
     </div>
   );

@@ -1,9 +1,24 @@
+import { estimateDishNutrition } from "@/lib/macroEstimator";
+import { resolveDishStudioAssets } from "@/lib/aiFoodStudio";
+
 export type ExtractedMenuItem = {
   id: string;
   name: string;
   price: number;
   isVeg: boolean | null;
   needsReview?: boolean;
+  imageUrl?: string;
+  imageSource?: string;
+  imageGallery?: any;
+  calories?: number;
+  proteinGrams?: number;
+  fatGrams?: number;
+  carbsGrams?: number;
+  fiberGrams?: number;
+  allergens?: string[];
+  dietaryFlags?: string[];
+  chefNote?: string;
+  isHotSizzler?: boolean;
 };
 
 export type ExtractedCategory = {
@@ -30,7 +45,7 @@ const vegKeywords = [
 ];
 
 /**
- * Parses raw OCR text into structured categories, items, prices, and food types.
+ * Parses raw OCR text into structured categories, items, prices, studio photos, and nutrition macros.
  */
 export function parseMenuTextToCategories(rawText: string): ExtractedCategory[] {
   const lines = rawText
@@ -64,7 +79,6 @@ export function parseMenuTextToCategories(rawText: string): ExtractedCategory[] 
     }
 
     // Flexible price matching regex:
-    // Matches "Paneer Tikka 250", "Chicken Tikka - ₹320", "Butter Naan ... 60", "Sweet Lassi 90/-"
     const priceMatch =
       line.match(/^(.+?)\s*(?:[\.|\-|\:|\*|\_|\s|₹|Rs])*?\s*(\d{2,4})\s*(?:\/|\-)?$/i) ||
       line.match(/(.*?)(?:[₹|Rs\.]\s*)(\d{2,4})/i) ||
@@ -88,12 +102,28 @@ export function parseMenuTextToCategories(rawText: string): ExtractedCategory[] 
         const items = categoriesMap.get(currentCategory) || [];
         // Prevent duplicate names in same category
         if (!items.some((i) => i.name.toLowerCase() === rawName.toLowerCase())) {
+          const foodType = isVeg === false ? "NON_VEG" : "VEG";
+          const studio = resolveDishStudioAssets(rawName, currentCategory, undefined, foodType);
+          const nutrition = estimateDishNutrition(rawName, currentCategory, undefined, foodType);
+
           items.push({
             id: genId(),
             name: rawName,
             price,
             isVeg,
             needsReview: false,
+            imageUrl: studio.primaryUrl,
+            imageSource: "AI_STUDIO",
+            imageGallery: studio.gallery,
+            calories: nutrition.calories,
+            proteinGrams: nutrition.proteinGrams,
+            fatGrams: nutrition.fatGrams,
+            carbsGrams: nutrition.carbsGrams,
+            fiberGrams: nutrition.fiberGrams,
+            allergens: nutrition.allergens,
+            dietaryFlags: nutrition.dietaryFlags,
+            chefNote: studio.chefNote,
+            isHotSizzler: studio.isHotSizzler
           });
           categoriesMap.set(currentCategory, items);
         }
@@ -140,7 +170,7 @@ export async function runClientOcr(
     const { data } = await worker.recognize(imageSource);
     await worker.terminate();
 
-    onProgress?.("Extracting dishes and categories...");
+    onProgress?.("Extracting dishes, studio photos & AI nutrition...");
     const categories = parseMenuTextToCategories(data.text);
     return categories;
   } catch (err) {

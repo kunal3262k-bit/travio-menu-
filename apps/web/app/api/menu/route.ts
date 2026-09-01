@@ -8,7 +8,6 @@ export async function PUT(request: NextRequest) {
     const { categories } = await request.json();
 
     // categories is an array of Category with an items array of MenuItem
-    // We will do this in a transaction
     await prisma.$transaction(async (tx) => {
       // 1. Process Categories
       const incomingCategoryIds = categories.filter((c: any) => !c.isNew).map((c: any) => c.id);
@@ -74,6 +73,31 @@ export async function PUT(request: NextRequest) {
 
         let itemIndex = 0;
         for (const item of cat.items) {
+          const itemPayload = {
+            description: item.description || null,
+            imageUrl: item.imageUrl || null,
+            imageSource: item.imageSource || "AI_STUDIO",
+            imageGallery: item.imageGallery || [],
+            aiPrompt: item.aiPrompt || null,
+            calories: typeof item.calories === "number" ? item.calories : null,
+            proteinGrams: typeof item.proteinGrams === "number" ? item.proteinGrams : null,
+            fatGrams: typeof item.fatGrams === "number" ? item.fatGrams : null,
+            carbsGrams: typeof item.carbsGrams === "number" ? item.carbsGrams : null,
+            fiberGrams: typeof item.fiberGrams === "number" ? item.fiberGrams : null,
+            allergens: item.allergens || [],
+            dietaryFlags: item.dietaryFlags || [],
+            chefNote: item.chefNote || null,
+            isPopular: Boolean(item.isPopular),
+            isHotSizzler: Boolean(item.isHotSizzler),
+            pricePaise: item.pricePaise || 10000,
+            foodType: item.foodType || "VEG",
+            spicyLevel: item.spicyLevel || 0,
+            preparationMin: item.preparationMin || 15,
+            sortOrder: itemIndex,
+            active: true,
+            available: item.available !== false
+          };
+
           if (item.isNew) {
             const existingItem = await tx.menuItem.findFirst({
               where: { restaurantId: session.restaurantId, categoryId: dbCategory.id, name: item.name }
@@ -84,29 +108,13 @@ export async function PUT(request: NextRequest) {
                   restaurantId: session.restaurantId,
                   categoryId: dbCategory.id,
                   name: item.name,
-                  description: item.description,
-                  pricePaise: item.pricePaise,
-                  foodType: item.foodType,
-                  spicyLevel: item.spicyLevel,
-                  preparationMin: item.preparationMin || 15,
-                  sortOrder: itemIndex,
-                  active: true,
-                  available: true
+                  ...itemPayload
                 }
               });
             } else {
               await tx.menuItem.update({
                 where: { id: existingItem.id },
-                data: {
-                  description: item.description,
-                  pricePaise: item.pricePaise,
-                  foodType: item.foodType,
-                  spicyLevel: item.spicyLevel,
-                  preparationMin: item.preparationMin || 15,
-                  sortOrder: itemIndex,
-                  active: true,
-                  available: true
-                }
+                data: itemPayload
               });
             }
           } else {
@@ -115,13 +123,7 @@ export async function PUT(request: NextRequest) {
               data: {
                 categoryId: dbCategory.id,
                 name: item.name,
-                description: item.description,
-                pricePaise: item.pricePaise,
-                foodType: item.foodType,
-                spicyLevel: item.spicyLevel,
-                preparationMin: item.preparationMin || 15,
-                sortOrder: itemIndex,
-                active: true
+                ...itemPayload
               }
             });
           }

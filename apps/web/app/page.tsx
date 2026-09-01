@@ -3,12 +3,14 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   Bell,
-  CarFront,
   CheckCircle2,
   ChefHat,
   CreditCard,
+  Flame,
   IndianRupee,
+  Layers,
   Menu as MenuIcon,
+  MessageSquare,
   Plus,
   Printer,
   QrCode,
@@ -16,8 +18,13 @@ import {
   ShieldCheck,
   Smartphone,
   Sparkles,
+  Star,
   Utensils,
   Wallet,
+  Activity,
+  ArrowRight,
+  Split,
+  Eye
 } from "lucide-react";
 import DemoModal from "./components/DemoModal";
 import ContactLink from "./components/ContactLink";
@@ -27,14 +34,14 @@ import { demoOrders, demoRestaurant } from "@/lib/demo-data";
 import { formatMoney } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "SwiftTab — QR Table Ordering & Kitchen Display for Indian Restaurants",
+  title: "SwiftTab — Next-Gen 3D QR Dining & Revenue Engine for Restaurants",
   description:
-    "SwiftTab lets customers order from their phone by scanning a QR code on the table. Orders reach your kitchen in real time. Staff stay in control of service and UPI or cash payment. No customer app, no per-order commission.",
+    "Transform flat menus into interactive 3D visual showcases with auto-generated AI studio food photos, live macro tracking, smart pairing upsells (+20% order value), 1-tap WhatsApp billing, and automated 5-star Google review protection.",
   alternates: { canonical: "/" },
   openGraph: {
-    title: "SwiftTab — QR Table Ordering & Kitchen Display",
+    title: "SwiftTab — Next-Gen 3D QR Dining & Kitchen Intelligence",
     description:
-      "Customers scan a QR code and order from their own phone. Orders reach the kitchen in real time. No customer app, no per-order commission.",
+      "Stunning AI studio food photography, interactive 3D dish cards, real-time macro tracking, and zero commission QR ordering for modern restaurants.",
     url: "https://justswifttab.com",
     siteName: "SwiftTab",
     type: "website",
@@ -42,113 +49,181 @@ export const metadata: Metadata = {
   },
 };
 
+const xFactorFeatures = [
+  {
+    icon: Sparkles,
+    badge: "AI Food Studio & 3D Cards",
+    title: "Mouthwatering 3D Interactive Dish Cards",
+    description:
+      "Turn plain text into magazine-quality studio photography with real-time 3D parallax tilt, dynamic lighting glare, steam particles on sizzling dishes, and chef's provenance stories.",
+    impact: "+32% customer engagement vs flat PDF menus",
+    color: "from-purple-500/10 to-pink-500/10 border-purple-200"
+  },
+  {
+    icon: Activity,
+    badge: "Nutrition & Macro Intelligence",
+    title: "Live Calories, Protein & Dietary Filters",
+    description:
+      "Attract gym-goers, keto diners, and health-conscious guests with instant calories, protein (g), carbs, and allergen transparency, backed by a live table nutrition accumulator.",
+    impact: "Captures high-value fitness & diet demographics",
+    color: "from-emerald-500/10 to-teal-500/10 border-emerald-200"
+  },
+  {
+    icon: Flame,
+    badge: "Smart AI Pairing Upsells",
+    title: "Intelligent Add-On Suggestions",
+    description:
+      "Automatically recommend high-margin chef pairings, sides, and signature desserts before checkout with social proof ('84% of guests pair this with Garlic Naan & Cold Coffee').",
+    impact: "Proven +18% to +24% increase in Average Order Value",
+    color: "from-amber-500/10 to-orange-500/10 border-amber-200"
+  },
+  {
+    icon: Star,
+    badge: "Reputation & CRM Engine",
+    title: "5-Star Google Review Shield & WhatsApp Bill",
+    description:
+      "Send itemized digital receipts straight to customer WhatsApp to capture real guest numbers. Route 4–5 star ratings to Google Maps, while capturing 1–3 star complaints privately.",
+    impact: "Builds a repeat customer list and protects public ratings",
+    color: "from-blue-500/10 to-indigo-500/10 border-blue-200"
+  }
+];
+
 const howItWorks = [
   {
     step: "1",
-    title: "Create your restaurant account",
-    text: "Register with your restaurant name, phone and email. You land in the setup flow that takes you from menu to go-live.",
+    title: "Scan & AI Auto-Enrich",
+    text: "Upload a photo of your paper menu. Our AI instantly extracts dishes, prices, studio photos, and accurate calorie/macro profiles in under 60 seconds.",
   },
   {
     step: "2",
-    title: "Add your menu",
-    text: "Type items in, or upload a photo of your printed menu and let the menu importer build the digital menu for you.",
+    title: "Place QR Stands on Tables",
+    text: "Print high-res QR codes for your tables and car-side drive-in spots. Guests scan with any phone camera—no app download required.",
   },
   {
     step: "3",
-    title: "Print your QR codes",
-    text: "Print QR codes for your tables — and car-side codes if you offer drive-in ordering — and place them where customers sit.",
+    title: "Guests Experience 3D Menu",
+    text: "Diners explore tiltable 3D dish cards, check macros, filter by dietary preferences, and add smart chef pairings in 1 tap.",
   },
   {
     step: "4",
-    title: "Open the kitchen and staff screens",
-    text: "Open the kitchen display and staff screens on any phone, tablet, or laptop with a browser. No special hardware required.",
+    title: "Orders Flash to Kitchen KDS",
+    text: "Orders instantly appear on your kitchen display with audio chimes, item modifiers, and preparation timers—zero waiter delays.",
   },
   {
     step: "5",
-    title: "Customers scan and order",
-    text: "A customer scans the QR with their phone camera. Your menu opens in their browser. No app to install, no login.",
+    title: "Direct UPI & Table Bill Split",
+    text: "Guests split the bill equally or pay directly via their own UPI app. 100% of the money goes straight to your bank with 0% commission.",
   },
   {
     step: "6",
-    title: "Serve, track, and get paid",
-    text: "Orders appear in your kitchen in real time. Staff confirm UPI payments or collect cash, and you stay in control.",
+    title: "WhatsApp Bill & 5★ Review Boost",
+    text: "Customers receive their digital receipt on WhatsApp and happy diners are routed to leave 5-star reviews on Google Maps.",
   },
+];
+
+const pricingTiers = [
+  {
+    name: "Starter",
+    priceInr: "₹2,999",
+    priceUsd: "$49",
+    period: "/month",
+    description: "Essential QR table ordering and real-time kitchen display for cafes and bistros.",
+    popular: false,
+    features: [
+      "Unlimited table QR ordering",
+      "Real-time Kitchen Display System (KDS)",
+      "Waiter call & bill request screens",
+      "On-device 60-second paper menu scanner",
+      "Direct UPI & Cash settlement (0% commission)",
+      "Customizable categories & sold-out toggles",
+      "Live order audio alerts"
+    ],
+    cta: "Start 3-Day Free Trial",
+    badge: "Core Operations"
+  },
+  {
+    name: "Growth",
+    priceInr: "₹5,999",
+    priceUsd: "$89",
+    period: "/month",
+    description: "The complete visual dining & revenue engine that drives higher table spend and diner wow-factor.",
+    popular: true,
+    features: [
+      "Everything in Starter, plus:",
+      "AI Studio Food Photography Pipeline (150+ dishes)",
+      "Interactive 3D Dish Cards with Parallax Tilt & Steam",
+      "AI Nutrition & Macro Engine (Calories, Protein, Carbs, Fats)",
+      "Dynamic Dietary Filter Bar (High Protein, Keto, Vegan)",
+      "Smart Pairing Upsells (+20% Average Order Value)",
+      "1-Tap WhatsApp Digital Bill & Phone Capture",
+      "Live Table Nutrition Meter for Guests"
+    ],
+    cta: "Launch Growth Experience",
+    badge: "Most Popular — Highest ROI"
+  },
+  {
+    name: "VIP Enterprise",
+    priceInr: "₹9,999",
+    priceUsd: "$149",
+    period: "/month",
+    description: "Premium end-to-end dining experience with automated reputation shielding and multi-user bill splitting.",
+    popular: false,
+    features: [
+      "Everything in Growth, plus:",
+      "5-Star Google Review Shield (Private manager complaint alerts)",
+      "Multi-User Table Bill Splitter with dynamic UPI QR codes",
+      "Car-Side Drive-In Ordering with vehicle number tracking",
+      "Custom Branded Acrylic QR Table Stands (Kit included)",
+      "Advanced Platform Analytics & Dish Reorder Insights",
+      "Dedicated 24/7 VIP Phone & WhatsApp Support",
+      "Same-Day Custom Menu Digitization Service"
+    ],
+    cta: "Get VIP Enterprise",
+    badge: "Full Power & Reputation"
+  }
 ];
 
 const faqs = [
   {
+    q: "How does the AI Studio Food Photography work?",
+    a: "When you upload your paper menu or type in dishes, our culinary AI studio engine automatically matches high-resolution, commercial-grade food photography for over 150 popular dishes. You can also generate multi-angle studio shots (front angle, top-down, close-up) or upload your own custom food photos at any time.",
+  },
+  {
+    q: "How accurate is the AI Macro & Nutrition Intelligence?",
+    a: "Our nutrition engine uses culinary macro data (calories, protein, healthy fats, net carbs, fiber, and common allergens) tailored for Indian and international cuisines. Restaurant owners can also adjust or override any specific macro values directly in the admin dashboard.",
+  },
+  {
     q: "Do customers need to download an app?",
-    a: "No. The QR code opens your menu in the customer's phone browser. There is nothing to install and no account for the customer to create.",
+    a: "No. The QR code opens directly in any standard phone browser (Safari, Chrome, etc.) in under a second. There is zero friction, no app to install, and no account required for diners.",
   },
   {
-    q: "Do I need to replace my existing POS or billing system?",
-    a: "No. SwiftTab is a dine-in ordering and kitchen display system, not a full POS. It works alongside your existing billing setup, and it does not charge a per-order commission.",
+    q: "How does the 5-Star Google Review Shield work?",
+    a: "When customers tap to leave feedback, diners giving 4 or 5 stars are seamlessly redirected to your restaurant's official Google Maps review page. Guests giving 1 to 3 stars are routed to a private feedback form that instantly notifies the manager via WhatsApp, giving you a chance to resolve the issue before a negative public review is posted.",
   },
   {
-    q: "What hardware do I need?",
-    a: "A screen for the kitchen and staff — any phone, tablet, or laptop with a modern browser. Customers use their own phones. You can print kitchen tickets and bills from the staff device using your existing printer.",
+    q: "How does payment work? Do you take a commission?",
+    a: "SwiftTab charges 0% commission on orders. Customers pay you directly via your restaurant's UPI QR code or in cash. Money goes straight into your bank account without middleman delays.",
   },
   {
-    q: "How does the kitchen receive orders?",
-    a: "Orders appear on the kitchen display the moment a customer places them, with a sound alert, the table number, items, special instructions, and the time. The kitchen updates each order's status as it is prepared.",
+    q: "What hardware is required?",
+    a: "No proprietary or expensive POS hardware is needed. The kitchen display and staff screens run in any modern web browser on any phone, tablet, or laptop. Kitchen tickets can be printed using your existing standard thermal printer.",
   },
   {
-    q: "Can my waiters still take orders?",
-    a: "Yes — waiters stay at the centre of service. Customers order from the phone menu, and waiters receive call-waiter and bill requests, verify UPI payments, collect cash, and handle the table. SwiftTab is built to make ordering smoother, not to replace your staff.",
-  },
-  {
-    q: "How does payment work?",
-    a: "Customers pay your restaurant directly — by your UPI QR code or in cash. Staff confirm the payment on their screen. Money never passes through SwiftTab, which is why there is no per-order commission.",
-  },
-  {
-    q: "Does SwiftTab support car-side or drive-in ordering?",
-    a: "Yes. Car-side ordering lets customers scan a QR code from their vehicle, place an order, pay, and the order is released to the kitchen for preparation.",
-  },
-  {
-    q: "Can I change menu items and mark things unavailable?",
-    a: "Yes. You can edit your menu at any time from the admin panel, and toggle any item available or sold out instantly. Sold-out items disappear from the customer menu.",
-  },
-  {
-    q: "What if a customer needs a waiter?",
-    a: "The menu includes a call-waiter button and a bill request button. The request reaches your staff screen in real time.",
-  },
-  {
-    q: "How quickly can I get started?",
-    a: "Sign up, add your menu, print your QR codes, and open the kitchen screen. Most restaurants go live the same day once their menu is ready.",
-  },
-  {
-    q: "Is there a contract or commitment? How does the 3-day trial work?",
-    a: "No long-term contract or lock-in. Pay ₹999 upfront to get your digital menu and table QR setup. Try it live at your tables for 3 days. If you are not completely satisfied with the order speed and staff time saved, we offer a full money-back refund (less nominal QR printing charges). Cancel anytime.",
-  },
-  {
-    q: "What happens if the internet connection drops?",
-    a: "SwiftTab is a live, online system — ordering, the kitchen display, and staff screens need a working internet connection. If the connection drops, you can fall back on your usual verbal ordering until it returns.",
-  },
-];
-
-const pricingIncluded = [
-  "Unlimited orders",
-  "Unlimited tables",
-  "Digital menu with photos",
-  "AI menu importer",
-  "Kitchen display system",
-  "Waiter & staff screens",
-  "Car-side ordering",
-  "QR code generation & printing",
-  "UPI / cash payment confirmation",
-  "Onboarding support",
+    q: "Is there a long-term contract or lock-in?",
+    a: "No contracts and no lock-in. We offer a 3-day risk-free live trial so you can experience the speed, guest excitement, and revenue increase live at your tables. You can cancel at any time with a single click.",
+  }
 ];
 
 export default function Home() {
   const phoneItems = [
     demoRestaurant.categories[0].items[0],
+    demoRestaurant.categories[0].items[1],
     demoRestaurant.categories[1].items[0],
-    demoRestaurant.categories[2].items[0],
   ];
   const previewOrder = demoOrders[0];
 
   return (
-    <div className="min-h-screen bg-white text-slate-900">
+    <div className="min-h-screen bg-slate-950 text-white selection:bg-purple-600 selection:text-white">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -159,8 +234,8 @@ export default function Home() {
             applicationCategory: "BusinessApplication",
             operatingSystem: "Web",
             description:
-              "QR table ordering and kitchen display system for Indian restaurants. Customers scan a QR code and order from their own phone. Orders reach the kitchen in real time. No customer app, no per-order commission.",
-            offers: { "@type": "Offer", price: "999", priceCurrency: "INR", description: "Monthly subscription" },
+              "Next-Gen 3D QR Table Ordering, AI Studio Food Photography, Macro Intelligence, and Kitchen Display System for modern restaurants.",
+            offers: { "@type": "Offer", price: "5999", priceCurrency: "INR", description: "Growth Monthly subscription" },
           }),
         }}
       />
@@ -168,372 +243,362 @@ export default function Home() {
       {/* Navigation */}
       <Navbar />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-[#f8f9fa]">
-        <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 py-16 lg:grid-cols-2 lg:py-24">
-          <div>
-            <p className="mb-4 inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-emerald-800">
-              <QrCode className="h-3.5 w-3.5" /> Zero Commission · ₹999/mo Flat · Go Live Today
-            </p>
-            <h1 className="text-3xl font-black leading-[1.1] tracking-tight text-slate-900 md:text-5xl lg:text-6xl">
-              Turn Tables 2x Faster.
-              <span className="text-emerald-700"> Never Lose an Order in the Rush.</span>
+      {/* Hero Section */}
+      <section className="relative overflow-hidden pt-12 pb-20 lg:pt-20 lg:pb-32 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.25),rgba(255,255,255,0))]">
+        {/* Background glow accents */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-600/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-1/3 right-10 w-[400px] h-[400px] bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 lg:grid-cols-12 lg:gap-8">
+          <div className="lg:col-span-7 space-y-6">
+            <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-purple-900/60 to-pink-900/60 border border-purple-500/30 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-purple-300 shadow-inner">
+              <Sparkles className="h-3.5 w-3.5 text-purple-400 animate-pulse" />
+              <span>AI Studio Photography · 3D Cards · Macro Tracking · 0% Commission</span>
+            </div>
+
+            <h1 className="text-4xl font-black leading-[1.08] tracking-tight text-white sm:text-6xl">
+              Turn Flat Menus Into an <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300">
+                Unforgettable 3D Dining Experience.
+              </span>
             </h1>
-            <p className="mt-6 max-w-xl text-lg leading-8 text-gray-600">
-              Let guests scan, browse mouthwatering photo menus, and order instantly from their phone. Orders flash to your kitchen in real time with zero waiter delays, zero ordering mistakes, and 100% direct UPI payments.
+
+            <p className="text-lg leading-relaxed text-slate-300 max-w-2xl font-medium">
+              Command higher table spends, eliminate ordering mistakes, and wow your diners with auto-generated studio food photos, live nutrition tracking, smart AI pairings (+20% average order value), 1-tap WhatsApp billing, and automated 5-star Google review protection.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+
+            <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
               <Link
                 href="/register"
-                className="w-full rounded-xl bg-emerald-700 px-8 py-4 text-center text-lg font-bold text-white shadow-lg shadow-emerald-700/20 transition hover:bg-emerald-800 sm:w-auto"
+                className="rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 px-8 py-4 text-center text-lg font-black text-white shadow-xl shadow-purple-600/25 transition-all hover:scale-[1.02] hover:shadow-purple-600/40 active:scale-[0.98] flex items-center justify-center gap-2"
               >
-                Create your menu
+                <span>Launch Your 3D Menu</span>
+                <ArrowRight className="w-5 h-5" />
               </Link>
               <DemoModal />
             </div>
-            <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold text-gray-700">
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600" /> 30% Faster Table Turnover
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600" /> No App Download for Guests
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600" /> 0% Revenue Commission
-              </li>
-            </ul>
+
+            {/* Trust Highlights */}
+            <div className="pt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 border-t border-slate-800/80">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
+                <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                <span>60s AI Menu Import</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
+                <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                <span>+22% Table Spend</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
+                <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                <span>5★ Review Shield</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
+                <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                <span>0% Commission</span>
+              </div>
+            </div>
           </div>
 
-          <ProductPreview phoneItems={phoneItems} previewOrder={previewOrder} />
-        </div>
-      </section>
-
-      {/* Product flow strip */}
-      <section className="border-y border-gray-100 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
-          <div className="flex items-center gap-4 overflow-x-auto pb-2 scrollbar-none md:grid md:grid-cols-7 md:gap-6 md:pb-0">
-            {["Scan QR", "Browse menu", "Place order", "Order hits kitchen", "Kitchen prepares", "Staff serve & confirm payment", "Customer enjoys"].map(
-              (step, i) => (
-                <div key={step} className="flex shrink-0 items-center gap-2 text-xs font-semibold text-gray-700 sm:text-sm">
-                  <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-emerald-100 text-xs font-black text-emerald-800">
-                    {i + 1}
-                  </span>
-                  <span className="whitespace-nowrap md:whitespace-normal">{step}</span>
-                </div>
-              )
-            )}
+          {/* Interactive Phone & Visual Preview */}
+          <div className="lg:col-span-5 relative">
+            <ProductPreview phoneItems={phoneItems} previewOrder={previewOrder} />
           </div>
         </div>
       </section>
 
-      {/* How it works */}
-      <section id="how-it-works" className="px-6 py-20">
-        <div className="mx-auto max-w-7xl">
-          <p className="text-center text-sm font-bold uppercase tracking-widest text-emerald-700">How it works</p>
-          <h2 className="mx-auto mt-3 max-w-2xl text-center text-3xl font-black tracking-tight md:text-4xl">
-            From sign-up to your first QR order — in six steps
-          </h2>
-          <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {howItWorks.map((item) => (
-              <div key={item.step} className="rounded-2xl border border-gray-100 bg-white p-6">
-                <div className="mb-4 grid h-10 w-10 place-items-center rounded-full bg-emerald-100 text-lg font-black text-emerald-800">
-                  {item.step}
-                </div>
-                <h3 className="text-lg font-bold">{item.title}</h3>
-                <p className="mt-2 leading-7 text-gray-600">{item.text}</p>
+      {/* Feature Strip */}
+      <section className="border-y border-slate-800 bg-slate-900/60 py-6">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="flex items-center gap-6 overflow-x-auto pb-2 scrollbar-none md:grid md:grid-cols-6 md:gap-4 md:pb-0 text-center">
+            {[
+              { title: "AI Food Studio", desc: "150+ HD dishes" },
+              { title: "3D Parallax Cards", desc: "Interactive depth" },
+              { title: "Live Macro Meter", desc: "Calories & protein" },
+              { title: "Smart Upsells", desc: "+20% order value" },
+              { title: "WhatsApp CRM", desc: "1-tap bill capture" },
+              { title: "Google Shield", desc: "Automated 5★ reviews" }
+            ].map((f, i) => (
+              <div key={f.title} className="flex-1 shrink-0 px-3 py-2 rounded-xl bg-slate-800/40 border border-slate-700/50">
+                <p className="text-xs font-black text-white">{f.title}</p>
+                <p className="text-[11px] text-purple-300 font-medium">{f.desc}</p>
               </div>
             ))}
           </div>
-          <p className="mt-8 text-center">
-            <Link href="/register" className="font-bold text-emerald-700 underline underline-offset-4 hover:text-emerald-900">
-              Start the setup now →
-            </Link>
-          </p>
         </div>
       </section>
 
-      {/* Features */}
-      <section id="features" className="bg-[#f8f9fa] px-6 py-20">
+      {/* The 4 X-Factors Showcase */}
+      <section id="features" className="py-24 px-6 relative bg-slate-950">
         <div className="mx-auto max-w-7xl">
-          <p className="text-center text-sm font-bold uppercase tracking-widest text-emerald-700">What SwiftTab covers</p>
-          <h2 className="mx-auto mt-3 max-w-2xl text-center text-3xl font-black tracking-tight md:text-4xl">
-            The full ordering loop — from table to kitchen to payment
-          </h2>
+          <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
+            <p className="text-xs font-bold uppercase tracking-widest text-purple-400">The SwiftTab Advantage</p>
+            <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
+              Four High-Impact X-Factors That Drive Measurable ROI
+            </h2>
+            <p className="text-slate-400 text-base sm:text-lg">
+              Move beyond basic commodity QR code menus. SwiftTab gives restaurant owners a state-of-the-art visual engine that commands higher ticket sizes and diner loyalty.
+            </p>
+          </div>
 
-          <div className="mt-12 grid gap-6 md:grid-cols-2">
-            <FeatureCard
-              icon={QrCode}
-              title="QR table ordering"
-              points={[
-                "Customers scan the QR on the table with their phone camera",
-                "Your menu opens in their browser — no app, no login",
-                "Veg / non-veg and spice labels on every item",
-                "Call-waiter and bill-request buttons right in the menu",
-              ]}
-            />
-            <FeatureCard
-              icon={ChefHat}
-              title="Kitchen display system"
-              points={[
-                "Orders appear on the kitchen screen the moment they are placed",
-                "Sound alert, table number, items, instructions, and time on every order",
-                "Kitchen updates each order as it goes from received to ready",
-                "Print kitchen tickets or bills from the staff device if you use a printer",
-              ]}
-            />
-            <FeatureCard
-              icon={Bell}
-              title="Waiter operations"
-              points={[
-                "Waiters receive call-waiter and bill requests on their screen",
-                "Waiters verify UPI payments and manage cash collection",
-                "Staff sign in to their own screen — no shared accounts",
-                "Technology handles the repetitive parts so staff can focus on hospitality",
-              ]}
-            />
-            <FeatureCard
-              icon={CarFront}
-              title="Car-side (drive-in) ordering"
-              points={[
-                "Customers scan a car QR code from their vehicle",
-                "They order and pay before the order is released to the kitchen",
-                "The kitchen gets a paid order ready to prepare and serve",
-                "Works with the same menu, kitchen, and staff screens",
-              ]}
-            />
-            <FeatureCard
-              icon={Wallet}
-              title="Payments that stay yours"
-              points={[
-                "Customers pay your restaurant directly — your UPI QR code or cash",
-                "Staff confirm the payment on their screen",
-                "Money never passes through SwiftTab",
-                "No per-order commission, ever",
-              ]}
-            />
-            <FeatureCard
-              icon={Smartphone}
-              title="Your menu, under your control"
-              points={[
-                "Add items manually or upload a photo of your printed menu",
-                "Edit prices and descriptions any time",
-                "Mark items sold out instantly — they disappear from the menu",
-                "Generate and print QR codes for tables and cars",
-              ]}
-            />
+          <div className="grid md:grid-cols-2 gap-8">
+            {xFactorFeatures.map((feat) => {
+              const Icon = feat.icon;
+              return (
+                <div 
+                  key={feat.title}
+                  className={`rounded-3xl border p-8 bg-gradient-to-br ${feat.color} bg-slate-900/80 backdrop-blur-xl relative overflow-hidden transition hover:border-slate-600 flex flex-col justify-between`}
+                >
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-800 text-purple-300 border border-purple-500/30">
+                        {feat.badge}
+                      </span>
+                      <div className="p-3 rounded-2xl bg-purple-500/10 text-purple-400">
+                        <Icon className="w-6 h-6" />
+                      </div>
+                    </div>
+                    <h3 className="text-2xl font-black text-white">{feat.title}</h3>
+                    <p className="text-slate-300 leading-relaxed text-sm sm:text-base font-normal">
+                      {feat.description}
+                    </p>
+                  </div>
+
+                  <div className="mt-6 pt-4 border-t border-slate-800/80 flex items-center gap-2">
+                    <span className="text-xs font-bold text-emerald-400">ROI Impact:</span>
+                    <span className="text-xs font-semibold text-slate-300">{feat.impact}</span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Hardware / POS objections */}
-      <section id="hardware" className="px-6 py-20">
-        <div className="mx-auto max-w-4xl">
-          <p className="text-center text-sm font-bold uppercase tracking-widest text-emerald-700">What you need</p>
-          <h2 className="mx-auto mt-3 max-w-2xl text-center text-3xl font-black tracking-tight md:text-4xl">
-            You probably already have everything required
-          </h2>
-          <div className="mt-12 grid gap-4 sm:grid-cols-2">
-            <HardwareRow
-              icon={ScanLine}
-              title="Customers need a phone with a camera"
-              text="Every smartphone scans a QR code with the built-in camera. No app to install."
-            />
-            <HardwareRow
-              icon={ChefHat}
-              title="The kitchen needs one screen"
-              text="A phone, tablet, or laptop with a browser. The kitchen display runs entirely in the browser."
-            />
-            <HardwareRow
-              icon={Bell}
-              title="Staff need a phone or tablet"
-              text="Waiters receive requests and confirm payments from their own device."
-            />
-            <HardwareRow
-              icon={Printer}
-              title="Printing works with your printer"
-              text="Kitchen tickets and bills are printed directly using your device's browser print capability (supports standard thermal and desktop printers)."
-            />
+      {/* How it works (6 Steps) */}
+      <section id="how-it-works" className="py-24 px-6 bg-slate-900/50 border-y border-slate-800">
+        <div className="mx-auto max-w-7xl">
+          <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
+            <p className="text-xs font-bold uppercase tracking-widest text-emerald-400">Instant Setup</p>
+            <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
+              From Printed Paper Menu to Live 3D Dining in 6 Steps
+            </h2>
+            <p className="text-slate-400 text-base">
+              No hardware purchases, no IT specialists. Your restaurant can go live in 10 minutes.
+            </p>
           </div>
-          <div className="mt-10 rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-center">
-            <h3 className="text-xl font-bold text-emerald-950">Keep your existing POS and billing.</h3>
-            <p className="mx-auto mt-2 max-w-2xl leading-7 text-emerald-900/80">
-              SwiftTab is a dine-in ordering and kitchen display system. It is not a replacement for your billing setup
-              and does not take a commission from your orders.
+
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {howItWorks.map((item) => (
+              <div key={item.step} className="rounded-3xl border border-slate-800 bg-slate-900/90 p-6 relative group hover:border-purple-500/40 transition-colors">
+                <div className="mb-4 grid h-10 w-10 place-items-center rounded-2xl bg-purple-950 border border-purple-500/40 text-base font-black text-purple-300">
+                  {item.step}
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2">{item.title}</h3>
+                <p className="text-sm leading-relaxed text-slate-400">{item.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Tiered Pricing Section */}
+      <section id="pricing" className="py-24 px-6 bg-slate-950 relative">
+        <div className="mx-auto max-w-7xl">
+          <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
+            <p className="text-xs font-bold uppercase tracking-widest text-purple-400">Transparent ROI Pricing</p>
+            <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
+              Plans Built to Pay for Themselves on Day 1
+            </h2>
+            <p className="text-slate-400 text-base">
+              Zero commission on your revenue. Flat, transparent monthly pricing with a 3-day risk-free live trial guarantee.
+            </p>
+          </div>
+
+          <div className="grid gap-8 lg:grid-cols-3 items-stretch">
+            {pricingTiers.map((tier) => (
+              <div
+                key={tier.name}
+                className={`rounded-3xl p-8 flex flex-col justify-between transition-all relative ${
+                  tier.popular
+                    ? "bg-gradient-to-b from-slate-900 via-slate-900 to-purple-950/40 border-2 border-purple-500 shadow-2xl shadow-purple-500/20 scale-[1.03]"
+                    : "bg-slate-900/70 border border-slate-800 hover:border-slate-700"
+                }`}
+              >
+                {tier.popular && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-black uppercase tracking-wider shadow-lg">
+                    {tier.badge}
+                  </div>
+                )}
+
+                <div className="space-y-6">
+                  <div>
+                    <span className="text-xs font-bold text-purple-400 uppercase tracking-wider">{tier.name}</span>
+                    <div className="mt-2 flex items-baseline gap-2">
+                      <span className="text-4xl sm:text-5xl font-black text-white">{tier.priceInr}</span>
+                      <span className="text-sm font-semibold text-slate-400">{tier.period}</span>
+                      <span className="text-xs font-medium text-slate-500">({tier.priceUsd})</span>
+                    </div>
+                    <p className="mt-3 text-xs sm:text-sm text-slate-300 leading-relaxed">{tier.description}</p>
+                  </div>
+
+                  <div className="space-y-3 pt-4 border-t border-slate-800">
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Included Features:</p>
+                    <ul className="space-y-2.5">
+                      {tier.features.map((feat) => (
+                        <li key={feat} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-200">
+                          <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400 mt-0.5" />
+                          <span>{feat}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="mt-8 pt-6 border-t border-slate-800">
+                  <Link
+                    href="/register"
+                    className={`block w-full py-4 text-center text-sm font-black rounded-2xl transition-all ${
+                      tier.popular
+                        ? "bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 text-white shadow-lg hover:brightness-110"
+                        : "bg-slate-800 text-white hover:bg-slate-700 border border-slate-700"
+                    }`}
+                  >
+                    {tier.cta}
+                  </Link>
+                  <p className="mt-2 text-center text-[11px] text-slate-500">
+                    3-Day money-back live trial · Cancel anytime
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Risk Free Trial Box */}
+          <div className="mt-12 max-w-3xl mx-auto rounded-3xl bg-slate-900 border border-purple-500/30 p-6 text-center space-y-2">
+            <h4 className="text-lg font-black text-white flex items-center justify-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-emerald-400" />
+              <span>3-Day Risk-Free Live Trial Guarantee</span>
+            </h4>
+            <p className="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto leading-relaxed">
+              Test SwiftTab live at your tables for 3 full days. If you don&apos;t see faster ordering and happier guests, receive a complete refund. No contracts, zero hassle.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Pricing */}
-      <section id="pricing" className="bg-emerald-950 px-6 py-20 text-white">
-        <div className="mx-auto max-w-3xl text-center">
-          <p className="text-sm font-bold uppercase tracking-widest text-emerald-300">Pricing</p>
-          <h2 className="mt-3 text-3xl font-black tracking-tight md:text-4xl">One simple monthly price</h2>
-          <p className="mx-auto mt-4 max-w-xl text-lg text-emerald-100">
-            No per-order commission. No percentage of your sales. Just software that works for a flat monthly price.
-          </p>
-
-          <div className="mt-12 rounded-3xl bg-white p-8 text-left text-slate-900 shadow-2xl">
-            <h3 className="text-xl font-bold">SwiftTab</h3>
-            <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-5xl font-black">₹999</span>
-              <span className="font-semibold text-gray-500">/month</span>
-            </div>
-            <p className="mt-2 text-sm text-gray-600">
-              One price for the full product — setup, menu, QR codes, kitchen, staff, and car-side ordering.
-            </p>
-            <ul className="mt-6 grid gap-2.5 sm:grid-cols-2">
-              {pricingIncluded.map((item) => (
-                <li key={item} className="flex items-center gap-2 text-sm font-semibold">
-                  <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" /> {item}
-                </li>
-              ))}
-            </ul>
-
-            <div className="mt-6 rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-emerald-950">
-              <p className="font-bold text-sm">🛡️ 3-Day Risk-Free Live Trial Guarantee</p>
-              <p className="mt-1 text-xs text-emerald-900/80 leading-5">
-                Pay ₹999 upfront. We set up your digital menu and QR ordering system. Test it live at your tables for 3 days — if you&apos;re not satisfied, get a refund (less nominal QR printing charges). No long-term contract, cancel anytime.
-              </p>
-            </div>
-
-            <Link
-              href="/register"
-              className="mt-6 block w-full rounded-xl bg-emerald-700 py-4 text-center text-lg font-bold text-white transition hover:bg-emerald-800"
-            >
-              Start 3-Day Trial at ₹999
-            </Link>
-            <p className="mt-3 text-center text-xs text-gray-500">
-              No long-term contract · 3-day money-back guarantee · Cancel anytime
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section id="faq" className="px-6 py-20">
+      {/* FAQ Section */}
+      <section id="faq" className="py-24 px-6 bg-slate-900/40 border-t border-slate-800">
         <div className="mx-auto max-w-3xl">
-          <p className="text-center text-sm font-bold uppercase tracking-widest text-emerald-700">FAQ</p>
-          <h2 className="mt-3 text-center text-3xl font-black tracking-tight md:text-4xl">Questions restaurant owners ask</h2>
-          <div className="mt-10 space-y-3.5">
+          <div className="text-center mb-16 space-y-3">
+            <p className="text-xs font-bold uppercase tracking-widest text-emerald-400">Got Questions?</p>
+            <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+              Frequently Asked Questions
+            </h2>
+          </div>
+
+          <div className="space-y-4">
             {faqs.map((faq) => (
-              <details key={faq.q} className="group rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:border-emerald-200">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-bold text-slate-900 marker:hidden">
+              <details key={faq.q} className="group rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-sm transition hover:border-purple-500/30">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-bold text-white marker:hidden">
                   <span>{faq.q}</span>
-                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-emerald-100 text-emerald-800 transition group-open:rotate-45">
+                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-purple-950 text-purple-300 transition group-open:rotate-45">
                     <Plus className="h-4 w-4" />
                   </span>
                 </summary>
-                <p className="mt-3 leading-7 text-gray-600 text-sm sm:text-base border-t border-gray-100 pt-3">{faq.a}</p>
+                <p className="mt-3 leading-relaxed text-slate-300 text-sm border-t border-slate-800/80 pt-3 font-normal">{faq.a}</p>
               </details>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Trust / final CTA */}
-      <section className="bg-[#f8f9fa] px-6 py-20">
-        <div className="mx-auto max-w-3xl text-center">
-          <h2 className="text-3xl font-black tracking-tight md:text-4xl">See SwiftTab in action</h2>
-          <p className="mx-auto mt-4 max-w-xl text-lg leading-8 text-gray-600">
-            Watch the demo, open the live menu, or create your restaurant account. You will be in the setup flow in the
-            next few minutes.
+      {/* Final Action CTA */}
+      <section className="py-20 px-6 bg-gradient-to-b from-slate-900 to-slate-950 border-t border-slate-800">
+        <div className="mx-auto max-w-3xl text-center space-y-6">
+          <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-white">
+            Experience the Future of Restaurant Dining Today
+          </h2>
+          <p className="text-slate-300 text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
+            Join modern restaurants elevating their guest experience and earning more on every table.
           </p>
-          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
             <Link
-              href="/demo"
-              className="rounded-xl bg-emerald-700 px-8 py-4 text-lg font-bold text-white transition hover:bg-emerald-800"
+              href="/register"
+              className="w-full sm:w-auto rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 px-8 py-4 text-lg font-black text-white shadow-xl hover:scale-105 transition-all"
             >
-              See SwiftTab in action
+              Get Started Now
             </Link>
             <DemoModal />
-          </div>
-          <div className="mx-auto mt-10 flex max-w-2xl flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm font-semibold text-gray-600">
-            <span className="flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-emerald-600" /> Served over HTTPS
-            </span>
-            <span className="flex items-center gap-2">
-              <IndianRupee className="h-4 w-4 text-emerald-600" /> Transparent ₹999/month pricing
-            </span>
-            <span className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600" /> Production product
-            </span>
-            <ContactLink className="text-emerald-700 hover:text-emerald-900" />
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200 bg-white px-6 py-12">
+      <footer className="border-t border-slate-800 bg-slate-950 px-6 py-12 text-slate-400">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-8 md:grid-cols-3">
             <div>
               <Link href="/" className="flex items-center gap-2">
-                <Image src="/logo-icon.png" alt="" width={179} height={166} className="h-10 w-auto lg:h-12" />
-                <span className="text-xl font-bold tracking-tight text-emerald-950 lg:text-2xl">SwiftTab</span>
+                <Image src="/logo-icon.png" alt="SwiftTab" width={179} height={166} className="h-10 w-auto" />
+                <span className="text-xl font-bold tracking-tight text-white">SwiftTab</span>
               </Link>
-              <p className="mt-3 max-w-xs text-sm leading-6 text-gray-600">
-                QR ordering, kitchen display, and staff tools built for Indian restaurants.
+              <p className="mt-3 max-w-xs text-xs sm:text-sm leading-6 text-slate-400">
+                Next-Gen 3D QR Table Ordering, AI Studio Photography & Kitchen Display Intelligence for modern restaurants.
               </p>
             </div>
             <div>
-              <p className="text-sm font-bold uppercase tracking-wider text-gray-500">Product</p>
-              <ul className="mt-3 space-y-2 text-sm font-semibold text-gray-700">
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-300">Product</p>
+              <ul className="mt-3 space-y-2 text-xs sm:text-sm font-semibold">
                 <li>
-                  <Link href="/demo" className="hover:text-emerald-800">
-                    See SwiftTab in action
+                  <Link href="/demo" className="hover:text-purple-400">
+                    Live 3D Customer Menu Demo
                   </Link>
                 </li>
                 <li>
-                  <Link href="#how-it-works" className="hover:text-emerald-800">
-                    How it works
+                  <Link href="#features" className="hover:text-purple-400">
+                    X-Factor Features
                   </Link>
                 </li>
                 <li>
-                  <Link href="#pricing" className="hover:text-emerald-800">
-                    Pricing
+                  <Link href="#pricing" className="hover:text-purple-400">
+                    Tiered Pricing
                   </Link>
                 </li>
                 <li>
-                  <Link href="#faq" className="hover:text-emerald-800">
+                  <Link href="#faq" className="hover:text-purple-400">
                     FAQ
                   </Link>
                 </li>
               </ul>
             </div>
             <div>
-              <p className="text-sm font-bold uppercase tracking-wider text-gray-500">Restaurant</p>
-              <ul className="mt-3 space-y-2 text-sm font-semibold text-gray-700">
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-300">Restaurant</p>
+              <ul className="mt-3 space-y-2 text-xs sm:text-sm font-semibold">
                 <li>
-                  <Link href="/register" className="hover:text-emerald-800">
-                    Get started
+                  <Link href="/register" className="hover:text-purple-400">
+                    Create Restaurant Account
                   </Link>
                 </li>
                 <li>
-                  <Link href="/login" className="hover:text-emerald-800">
-                    Restaurant login
+                  <Link href="/login" className="hover:text-purple-400">
+                    Restaurant Staff / Admin Login
                   </Link>
                 </li>
-                {SUPPORT_EMAIL || SUPPORT_WHATSAPP ? (
-                  <li>
-                    <ContactLink className="hover:text-emerald-800" />
-                  </li>
-                ) : null}
                 <li>
-                  <Link href="/privacy" className="hover:text-emerald-800">
+                  <Link href="/privacy" className="hover:text-purple-400">
                     Privacy Policy
                   </Link>
                 </li>
                 <li>
-                  <Link href="/terms" className="hover:text-emerald-800">
+                  <Link href="/terms" className="hover:text-purple-400">
                     Terms of Service
                   </Link>
                 </li>
               </ul>
             </div>
           </div>
-          <div className="mt-10 border-t border-gray-100 pt-6 text-center text-sm text-gray-500">
-            © 2026 SwiftTab. Built for Indian restaurants.
+          <div className="mt-10 border-t border-slate-900 pt-6 text-center text-xs text-slate-500">
+            © 2026 SwiftTab (justswifttab.com). Next-Gen Restaurant Dining & Operations Engine.
           </div>
         </div>
       </footer>
@@ -552,148 +617,81 @@ function ProductPreview({
   return (
     <div className="relative">
       <div className="grid grid-cols-1 items-end gap-4 sm:grid-cols-5 lg:gap-6">
-        {/* Customer phone */}
-        <div className="col-span-1 rounded-[1.5rem] border-4 border-slate-900 bg-[#f8f4ed] p-3 shadow-2xl sm:col-span-3 sm:rounded-[2rem] sm:border-[10px] sm:p-4">
-          <div className="flex items-center justify-between border-b border-stone-300 px-2 pb-3">
+        {/* Customer phone mockup */}
+        <div className="col-span-1 sm:col-span-3 rounded-[2rem] border-4 border-slate-800 bg-slate-900 p-4 shadow-2xl space-y-3">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-800">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
                 Table {demoRestaurant.tableNumber}
               </p>
-              <h3 className="text-lg font-semibold">{demoRestaurant.name}</h3>
+              <h3 className="text-base font-black text-white">{demoRestaurant.name}</h3>
             </div>
-            <QrCode className="h-5 w-5 text-stone-700" />
+            <div className="px-2.5 py-1 rounded-full bg-purple-900/60 border border-purple-500/30 text-[10px] font-bold text-purple-300 flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-purple-400" />
+              <span>3D Active</span>
+            </div>
           </div>
-          <div className="space-y-3 py-3">
+
+          <div className="space-y-2.5 py-1">
             {phoneItems.map((item) => (
-              <div key={item.id} className="grid grid-cols-[56px_1fr] gap-3 rounded-lg bg-white p-2">
-                <div className="relative h-16 w-14 overflow-hidden rounded-md bg-stone-200">
+              <div key={item.id} className="grid grid-cols-[60px_1fr] gap-3 rounded-2xl bg-slate-800/80 p-2.5 border border-slate-700/60 items-center">
+                <div className="relative h-16 w-15 overflow-hidden rounded-xl bg-slate-700">
                   <Image
-                    src={item.imageUrl}
+                    src={item.imageUrl || ""}
                     alt={item.name}
                     fill
-                    sizes="56px"
+                    sizes="60px"
                     className="object-cover"
                   />
                 </div>
-                <div className="flex min-w-0 flex-col justify-center">
-                  <p className="text-sm font-semibold">{item.name}</p>
-                  <p className="mt-0.5 text-xs text-stone-600">{formatMoney(item.pricePaise)}</p>
-                  <span
-                    className={`mt-1 inline-flex w-fit items-center gap-1 text-[10px] font-bold ${
-                      item.foodType === "NON_VEG" ? "text-red-700" : "text-emerald-700"
-                    }`}
-                  >
-                    <Utensils className="h-3 w-3" /> {item.foodType === "NON_VEG" ? "Non veg" : "Veg"}
-                  </span>
+                <div className="flex min-w-0 flex-col justify-center space-y-0.5">
+                  <p className="text-xs font-bold text-white truncate">{item.name}</p>
+                  <p className="text-xs font-mono font-bold text-purple-300">{formatMoney(item.pricePaise)}</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold text-emerald-400">
+                      🔥 {item.calories || 480} kcal
+                    </span>
+                    <span className="text-[10px] font-bold text-purple-300">
+                      💪 {item.proteinGrams || 22}g P
+                    </span>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
-          <div className="rounded-lg bg-stone-950 p-3 text-white">
+
+          <div className="rounded-2xl bg-gradient-to-r from-purple-900/80 to-indigo-900/80 border border-purple-500/30 p-3 text-white">
             <div className="flex items-center justify-between">
-              <span className="flex items-center gap-2 text-sm font-semibold">
-                <MenuIcon className="h-4 w-4" /> Cart
+              <span className="flex items-center gap-1.5 text-xs font-bold">
+                <Activity className="h-3.5 w-3.5 text-emerald-400" /> Live Table Nutrition
               </span>
-              <span className="text-sm font-semibold">{formatMoney(phoneTotalPaise)} + GST</span>
+              <span className="text-xs font-mono font-bold text-emerald-300">1,330 kcal · 60g P</span>
             </div>
-            <div className="mt-2 rounded-md bg-white px-3 py-2 text-center text-sm font-semibold text-stone-950">
-              Place order
+            <div className="mt-2 rounded-xl bg-white px-3 py-2 text-center text-xs font-black text-slate-950 shadow">
+              Proceed to Table Order ({formatMoney(phoneTotalPaise)})
             </div>
           </div>
         </div>
 
-        {/* Kitchen + staff cards */}
-        <div className="col-span-1 flex flex-col gap-4 sm:col-span-2">
-          <div className="rounded-xl border border-white/10 bg-stone-950 p-4 text-white shadow-xl">
-            <div className="flex items-center justify-between">
-              <h3 className="flex items-center gap-2 text-base font-semibold">
-                <ChefHat className="h-4 w-4 text-emerald-300" /> Kitchen
-              </h3>
-              <span className="flex items-center gap-1 rounded-md bg-white/10 px-2 py-1 text-[10px] font-semibold">
-                <Bell className="h-3 w-3 text-emerald-300" /> Alert
-              </span>
+        {/* Live Kitchen KDS Ticket mockup */}
+        <div className="hidden sm:block sm:col-span-2 space-y-3">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900 p-4 shadow-xl space-y-2">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+              <span className="text-xs font-black text-white">Live Kitchen KDS</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-950 border border-emerald-500/40 text-emerald-400">Active</span>
             </div>
-            <div className="mt-3 rounded-lg border border-white/10 bg-white/[0.06] p-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-[11px] text-stone-300">Order #{previewOrder.orderNumber}</p>
-                  <p className="text-lg font-semibold">Table {previewOrder.table}</p>
+            <p className="text-[11px] font-bold text-purple-300">Table #{previewOrder.table} · #{previewOrder.orderNumber}</p>
+            <div className="space-y-1 text-xs text-slate-300">
+              {previewOrder.items.map((i, idx) => (
+                <div key={idx} className="flex justify-between text-[11px]">
+                  <span>{i.quantity}x {i.name}</span>
+                  <span className="text-slate-400 font-mono">Kitchen</span>
                 </div>
-                <span className="rounded-md bg-amber-300 px-2 py-0.5 text-[10px] font-bold text-stone-950">Received</span>
-              </div>
-              <div className="mt-3 space-y-1.5 text-xs text-stone-200">
-                {previewOrder.items.map((item) => (
-                  <p key={item.name}>
-                    {item.quantity} x {item.name}
-                    {item.instructions && <span className="text-amber-200"> · {item.instructions}</span>}
-                  </p>
-                ))}
-              </div>
+              ))}
             </div>
           </div>
-
-          <div className="rounded-xl border border-stone-200 bg-white p-4 shadow-xl">
-            <h3 className="flex items-center gap-2 text-base font-semibold">
-              <CreditCard className="h-4 w-4 text-emerald-700" /> Payment
-            </h3>
-            <p className="mt-1 text-xs text-stone-500">Paid directly to the restaurant</p>
-            <div className="mt-3 flex items-center gap-2">
-              <span className="rounded-md bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-800">UPI</span>
-              <span className="rounded-md bg-stone-100 px-2.5 py-1 text-xs font-bold text-stone-700">Cash</span>
-              <span className="ml-auto text-xs font-semibold text-stone-600">Staff confirms</span>
-            </div>
-          </div>
-
-          <Link
-            href="/demo"
-            className="flex items-center justify-center gap-2 rounded-xl border border-emerald-700 bg-white px-4 py-3 text-sm font-bold text-emerald-800 transition hover:bg-emerald-50"
-          >
-            <Sparkles className="h-4 w-4" /> Explore the workflow
-          </Link>
         </div>
       </div>
-      <p className="mt-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-400">
-        Preview from the live product · demo data
-      </p>
-    </div>
-  );
-}
-
-function FeatureCard({
-  icon: Icon,
-  title,
-  points,
-}: {
-  icon: typeof QrCode;
-  title: string;
-  points: string[];
-}) {
-  return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-7">
-      <div className="mb-4 grid h-11 w-11 place-items-center rounded-xl bg-emerald-100 text-emerald-800">
-        <Icon className="h-5 w-5" />
-      </div>
-      <h3 className="text-xl font-bold">{title}</h3>
-      <ul className="mt-4 space-y-2.5">
-        {points.map((point) => (
-          <li key={point} className="flex items-start gap-2.5 leading-6 text-gray-600">
-            <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-emerald-600" />
-            <span>{point}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function HardwareRow({ icon: Icon, title, text }: { icon: typeof QrCode; title: string; text: string }) {
-  return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-6">
-      <div className="mb-3 grid h-10 w-10 place-items-center rounded-lg bg-emerald-100 text-emerald-800">
-        <Icon className="h-5 w-5" />
-      </div>
-      <h3 className="font-bold">{title}</h3>
-      <p className="mt-1.5 text-sm leading-6 text-gray-600">{text}</p>
     </div>
   );
 }

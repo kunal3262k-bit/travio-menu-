@@ -64,9 +64,11 @@ model Restaurant {
   coverImage      String?
   brandColor      String?          @default("#000000")
   phone           String?
+  whatsappPhone   String?
   address         String?
   gstNumber       String?
   googleReviewUrl String?
+  reviewRedirectThreshold Int      @default(4)
   upiQrUrl        String?
   cuisine         String?
   isVegOnly       Boolean          @default(false)
@@ -106,12 +108,15 @@ model Staff {
 }
 
 model Feedback {
-  id           String     @id @default(cuid())
-  restaurantId String
-  rating       Int
-  comment      String?
-  createdAt    DateTime   @default(now())
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  id             String     @id @default(cuid())
+  restaurantId   String
+  rating         Int
+  comment        String?
+  customerPhone  String?
+  tableNumber    Int?
+  routedToGoogle Boolean    @default(false)
+  createdAt      DateTime   @default(now())
+  restaurant     Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 
   @@index([restaurantId, createdAt])
 }
@@ -168,6 +173,19 @@ model MenuItem {
   name           String
   description    String?
   imageUrl       String?
+  imageSource    String?      @default("AI_GENERATED")
+  imageGallery   Json?        @default("[]")
+  aiPrompt       String?
+  calories       Int?
+  proteinGrams   Float?
+  fatGrams       Float?
+  carbsGrams     Float?
+  fiberGrams     Float?
+  allergens      Json?        @default("[]")
+  dietaryFlags   Json?        @default("[]")
+  chefNote       String?
+  isPopular      Boolean      @default(false)
+  isHotSizzler   Boolean      @default(false)
   pricePaise     Int
   foodType       FoodType
   spicyLevel     Int          @default(0)
