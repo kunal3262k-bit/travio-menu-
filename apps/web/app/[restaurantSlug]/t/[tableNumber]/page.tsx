@@ -97,16 +97,21 @@ export default async function TablePage({
 
   // 3. Check for Open Orders (strictly by session, with a 6-hour fallback for pre-migration orders)
   const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
-  const openOrdersCount = await prisma.order.count({
+  const openOrders = await prisma.order.findMany({
     where: {
       tableId: table.id,
       restaurantId: restaurant.id,
       status: { notIn: ["COMPLETED", "CANCELLED"] },
+      paymentStatus: { not: "PAID" },
       OR: [
         { tableSessionId: table.currentSessionId ?? "NONE_ACTIVE" },
         { tableSessionId: null, createdAt: { gte: sixHoursAgo } }
       ]
-    }
+    },
+    include: {
+      items: true
+    },
+    orderBy: { createdAt: "asc" }
   });
 
   // 4. Render Live Menu
@@ -117,7 +122,8 @@ export default async function TablePage({
         restaurant={restaurant} 
         table={table} 
         categories={restaurant.categories} 
-        openOrdersCount={openOrdersCount}
+        openOrdersCount={openOrders.length}
+        initialOrders={openOrders}
       />
     </>
   );

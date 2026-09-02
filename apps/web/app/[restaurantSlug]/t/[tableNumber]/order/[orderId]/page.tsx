@@ -21,13 +21,13 @@ export default async function OrderTrackingPage({
   if (!order || order.restaurant.slug !== restaurantSlug) return notFound();
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-[#070D0B] flex flex-col items-center justify-center p-4">
       <div className="max-w-md w-full">
-        <h1 className="text-2xl font-bold text-center mb-8">{order.restaurant.name}</h1>
+        <h1 className="text-2xl font-black text-center mb-6 text-white">{order.restaurant.name}</h1>
         <OrderStatusClient order={order} />
-        <div className="mt-8 text-center">
-          <a href={`/${restaurantSlug}/t/${tableNumber}`} className="text-emerald-700 font-medium hover:underline">
-            ← Back to Menu
+        <div className="mt-6 text-center">
+          <a href={`/${restaurantSlug}/t/${tableNumber}`} className="text-emerald-400 font-bold text-sm hover:underline">
+            ← Return to Table Menu
           </a>
         </div>
       </div>

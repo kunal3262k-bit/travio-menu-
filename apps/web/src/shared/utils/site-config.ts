@@ -14,4 +14,4 @@
  * here, the header, footer, and CTA contact links appear automatically.
  */
 export const SUPPORT_EMAIL: string = "support@justswifttab.com";
-export const SUPPORT_WHATSAPP: string = "+9197177468";
+export const SUPPORT_WHATSAPP: string = "+919719945568";

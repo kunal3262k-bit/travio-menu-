@@ -4,6 +4,9 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useNotificationSound } from "@/lib/sound";
 import { createRealtimeSocket } from "@/lib/realtime";
+import { TableBillSplitter } from "@/components/customer/TableBillSplitter";
+import { WhatsAppBillModal } from "@/components/customer/WhatsAppBillModal";
+import { Split, MessageSquare, ReceiptText, CheckCircle2 } from "lucide-react";
 
 export default function PaymentClient({ 
   restaurant, 
@@ -21,6 +24,8 @@ export default function PaymentClient({
   const [activeOrders, setActiveOrders] = useState(orders);
   const [isCallingWaiter, setIsCallingWaiter] = useState(false);
   const [waiterCalled, setWaiterCalled] = useState(false);
+  const [isSplitModalOpen, setIsSplitModalOpen] = useState(false);
+  const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
   const [invoiceInfo, setInvoiceInfo] = useState<{ orderId: string; invoiceNumber: number } | null>(null);
   const { isSoundEnabled, playCustomerHotelChime, playStatusChime, unlockSound } = useNotificationSound();
   
@@ -201,8 +206,38 @@ export default function PaymentClient({
     );
   }
 
+  const handleClaimSplitPayment = async (sharePaise: number, splitCount: number) => {
+    // Mark orders as CLAIMED — ensuring split payments pass through the SAME waiter verification
+    await fetch("/api/orders/claim-payment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orderIds, method: "UPI" })
+    });
+    void playCustomerHotelChime();
+    setPaymentState("UPI_CLAIMED");
+  };
+
   return (
     <div className="max-w-md mx-auto space-y-6">
+      {/* Table Bill Splitter Modal */}
+      <TableBillSplitter
+        isOpen={isSplitModalOpen}
+        onClose={() => setIsSplitModalOpen(false)}
+        totalPaise={grandTotal}
+        tableNumber={table.number}
+        restaurantName={restaurant.name}
+        onClaimSplitPayment={handleClaimSplitPayment}
+      />
+
+      {/* WhatsApp Bill Modal */}
+      <WhatsAppBillModal
+        isOpen={isWhatsAppModalOpen}
+        onClose={() => setIsWhatsAppModalOpen(false)}
+        restaurantName={restaurant.name}
+        totalPaise={grandTotal}
+        tableNumber={table.number}
+      />
+
       {/* Sound enablement banner */}
       {!isSoundEnabled && (
         <div 
@@ -287,9 +322,25 @@ export default function PaymentClient({
         })}
       </div>
 
-      {/* Bill & Payment Card */}
+      {/* Bill & Settlement Card */}
       <div className="bg-white rounded-xl shadow-sm p-6 border space-y-6">
-        <h2 className="text-xl font-black border-b pb-3">Bill & Settlement</h2>
+        <div className="flex items-center justify-between border-b pb-3">
+          <h2 className="text-xl font-black">Bill & Settlement</h2>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setIsSplitModalOpen(true)}
+              className="px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 font-bold text-xs flex items-center gap-1 transition-colors"
+            >
+              <Split className="w-3.5 h-3.5" /> Split Bill
+            </button>
+            <button
+              onClick={() => setIsWhatsAppModalOpen(true)}
+              className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 font-bold text-xs flex items-center gap-1 transition-colors"
+            >
+              <MessageSquare className="w-3.5 h-3.5" /> WhatsApp
+            </button>
+          </div>
+        </div>
         
         <div className="space-y-2 text-sm font-medium text-stone-600">
           <div className="flex justify-between">
@@ -315,7 +366,7 @@ export default function PaymentClient({
               onClick={() => setPaymentMethod("UPI")}
               className={`py-3 rounded-xl border-2 font-bold text-sm transition-all ${paymentMethod === "UPI" ? "border-emerald-600 bg-emerald-50 text-emerald-950" : "border-stone-200 text-stone-600"}`}
             >
-              📱 UPI
+              📱 Full UPI
             </button>
             <button 
               onClick={() => setPaymentMethod("CASH")}

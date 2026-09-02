@@ -13,6 +13,7 @@ interface TableBillSplitterProps {
   tableNumber: number;
   restaurantName: string;
   upiVpa?: string;
+  onClaimSplitPayment?: (sharePaise: number, splitCount: number) => Promise<void>;
 }
 
 export function TableBillSplitter({
@@ -21,10 +22,12 @@ export function TableBillSplitter({
   totalPaise,
   tableNumber,
   restaurantName,
-  upiVpa = "swifttab@icici"
+  upiVpa = "swifttab@icici",
+  onClaimSplitPayment
 }: TableBillSplitterProps) {
   const [splitCount, setSplitCount] = useState(2);
   const [mode, setMode] = useState<"equal" | "qr">("equal");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -40,6 +43,19 @@ export function TableBillSplitter({
 
   const perPersonPaise = Math.round(totalPaise / splitCount);
   const upiPayUrl = `upi://pay?pa=${encodeURIComponent(upiVpa)}&pn=${encodeURIComponent(restaurantName)}&am=${(perPersonPaise / 100).toFixed(2)}&tn=${encodeURIComponent(`Table ${tableNumber} Share`)}&cu=INR`;
+
+  const handleClaim = async () => {
+    if (!onClaimSplitPayment || isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      await onClaimSplitPayment(perPersonPaise, splitCount);
+      onClose();
+    } catch (e: any) {
+      alert(e.message || "Failed to notify waiter.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -115,7 +131,7 @@ export function TableBillSplitter({
 
               <button
                 onClick={() => setMode("qr")}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-sm shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-sm shadow-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
               >
                 <QrCode className="w-4 h-4" />
                 <span>Show My UPI QR Code ({formatMoney(perPersonPaise)})</span>
@@ -135,6 +151,17 @@ export function TableBillSplitter({
               <p className="text-xs text-slate-300">
                 Scan with Google Pay, PhonePe, or Paytm to pay your share directly.
               </p>
+
+              {onClaimSplitPayment && (
+                <button
+                  onClick={handleClaim}
+                  disabled={isSubmitting}
+                  className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>{isSubmitting ? "Notifying..." : "I've Paid My Share → Notify Waiter"}</span>
+                </button>
+              )}
 
               <button
                 onClick={() => setMode("equal")}

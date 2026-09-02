@@ -10,7 +10,10 @@ export async function POST(request: NextRequest) {
     if (!isPaymentConfirmationAllowedRole(session.role)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
-    const { orderIds } = await request.json();
+    const rawBody = await request.text();
+    console.log("[CONFIRM_PAYMENT_ROUTE] rawBody received:", rawBody);
+    const body = rawBody ? JSON.parse(rawBody) : {};
+    const { orderIds } = body;
 
     if (!orderIds || !Array.isArray(orderIds) || orderIds.length === 0) {
       return NextResponse.json({ error: "Invalid data" }, { status: 400 });

@@ -25,7 +25,6 @@ import { formatMoney } from "@/lib/utils";
 import { selectUpsellRecommendations } from "@/lib/upsell";
 import { estimateDishNutrition, calculateTableNutritionTotals } from "@/lib/macroEstimator";
 import { resolveDishStudioAssets } from "@/lib/aiFoodStudio";
-import { Dish3DModal, Dish3DModalItem } from "@/components/customer/Dish3DModal";
 import { DietaryFilterBar, DietaryFilterType } from "@/components/customer/DietaryFilterBar";
 import { TableNutritionMeter } from "@/components/customer/TableNutritionMeter";
 import { SmartUpsellModal } from "@/components/customer/SmartUpsellModal";
@@ -77,16 +76,20 @@ export type RestaurantView = {
 
 type CartLine = { item: MenuItem; quantity: number; instructions: string };
 
+import { createRealtimeSocket } from "@/lib/realtime";
+
 export function CustomerMenu({
   restaurant,
   table,
   categories,
   openOrdersCount = 0,
+  initialOrders = [],
 }: {
   restaurant: any;
   table?: any;
   categories?: any[];
   openOrdersCount?: number;
+  initialOrders?: any[];
 }) {
   const router = useRouter();
   
@@ -137,18 +140,44 @@ export function CustomerMenu({
     };
   }, [restaurant, table, categories, openOrdersCount]);
 
+  const [activeOrders, setActiveOrders] = useState<any[]>(initialOrders);
   const [cart, setCart] = useState<Record<string, CartLine>>({});
   const [notice, setNotice] = useState<string | null>(null);
   const [sessionDailyOrderNumber, setSessionDailyOrderNumber] = useState<number | null>(null);
-  const [rounds, setRounds] = useState<number>(0);
+  const [rounds, setRounds] = useState<number>(initialOrders.length);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCallingWaiter, setIsCallingWaiter] = useState(false);
   const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>(view.categories[0]?.id || "");
   const [idempotencyKey, setIdempotencyKey] = useState(() => Math.random().toString(36).substring(2) + Date.now().toString(36));
 
-  // 3D Card & Modal States
-  const [selected3DItem, setSelected3DItem] = useState<MenuItem | null>(null);
+  // Listen for live order status changes on this table
+  useEffect(() => {
+    const tableId = table?.id || restaurant?.tables?.[0]?.id;
+    if (!tableId) return;
+
+    const rt = createRealtimeSocket({
+      rooms: () => [`table_${tableId}`],
+      onReconcile: () => {},
+    });
+
+    rt.on("order_status_changed", (data: any) => {
+      setActiveOrders((prev) =>
+        prev.map((o) => (o.id === data.orderId ? { ...o, status: data.status } : o))
+      );
+    });
+
+    rt.on("payment_confirmed", () => {
+      setActiveOrders([]);
+      setCart({});
+    });
+
+    return () => {
+      rt.disconnect();
+    };
+  }, [table?.id, restaurant?.tables]);
+
+  // Modals States
   const [selectedDietaryFilter, setSelectedDietaryFilter] = useState<DietaryFilterType>("ALL");
   const [upsellModalOpen, setUpsellModalOpen] = useState(false);
   const [upsellTriggerName, setUpsellTriggerName] = useState("");
@@ -259,16 +288,16 @@ export function CustomerMenu({
       const isFirstRound = rounds === 0;
       const displayOrderNumber = sessionDailyOrderNumber ?? data.order?.dailyOrderNumber ?? "1";
       const orderMessage = isFirstRound
-        ? `Order #${data.order?.dailyOrderNumber || 1} sent to kitchen!`
-        : `Order #${displayOrderNumber} (Round ${rounds + 1}) sent to kitchen!`;
+        ? `Order #${data.order?.dailyOrderNumber || 1} sent to kitchen! Status: Preparing.`
+        : `Order #${displayOrderNumber} (Round ${rounds + 1}) sent to kitchen! Status: Preparing.`;
 
       showNotice(orderMessage);
       setCart({});
       setIsMobileCartOpen(false);
       setIdempotencyKey(Math.random().toString(36).substring(2) + Date.now().toString(36));
 
-      if (data.order?.id && view.slug && view.tableNumber) {
-        router.push(`/${view.slug}/t/${view.tableNumber}/order/${data.order.id}`);
+      if (data.order) {
+        setActiveOrders((prev) => [...prev, data.order]);
       }
     } catch (error: any) {
       alert(error.message);
@@ -278,6 +307,10 @@ export function CustomerMenu({
   }
 
   const estimatedWait = useMemo(() => (cartLines.length ? "15-20 min wait" : "Add items to estimate"), [cartLines.length]);
+
+  const activeSessionTotal = useMemo(() => {
+    return activeOrders.reduce((sum, o) => sum + (o.totalPaise || 0), 0);
+  }, [activeOrders]);
 
   const [greeting, setGreeting] = useState("Here's our menu");
   useEffect(() => {
@@ -311,17 +344,36 @@ export function CustomerMenu({
     }
   }
 
+  const getOrderStatusBadge = (status: string) => {
+    switch (status) {
+      case "RECEIVED":
+        return { text: "Order Received 📥", color: "bg-blue-100 text-blue-800 border-blue-300", step: 1 };
+      case "ACCEPTED":
+        return { text: "Chef Accepted 👨‍🍳", color: "bg-blue-100 text-blue-800 border-blue-300", step: 1 };
+      case "PREPARING":
+        return { text: "Cooking in Kitchen 🔥", color: "bg-amber-100 text-amber-800 border-amber-300", step: 2 };
+      case "READY":
+        return { text: "Ready for Table 🔔", color: "bg-green-100 text-green-800 border-green-300", step: 3 };
+      case "SERVED":
+        return { text: "Served at Table 🍽️", color: "bg-emerald-100 text-emerald-800 border-emerald-300", step: 4 };
+      default:
+        return { text: status, color: "bg-gray-100 text-gray-800 border-gray-300", step: 1 };
+    }
+  };
+
+  const handleClaimSplitPayment = async (sharePaise: number, splitCount: number) => {
+    const orderIds = activeOrders.map((o: any) => o.id).filter(Boolean);
+    if (orderIds.length === 0) return;
+    await fetch("/api/orders/claim-payment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orderIds, method: "UPI" }),
+    });
+    showNotice("Payment reported! Waiter notified to verify your share.");
+  };
+
   return (
     <main className="min-h-svh bg-[#f8f4ed] pb-36 lg:pb-16 text-slate-900">
-      {/* 3D Interactive Dish Modal */}
-      <Dish3DModal
-        item={selected3DItem}
-        isOpen={Boolean(selected3DItem)}
-        onClose={() => setSelected3DItem(null)}
-        onAddToCart={(item, qty, inst) => updateQuantity(item as MenuItem, qty, inst)}
-        initialQuantity={selected3DItem ? cart[selected3DItem.id]?.quantity || 1 : 1}
-        initialInstructions={selected3DItem ? cart[selected3DItem.id]?.instructions || "" : ""}
-      />
 
       {/* Smart Upsell Modal */}
       <SmartUpsellModal
@@ -341,7 +393,7 @@ export function CustomerMenu({
         isOpen={isWhatsAppModalOpen}
         onClose={() => setIsWhatsAppModalOpen(false)}
         restaurantName={view.name}
-        totalPaise={total || 45000}
+        totalPaise={activeSessionTotal || total || 45000}
         tableNumber={view.tableNumber}
       />
 
@@ -358,30 +410,92 @@ export function CustomerMenu({
       <TableBillSplitter
         isOpen={isSplitBillModalOpen}
         onClose={() => setIsSplitBillModalOpen(false)}
-        totalPaise={total || 45000}
+        totalPaise={activeSessionTotal || total || 45000}
         tableNumber={view.tableNumber}
         restaurantName={view.name}
+        onClaimSplitPayment={handleClaimSplitPayment}
       />
 
-      {/* Active Orders Banner */}
-      {view.openOrdersCount > 0 && cartLines.length === 0 && (
-        <div
-          onClick={() => router.push(`/${view.slug}/t/${view.tableNumber}/payment`)}
-          className="bg-emerald-700 text-white px-4 py-3 flex justify-between items-center cursor-pointer hover:bg-emerald-800 transition-colors sticky top-0 z-40 shadow-sm"
-        >
-          <div className="font-bold text-xs sm:text-sm flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-            You have {view.openOrdersCount} active {view.openOrdersCount === 1 ? "order" : "orders"}
-          </div>
-          <div className="font-bold text-xs sm:text-sm bg-black/20 px-3 py-1 rounded-full flex items-center gap-1">
-            View / Pay Bill →
+      {/* Active Orders Live Tracking Stepper Panel */}
+      {activeOrders.length > 0 && (
+        <div className="bg-emerald-950 text-white px-4 py-4 border-b border-emerald-800/80 shadow-md">
+          <div className="mx-auto max-w-5xl space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-400 animate-ping" />
+                <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-emerald-300">
+                  Live Table Session ({activeOrders.length} {activeOrders.length === 1 ? "Round" : "Rounds"})
+                </h3>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsSplitBillModalOpen(true)}
+                  className="px-2.5 py-1 rounded-lg bg-emerald-900/60 hover:bg-emerald-800 border border-emerald-600/40 text-[11px] font-bold text-emerald-200 transition-colors flex items-center gap-1"
+                >
+                  <Split className="w-3 h-3" /> Split Bill
+                </button>
+                <button
+                  onClick={() => setIsWhatsAppModalOpen(true)}
+                  className="px-2.5 py-1 rounded-lg bg-emerald-900/60 hover:bg-emerald-800 border border-emerald-600/40 text-[11px] font-bold text-emerald-200 transition-colors flex items-center gap-1"
+                >
+                  <MessageSquare className="w-3 h-3" /> WhatsApp Bill
+                </button>
+                <button
+                  onClick={() => router.push(`/${view.slug}/t/${view.tableNumber}/payment`)}
+                  className="px-3 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shadow transition-all flex items-center gap-1"
+                >
+                  Pay & Settle ({formatMoney(activeSessionTotal)}) →
+                </button>
+              </div>
+            </div>
+
+            {/* Active Orders Stepper List */}
+            <div className="grid gap-2 sm:grid-cols-2">
+              {activeOrders.map((order: any, idx: number) => {
+                const badge = getOrderStatusBadge(order.status);
+                return (
+                  <div key={order.id || idx} className="rounded-xl bg-[#070D0B] border border-emerald-500/20 p-3 space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-bold text-white">
+                        Order #{order.dailyOrderNumber || order.orderNumber || idx + 1} {activeOrders.length > 1 ? `(Round ${idx + 1})` : ""}
+                      </span>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${badge.color}`}>
+                        {badge.text}
+                      </span>
+                    </div>
+
+                    {/* Step bar */}
+                    <div className="grid grid-cols-4 gap-1">
+                      {["Received", "Cooking", "Ready", "Served"].map((stepName, sIdx) => {
+                        const isDone = badge.step >= sIdx + 1;
+                        return (
+                          <div key={stepName} className="text-center">
+                            <div className={`h-1 rounded-full mb-0.5 ${isDone ? "bg-emerald-400" : "bg-slate-800"}`} />
+                            <span className={`text-[9px] font-semibold ${isDone ? "text-emerald-300" : "text-slate-600"}`}>
+                              {stepName}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Item snapshot */}
+                    {order.items && order.items.length > 0 && (
+                      <div className="text-[11px] text-slate-300 pt-1 border-t border-emerald-950/60 truncate">
+                        {order.items.map((it: any) => `${it.quantity}x ${it.nameSnapshot || it.name}`).join(", ")}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
 
       {/* Sticky Top Header */}
       <header
-        className={`sticky ${view.openOrdersCount > 0 && cartLines.length === 0 ? "top-[48px]" : "top-0"} z-30 border-b border-stone-300/70 bg-[#f8f4ed]/95 px-4 py-3 backdrop-blur-md`}
+        className="sticky top-0 z-30 border-b border-stone-300/70 bg-[#f8f4ed]/95 px-4 py-3 backdrop-blur-md"
       >
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <div>
@@ -488,10 +602,9 @@ export function CustomerMenu({
                         key={item.id}
                         className="grid grid-cols-[100px_1fr] gap-3.5 border-b border-stone-300/80 pb-4 sm:grid-cols-[116px_1fr] sm:gap-4 bg-white/70 hover:bg-white rounded-2xl p-3 shadow-sm transition-all border border-stone-200/50"
                       >
-                        {/* Image Thumbnail with 3D Trigger */}
+                        {/* Image Thumbnail */}
                         <div
-                          onClick={() => setSelected3DItem(item)}
-                          className="relative h-24 w-24 sm:h-28 sm:w-28 overflow-hidden rounded-2xl bg-stone-200 shadow-sm cursor-pointer group shrink-0"
+                          className="relative h-24 w-24 sm:h-28 sm:w-28 overflow-hidden rounded-2xl bg-stone-200 shadow-sm shrink-0"
                         >
                           {item.imageUrl ? (
                             <Image
@@ -499,18 +612,13 @@ export function CustomerMenu({
                               alt={item.name}
                               fill
                               sizes="(max-width: 640px) 100px, 116px"
-                              className="object-cover group-hover:scale-108 transition-transform duration-500"
+                              className="object-cover"
                             />
                           ) : (
                             <div className="flex h-full w-full items-center justify-center bg-stone-200 text-stone-400">
                               <Utensils className="h-7 w-7 text-stone-400" />
                             </div>
                           )}
-
-                          {/* 3D Visual Pill */}
-                          <div className="absolute bottom-1.5 right-1.5 px-2 py-0.5 rounded-md bg-black/80 backdrop-blur-md text-[10px] font-bold text-white flex items-center gap-1 opacity-90 group-hover:opacity-100 border border-emerald-500/30 shadow-sm">
-                            <Sparkles className="w-2.5 h-2.5 text-emerald-400" /> 3D
-                          </div>
                         </div>
 
                         {/* Item Details */}
@@ -518,8 +626,7 @@ export function CustomerMenu({
                           <div>
                             <div className="flex items-start justify-between gap-2">
                               <h3
-                                onClick={() => setSelected3DItem(item)}
-                                className="font-bold text-stone-950 text-base leading-snug hover:text-emerald-800 cursor-pointer"
+                                className="font-bold text-stone-950 text-base leading-snug"
                               >
                                 {item.name}
                               </h3>
@@ -536,8 +643,7 @@ export function CustomerMenu({
 
                             {/* Macro Pill */}
                             <div
-                              onClick={() => setSelected3DItem(item)}
-                              className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-emerald-50/80 hover:bg-emerald-100 border border-emerald-200/60 text-[11px] font-semibold text-emerald-950 cursor-pointer transition-colors"
+                              className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-emerald-50/80 border border-emerald-200/60 text-[11px] font-semibold text-emerald-950"
                             >
                               <span className="font-bold text-amber-700">🔥 {item.calories || 380} kcal</span>
                               <span className="text-emerald-300">·</span>
@@ -631,7 +737,7 @@ export function CustomerMenu({
       </section>
 
       {/* Floating Mobile Cart Bar */}
-      {(totalItemCount > 0 || sessionDailyOrderNumber) && (
+      {(totalItemCount > 0 || activeOrders.length > 0) && (
         <div className="fixed inset-x-4 bottom-4 z-40 lg:hidden">
           <button
             onClick={() => setIsMobileCartOpen(true)}
@@ -643,7 +749,7 @@ export function CustomerMenu({
               </span>
               <div className="text-left">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-100">
-                  {sessionDailyOrderNumber ? `Order #${sessionDailyOrderNumber}` : "View Table Cart"}
+                  {activeOrders.length > 0 ? `Order #${activeOrders[0].dailyOrderNumber || activeOrders[0].orderNumber || 1}` : "View Table Cart"}
                 </p>
                 <p className="text-sm font-bold">
                   {formatMoney(total)} <span className="text-xs font-normal text-emerald-100">incl. GST</span>

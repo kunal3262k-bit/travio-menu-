@@ -151,15 +151,19 @@ export default function WaiterClient({
   };
 
   const confirmPayment = async (tableId: string, orderIds: string[], method: string) => {
+    console.log("[WAITER_CLIENT] confirmPayment called for tableId:", tableId, "orderIds:", orderIds);
     setPendingPayments(prev => prev.filter(p => p.tableId !== tableId));
     
     try {
-      await fetch("/api/orders/confirm-payment", {
+      const res = await fetch("/api/orders/confirm-payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orderIds })
       });
+      console.log("[WAITER_CLIENT] confirm-payment response status:", res.status);
+      router.refresh();
     } catch (e) {
+      console.error("[WAITER_CLIENT] Failed to confirm payment:", e);
       alert("Failed to confirm payment");
     }
   };

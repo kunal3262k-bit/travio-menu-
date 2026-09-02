@@ -1,4 +1,4 @@
-﻿import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, expect, it, vi, beforeEach } from "vitest";
 
 vi.mock("../src/shared/utils/prisma", () => ({
   prisma: {
@@ -33,7 +33,10 @@ const makeTx = (rows: any[] = [carOrder]) => ({
   table: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
 });
 
-const request = (body: object) => ({ json: vi.fn().mockResolvedValue(body) });
+const request = (body: object) => ({ 
+  json: vi.fn().mockResolvedValue(body),
+  text: vi.fn().mockResolvedValue(JSON.stringify(body))
+});
 
 beforeEach(() => {
   vi.clearAllMocks();
