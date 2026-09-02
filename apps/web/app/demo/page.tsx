@@ -7,7 +7,7 @@ import { KitchenBoard } from "@/components/kitchen/KitchenBoard";
 export const metadata: Metadata = {
   title: "See SwiftTab in Action",
   description:
-    "Watch a 50-second product walkthrough and explore the real SwiftTab workflow — from customer order to kitchen display.",
+    "Watch a quick product walkthrough and explore the real SwiftTab workflow — from customer order to kitchen display.",
   alternates: { canonical: "/demo" },
 };
 
@@ -41,7 +41,7 @@ export default function DemoPage() {
             />
           </div>
           <p className="mt-3 text-center text-sm font-semibold text-gray-400">
-            Real SwiftTab product · 50 seconds · no narration required
+            Real SwiftTab product · 12 seconds · no narration required
           </p>
         </div>
       </section>
