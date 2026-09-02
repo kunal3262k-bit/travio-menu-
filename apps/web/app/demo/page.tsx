@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 import { KitchenBoard } from "@/components/kitchen/KitchenBoard";
-import StoryDemo from "@/app/components/StoryDemo";
+import InteractiveDemo from "@/app/components/InteractiveDemo";
 
 export const metadata: Metadata = {
-  title: "See SwiftTab in Action",
+  title: "See SwiftTab in Action — Try the Live Demo",
   description:
-    "Watch a quick product walkthrough and explore the real SwiftTab workflow — from customer order to kitchen display.",
+    "Try the real SwiftTab product right in your browser. Browse the menu, add items, and see how orders flow to the kitchen display.",
   alternates: { canonical: "/demo" },
 };
 
@@ -16,110 +15,76 @@ export default function DemoPage() {
   return (
     <main className="min-h-screen bg-white text-slate-900">
       {/* Hero */}
-      <section className="bg-[#f8f9fa] px-6 py-16 md:py-24">
+      <section className="bg-[#f8f9fa] px-6 py-16 md:py-20">
         <div className="mx-auto max-w-4xl text-center">
-          <p className="text-sm font-bold uppercase tracking-widest text-emerald-700">Product tour</p>
+          <p className="text-sm font-bold uppercase tracking-widest text-emerald-700">Live product demo</p>
           <h1 className="mt-3 text-3xl font-black tracking-tight md:text-5xl">
-            See SwiftTab in action
+            Try SwiftTab right now
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-gray-600">
-            From customer order to kitchen — see the workflow your restaurant staff actually uses.
+            No sign-up. No video. This is the actual product — browse the menu, add items to cart, and see orders land in the kitchen display.
           </p>
         </div>
       </section>
 
-      {/* Animated Story Demo */}
-      <section className="px-6 py-12">
+      {/* Interactive Demo — the main attraction */}
+      <section className="px-6 py-12 md:py-16">
         <div className="mx-auto max-w-5xl">
-          <StoryDemo />
-          <p className="mt-3 text-center text-sm font-semibold text-gray-400">
-            Real SwiftTab product · hover to pause · click segments to jump
-          </p>
+          <InteractiveDemo />
         </div>
       </section>
 
-      {/* Workflow */}
-      <section className="px-6 py-16">
-        <div className="mx-auto max-w-5xl">
-          <p className="text-center text-sm font-bold uppercase tracking-widest text-emerald-700">The workflow</p>
+      {/* How it works — 3 steps */}
+      <section className="bg-[#f8f9fa] px-6 py-16">
+        <div className="mx-auto max-w-4xl">
+          <p className="text-center text-sm font-bold uppercase tracking-widest text-emerald-700">How it works</p>
           <h2 className="mx-auto mt-3 max-w-2xl text-center text-3xl font-black tracking-tight md:text-4xl">
-            Three screens that keep your restaurant running
+            Three steps. Zero friction.
           </h2>
 
-          <div className="mt-12 grid gap-10 md:grid-cols-3">
-            {/* 01 — Customer */}
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <span className="grid h-8 w-8 place-items-center rounded-full bg-emerald-100 text-sm font-black text-emerald-800">01</span>
-                <p className="text-sm font-bold uppercase tracking-widest text-emerald-700">Customer</p>
+          <div className="mt-12 grid gap-8 md:grid-cols-3">
+            <div className="text-center">
+              <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-emerald-100 text-2xl font-black text-emerald-800">
+                1
               </div>
-              <div className="rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-                <Image
-                  src="/demo/customer-menu.png"
-                  alt="SwiftTab customer menu — table ordering with categories, items, and prices"
-                  width={390}
-                  height={844}
-                  className="w-full h-auto"
-                  priority
-                />
-              </div>
-              <p className="mt-3 text-sm leading-6 text-gray-600">
-                Customers browse the restaurant menu from their phone — no app download, no login. The QR code on the table opens the menu directly in their browser.
+              <h3 className="mt-4 text-lg font-bold">Customer scans QR</h3>
+              <p className="mt-2 text-sm leading-6 text-gray-600">
+                The QR code on each table opens the menu instantly in any phone browser. No app download, no login.
               </p>
             </div>
 
-            {/* 02 — Cart */}
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <span className="grid h-8 w-8 place-items-center rounded-full bg-emerald-100 text-sm font-black text-emerald-800">02</span>
-                <p className="text-sm font-bold uppercase tracking-widest text-emerald-700">Cart</p>
+            <div className="text-center">
+              <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-emerald-100 text-2xl font-black text-emerald-800">
+                2
               </div>
-              <div className="rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-                <Image
-                  src="/demo/customer-cart.png"
-                  alt="SwiftTab customer cart — selected items with subtotal and upsell recommendations"
-                  width={390}
-                  height={600}
-                  className="w-full h-auto"
-                />
-              </div>
-              <p className="mt-3 text-sm leading-6 text-gray-600">
-                The customer reviews their cart — quantities, subtotal, and smart recommendations — before submitting. Upsell suggestions appear naturally alongside the order.
+              <h3 className="mt-4 text-lg font-bold">They order from their phone</h3>
+              <p className="mt-2 text-sm leading-6 text-gray-600">
+                Browse dishes with photos, calorie info, and veg/non-veg tags. Add to cart and place the order in seconds.
               </p>
             </div>
 
-            {/* 03 — Kitchen */}
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <span className="grid h-8 w-8 place-items-center rounded-full bg-emerald-100 text-sm font-black text-emerald-800">03</span>
-                <p className="text-sm font-bold uppercase tracking-widest text-emerald-700">Kitchen</p>
+            <div className="text-center">
+              <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-emerald-100 text-2xl font-black text-emerald-800">
+                3
               </div>
-              <div className="rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-                <Image
-                  src="/demo/kitchen.png"
-                  alt="SwiftTab kitchen display — incoming orders with table number, items, and status"
-                  width={1280}
-                  height={800}
-                  className="w-full h-auto"
-                />
-              </div>
-              <p className="mt-3 text-sm leading-6 text-gray-600">
-                Orders appear in the kitchen the moment they are placed. The kitchen staff sees the table, items, special instructions, and order status in a clean display.
+              <h3 className="mt-4 text-lg font-bold">Kitchen gets it instantly</h3>
+              <p className="mt-2 text-sm leading-6 text-gray-600">
+                Orders appear in real-time on the Kitchen Display. Table number, items, and status — all at a glance.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Interactive kitchen (deterministic, no backend) */}
-      <section className="bg-[#f8f9fa] px-6 py-16">
+      {/* Interactive kitchen */}
+      <section id="kitchen-board" className="px-6 py-16">
         <div className="mx-auto max-w-5xl">
           <p className="text-center text-sm font-bold uppercase tracking-widest text-emerald-700">Try it yourself</p>
           <h2 className="mx-auto mt-3 max-w-2xl text-center text-3xl font-black tracking-tight md:text-4xl">
             The kitchen display — live with demo data
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-center text-gray-600">
-            This is the actual SwiftTab kitchen component, running with deterministic demo orders. Click &quot;Next&quot; or &quot;Done&quot; to see how orders move through the workflow.
+            This is the actual SwiftTab kitchen component. Click &quot;Next&quot; or &quot;Done&quot; to see how orders move through the workflow.
           </p>
           <div className="mt-8 rounded-2xl border border-gray-200 overflow-hidden shadow-lg">
             <KitchenBoard />
@@ -134,25 +99,6 @@ export default function DemoPage() {
             <span className="flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-emerald-600" /> Runs entirely in the browser
             </span>
-          </div>
-        </div>
-      </section>
-
-      {/* Browse the demo menu */}
-      <section className="px-6 py-16">
-        <div className="mx-auto max-w-3xl text-center">
-          <h2 className="text-3xl font-black tracking-tight md:text-4xl">Browse the demo menu</h2>
-          <p className="mx-auto mt-4 max-w-xl text-lg leading-8 text-gray-600">
-            See the real customer-facing menu — browse items, add to cart, and explore upsell recommendations.
-            This is a browse-only demo; no orders are submitted.
-          </p>
-          <div className="mt-8">
-            <Link
-              href="/menu/abc-cafe/12"
-              className="inline-block rounded-xl bg-emerald-700 px-8 py-4 text-lg font-bold text-white transition hover:bg-emerald-800"
-            >
-              Open the demo menu
-            </Link>
           </div>
         </div>
       </section>
