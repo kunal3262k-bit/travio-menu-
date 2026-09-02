@@ -44,17 +44,19 @@ export default function InteractiveDemo() {
         {/* Phone notch */}
         {view === "phone" && <div className="demo-notch" />}
 
-        <iframe
-          key={`${view}-${iframeKey}`}
-          src={
-            view === "phone"
-              ? "/menu/abc-cafe/12"
-              : "/demo#kitchen-board"
-          }
-          className="demo-iframe"
-          title={view === "phone" ? "SwiftTab customer menu demo" : "SwiftTab kitchen display demo"}
-          allow="clipboard-write"
-        />
+        <div className="demo-screen">
+          <iframe
+            key={`${view}-${iframeKey}`}
+            src={
+              view === "phone"
+                ? "/menu/abc-cafe/12"
+                : "/demo#kitchen-board"
+            }
+            className="demo-iframe"
+            title={view === "phone" ? "SwiftTab customer menu demo" : "SwiftTab kitchen display demo"}
+            allow="clipboard-write"
+          />
+        </div>
       </div>
 
       {/* Hint */}
@@ -139,20 +141,19 @@ export default function InteractiveDemo() {
         /* Phone frame */
         .demo-frame {
           position: relative;
-          border-radius: 2.5rem;
           background: #0a0a0a;
           box-shadow:
             0 0 0 2px #2a2a2a,
             0 0 0 6px #111,
             0 25px 80px -15px rgba(0, 0, 0, 0.4),
             0 0 60px -10px rgba(16, 185, 129, 0.08);
-          overflow: hidden;
           transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .demo-frame-phone {
           width: 375px;
           height: 780px;
-          padding: 12px;
+          padding: 14px;
+          border-radius: 3rem;
         }
         .demo-frame-desktop {
           width: min(100%, 900px);
@@ -161,14 +162,30 @@ export default function InteractiveDemo() {
           padding: 8px;
         }
 
+        /* Screen wrapper to clip iframe corners */
+        .demo-screen {
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+          background: #fff;
+          position: relative;
+          transform: translateZ(0); /* Forces clipping in webkit */
+        }
+        .demo-frame-phone .demo-screen {
+          border-radius: 2.25rem;
+        }
+        .demo-frame-desktop .demo-screen {
+          border-radius: 0.5rem;
+        }
+
         /* Notch */
         .demo-notch {
           position: absolute;
-          top: 10px;
+          top: 13px; /* Just overlaps the inner screen edge */
           left: 50%;
           transform: translateX(-50%);
-          width: 120px;
-          height: 28px;
+          width: 140px;
+          height: 30px;
           background: #0a0a0a;
           border-radius: 0 0 1.25rem 1.25rem;
           z-index: 10;
@@ -179,11 +196,7 @@ export default function InteractiveDemo() {
           width: 100%;
           height: 100%;
           border: none;
-          border-radius: 2rem;
           background: #fff;
-        }
-        .demo-frame-desktop .demo-iframe {
-          border-radius: 0.5rem;
         }
 
         /* Hint */
@@ -201,13 +214,14 @@ export default function InteractiveDemo() {
             width: 320px;
             height: 660px;
             padding: 10px;
-            border-radius: 2rem;
+            border-radius: 2.5rem;
           }
-          .demo-frame-phone .demo-iframe {
-            border-radius: 1.5rem;
+          .demo-frame-phone .demo-screen {
+            border-radius: 1.75rem;
           }
           .demo-notch {
-            width: 100px;
+            top: 9px;
+            width: 110px;
             height: 24px;
           }
           .demo-controls {
