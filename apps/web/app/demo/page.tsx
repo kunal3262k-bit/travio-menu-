@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 import { KitchenBoard } from "@/components/kitchen/KitchenBoard";
+import StoryDemo from "@/app/components/StoryDemo";
 
 export const metadata: Metadata = {
   title: "See SwiftTab in Action",
@@ -27,21 +28,12 @@ export default function DemoPage() {
         </div>
       </section>
 
-      {/* Video */}
+      {/* Animated Story Demo */}
       <section className="px-6 py-12">
         <div className="mx-auto max-w-5xl">
-          <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-black shadow-xl">
-            <video
-              src="/demo.mp4"
-              poster="/demo/poster.png"
-              className="w-full aspect-video object-cover"
-              controls
-              playsInline
-              preload="metadata"
-            />
-          </div>
+          <StoryDemo />
           <p className="mt-3 text-center text-sm font-semibold text-gray-400">
-            Real SwiftTab product · 12 seconds · no narration required
+            Real SwiftTab product · hover to pause · click segments to jump
           </p>
         </div>
       </section>
