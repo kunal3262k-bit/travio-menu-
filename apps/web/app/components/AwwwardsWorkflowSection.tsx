@@ -30,8 +30,8 @@ const workflowSteps = [
   {
     step: "03",
     icon: Smartphone,
-    title: "Interactive 3D Ordering",
-    description: "Guests tilt their phones to inspect dishes in 3D, filter by dietary preferences, and customize preparation notes in real time."
+    title: "Visual Menu Ordering",
+    description: "Guests browse high-resolution studio photos of dishes, filter by dietary preferences, and customize preparation notes in real time."
   },
   {
     step: "04",

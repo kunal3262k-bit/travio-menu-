@@ -80,9 +80,9 @@ export function AwwwardsBentoSection() {
                 </span>
               </div>
 
-              <h3 className="text-2xl font-bold text-white mb-2">Studio Photography & 3D Cards</h3>
+              <h3 className="text-2xl font-bold text-white mb-2">Studio Photography & Visual Menus</h3>
               <p className="text-sm leading-relaxed text-slate-300 mb-6">
-                Transform plain text items into high-resolution studio food photography. Diners tilt and interact with dishes in true 3D perspective with realistic depth, specular lighting, and steam effects.
+                Transform plain text items into high-resolution studio food photography. Present dishes beautifully with dynamic angles, realistic lighting, and appetizing close-ups.
               </p>
 
               {/* Interactive Multi-Angle Demo Sandbox */}
@@ -128,7 +128,7 @@ export function AwwwardsBentoSection() {
 
                   <div className="absolute bottom-2 left-3 right-3 flex items-center justify-between text-[11px] font-medium text-slate-300 bg-black/70 px-2.5 py-1 rounded-lg backdrop-blur-md border border-emerald-500/20">
                     <span>{dishAngles[selectedAngle].desc}</span>
-                    <span className="text-emerald-400 font-bold">3D Active</span>
+                    <span className="text-emerald-400 font-bold">Studio Active</span>
                   </div>
                 </div>
               </div>
