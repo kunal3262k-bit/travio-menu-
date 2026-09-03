@@ -66,7 +66,7 @@ export default function InteractiveDemo() {
       <p className="demo-hint">
         {view === "phone"
           ? "This is not a video — it's the actual product running live."
-          : "Real SwiftTab kitchen component with demo orders."}
+          : "Simulates live Kitchen Display System (KDS) on any kitchen tablet or screen."}
       </p>
 
       <style jsx>{`

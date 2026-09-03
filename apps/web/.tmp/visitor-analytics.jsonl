@@ -94,3 +94,4 @@
 {"timestamp":"2026-09-03T04:16:41.554Z","path":"/menu/abc-cafe/12","referrer":"http://localhost:3001/demo","device":"mobile","ipHash":"Ojox","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Sa"}
 {"timestamp":"2026-09-03T04:18:55.801Z","path":"/menu/abc-cafe/12","referrer":"http://localhost:3001/demo","device":"mobile","ipHash":"Ojox","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Sa"}
 {"timestamp":"2026-09-03T04:18:55.803Z","path":"/demo","referrer":"direct","device":"mobile","ipHash":"Ojox","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Sa"}
+{"timestamp":"2026-09-03T07:45:11.198Z","path":"/","referrer":"direct","device":"desktop","ipHash":"Ojox","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Sa"}

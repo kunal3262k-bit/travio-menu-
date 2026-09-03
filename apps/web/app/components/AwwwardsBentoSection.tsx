@@ -68,7 +68,7 @@ export function AwwwardsBentoSection() {
 
         {/* Bento Grid Layout */}
         <div className="grid gap-6 md:grid-cols-2">
-          {/* Card 1: 3D Food Studio & Angles */}
+          {/* Card 1: Multi-Angle Studio Food Showcase */}
           <SpotlightCard className="flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between mb-6">

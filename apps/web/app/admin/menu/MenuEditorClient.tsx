@@ -317,10 +317,10 @@ export default function MenuEditorClient({
             )}
           </div>
           <h2 className="text-2xl font-black mt-2 text-white">
-            Transform Your Menu into a 3D Visual Experience
+            Transform Your Menu into a Studio-Grade Visual Experience
           </h2>
           <p className="text-purple-200 text-sm mt-1 max-w-xl">
-            Upload a photo of your paper menu to auto-generate studio food photography, 3D interactive dish cards, and live macro tracking.
+            Upload a photo of your paper menu to auto-generate studio food photography, high-resolution multi-angle dish cards, and live macro tracking.
           </p>
         </div>
         

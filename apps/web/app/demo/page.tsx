@@ -115,7 +115,7 @@ export default function DemoPage() {
               href="/register"
               className="inline-block rounded-xl bg-white px-8 py-4 text-lg font-bold text-emerald-950 transition hover:bg-emerald-50"
             >
-              Get started at ₹999/month
+              Start 3-Day Free Trial — Plans from ₹2,999/mo
             </Link>
           </div>
         </div>

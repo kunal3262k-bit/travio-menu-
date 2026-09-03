@@ -75,7 +75,11 @@ export default function Home() {
             operatingSystem: "Web",
             description:
               "The high-performance dining & revenue platform for modern restaurants. Visual menus, macro tracking, KDS, and 0% commission QR ordering.",
-            offers: { "@type": "Offer", price: "5999", priceCurrency: "INR", description: "Growth Monthly subscription" },
+            offers: [
+              { "@type": "Offer", price: "2999", priceCurrency: "INR", name: "Starter Monthly" },
+              { "@type": "Offer", price: "5999", priceCurrency: "INR", name: "Growth Monthly" },
+              { "@type": "Offer", price: "9999", priceCurrency: "INR", name: "VIP Enterprise Monthly" },
+            ],
           }),
         }}
       />
