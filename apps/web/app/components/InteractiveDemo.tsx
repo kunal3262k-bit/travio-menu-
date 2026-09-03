@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Smartphone, Monitor, RotateCcw } from "lucide-react";
+import { KitchenBoard } from "@/components/kitchen/KitchenBoard";
 
 export default function InteractiveDemo() {
   const [view, setView] = useState<"phone" | "desktop">("phone");
@@ -45,17 +46,19 @@ export default function InteractiveDemo() {
         {view === "phone" && <div className="demo-notch" />}
 
         <div className="demo-screen">
-          <iframe
-            key={`${view}-${iframeKey}`}
-            src={
-              view === "phone"
-                ? "/menu/abc-cafe/12"
-                : "/demo#kitchen-board"
-            }
-            className="demo-iframe"
-            title={view === "phone" ? "SwiftTab customer menu demo" : "SwiftTab kitchen display demo"}
-            allow="clipboard-write"
-          />
+          {view === "phone" ? (
+            <iframe
+              key={`${view}-${iframeKey}`}
+              src="/menu/abc-cafe/12"
+              className="demo-iframe"
+              title="SwiftTab customer menu demo"
+              allow="clipboard-write"
+            />
+          ) : (
+            <div className="h-full w-full overflow-y-auto bg-white p-4" key={`${view}-${iframeKey}`}>
+              <KitchenBoard />
+            </div>
+          )}
         </div>
       </div>
 

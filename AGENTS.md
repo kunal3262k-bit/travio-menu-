@@ -15,3 +15,4 @@ Tool-selection policy for AI coding agents working in this repository.
 - Never log or commit secrets, env files, or `*.pem`.
 - Production is a separate Dokku VPS — no deploys or prod-data access without explicit instruction.
 - This repo is a git checkout of a Dokku deploy. `apps/web` is the Next.js app; `prisma/` holds the schema.
+- **CRITICAL**: We have a mobile website as well. ALL UI changes, new pages, or components must be flawless on mobile. You must verify mobile responsiveness using media queries (`max-width: 480px`, `768px`) for every change without needing a reminder.
