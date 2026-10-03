@@ -20,15 +20,13 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
   if (!restaurant) redirect("/login");
 
-  const isSetup = restaurant.status === "SETUP";
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {!isSetup && <AdminNav restaurantName={restaurant.name} userRole={session.user.role} />}
-      <main className={!isSetup ? "lg:ml-64 pt-14 lg:pt-0 print:ml-0 print:pt-0" : ""}>
+    <div className="min-h-screen bg-[#06080D] text-slate-100 font-sans selection:bg-emerald-500 selection:text-slate-950 antialiased">
+      <AdminNav restaurantName={restaurant.name} userRole={session.user.role} />
+      <main className="lg:ml-64 pt-14 lg:pt-0 print:ml-0 print:pt-0">
         {children}
       </main>
-      {restaurant && <AdminNotifications restaurantId={restaurant.id} />}
+      <AdminNotifications restaurantId={restaurant.id} />
     </div>
   );
 }

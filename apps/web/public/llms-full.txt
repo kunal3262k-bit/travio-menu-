@@ -1,25 +1,64 @@
-# SwiftTab — Full AI Knowledge Base & System Documentation
+# SwiftTab Auto — Comprehensive AI Knowledge Base & Platform Documentation
 
-## Overview
-SwiftTab (`https://justswifttab.com`) is a lightweight, high-performance web platform for Indian restaurants, cafes, food courts, and drive-ins. It bridges customer smartphones directly to kitchen display screens via QR codes, eliminating manual order-taking delays and third-party delivery app commissions.
+## 1. Executive Summary & Market Positioning
+SwiftTab Auto (`https://justswifttab.com`) is a dedicated B2B shop floor operating system purpose-built for high-end automotive detailing, Paint Protection Film (PPF), ceramic coating, and window tint studios. 
 
-## Target Audience & Geography
-- **Primary Market**: India (Delhi NCR, Mumbai, Bengaluru, Hyderabad, Pune, Chennai, Kolkata, Jaipur, Chandigarh, Ahmedabad).
-- **Establishment Types**: Fine dining, casual cafes, QSR (Quick Service Restaurants), food courts, drive-in / car-side eateries, highway dhabas.
+While legacy garage management systems focus primarily on inventory accounting or mechanical repair invoicing, SwiftTab Auto focuses on the high-ticket shop floor execution layer:
+1. Preventing fraudulent vehicle damage disputes through timestamped pre-service photographic defect inspections and electronic signature waivers.
+2. Synchronizing shop floor throughput via a real-time multi-bay Kanban dispatch board with audio chimes.
+3. Unlocking immediate high-margin revenue through photo-backed mobile SMS upsells approved on vehicle owners' phones in seconds.
+4. Elevating customer retention through a permanent VIP Digital Care Dossier and automated re-coat warranty reminders.
 
-## Architectural Architecture
-- **Framework**: Next.js 15 (App Router, Server Components).
-- **Database**: PostgreSQL with Prisma 6 ORM (Multi-tenant schema by `restaurantId`).
-- **Realtime Infrastructure**: Socket.io 4.8 WebSockets with scoped rooms (`kitchen_${id}`, `waiter_${id}`, `admin_${id}`, `car_${id}`, `table_${id}`).
-- **Web Push**: VAPID background notifications for staff mobile devices.
-- **AI Menu Importer**: Gemini 3.5 Flash Vision REST API + Tesseract OCR worker for automatic digitized menu creation from scanned photos/PDFs.
+## 2. Target Market & Geographic Coverage
+- **Primary Geographies**: United States (major automotive detailing markets including California, Texas, Florida, Arizona, Georgia, Ohio, New York, North Carolina), Canada, United Kingdom, Australia, and Global.
+- **Facility Types**:
+  - Independent detailing studios & luxury vehicle care centers.
+  - Paint Protection Film (PPF) & Clear Bra installation facilities.
+  - Ceramic, graphene, and glass coating application studios.
+  - Automotive tint and aesthetic customization shops.
+  - Exotic car preservation and concourse restoration workshops.
 
-## Commercial Terms
-- Flat monthly subscription of ₹999/month.
-- 0% per-order commission.
-- Customer payments pass directly to restaurant UPI QR or Cash.
+## 3. Core Software Modules
 
-## Contact Information
-- **Support Email**: support@justswifttab.com
-- **WhatsApp Support**: +91 97177468
+### A. 60-Second Digital Defect Shield (Vehicle Intake)
+- **Workflow**: Upon vehicle drop-off, the lead technician conducts a walkaround using any smartphone or tablet.
+- **Data Captured**: VIN, license plate, vehicle year/make/model, exterior paint color, paint thickness gauge depth readings, high-resolution condition photos (scratches, rock chips, clear-coat etchings, curb rash, interior stains).
+- **Client E-Signature**: The vehicle owner reviews the defects on-screen and provides a digital signature on an HTML5 touch canvas. Complies with US ESIGN Act and UETA standards.
+
+### B. Live Bay Kanban Dispatch Board
+- **Shop Floor Coordination**: Real-time multi-bay board categorizing vehicles across operational stages:
+  - Stage 1: Decon & Clay Wash
+  - Stage 2: Paint Correction (Stage 1 / Stage 2 / Stage 3)
+  - Stage 3: Ceramic Coating / PPF Installation
+  - Stage 4: Infrared (IR) Curing & Baking
+  - Stage 5: Quality Inspection & VIP Delivery
+- **Real-Time Synchronization**: Built on Socket.IO WebSockets. When a technician advances a vehicle stage, all shop displays, technician tablets, and front-desk monitors update instantaneously with audible sound chimes.
+
+### C. 1-Tap Photo-Backed Mobile Upsell Engine
+- **Frictionless Sales**: When a technician uncovers severe micro-scratches or chipped film during prep, they photograph the issue and select a recommended service add-on.
+- **Customer Experience**: The customer receives an SMS link displaying side-by-side photo evidence and a 1-tap "Approve & Add to Work Order" button.
+- **Proven Impact**: Generates an average of +$420 per vehicle in approved high-margin service upgrades without awkward phone calls.
+
+### D. VIP Digital Vehicle Dossier & Warranty Certificate
+- **Customer Hand-Off**: Upon job completion, an immutable digital certificate is issued containing the vehicle's VIN, service date, applied coating/film specifications (e.g. 9H ceramic coating, 8.5 mil self-healing PPF), cure timestamps, and aftercare instructions.
+- **Retention**: Triggers automated SMS maintenance reminders at 6-month and 12-month intervals for hydrophobic top-ups and annual inspections.
+
+## 4. Technical Architecture & Security Specifications
+- **Frontend / Application Layer**: Next.js 15 (App Router, Server Components, TypeScript).
+- **Backend / Real-Time**: Node.js custom HTTP server integrated with Socket.IO 4.8 WebSockets with process exception guards and zero-downtime health probes.
+- **Database**: Dedicated PostgreSQL with Prisma 6 ORM. Multi-tenant schema isolating studio records.
+- **Hosting & Infrastructure**: Amazon Web Services (AWS) US East (N. Virginia `us-east-1`) with low-latency edge caching via Cloudflare.
+- **Security & Encryption**: End-to-end TLS 1.3 HTTPS encryption, bcrypt password hashing, JWT session authentication, and automated database snapshots.
+
+## 5. Commercial Pricing & Terms
+- **Starter Studio**: $79/month — Up to 3 service bays, 60-second digital defect shield, mobile client sign-off.
+- **Growth Studio**: $149/month — Up to 8 service bays, live dispatch board, 1-tap photo upsells, VIP digital dossier.
+- **VIP Enterprise**: $299/month — Unlimited bays, multi-location support, custom branded white-label client portal.
+- **Zero Commission**: Flat recurring SaaS fee only. No per-job cuts or credit card transaction markups.
+
+## 6. Official Contact & Verification Channels
 - **Website**: https://justswifttab.com
+- **Product Demo**: https://justswifttab.com/demo
+- **Support & Sales**: support@justswifttab.com
+- **WhatsApp Direct**: +91 9719945568
+- **Company**: SwiftTab Technologies

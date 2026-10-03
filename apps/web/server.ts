@@ -125,6 +125,21 @@ app.prepare().then(async () => {
     });
   });
 
+  httpServer.on("clientError", (err: any, socket: any) => {
+    if (err.code === "ECONNRESET" || !socket.writable) {
+      return;
+    }
+    socket.end("HTTP/1.1 400 Bad Request\r\n\r\n");
+  });
+
+  process.on("unhandledRejection", (reason) => {
+    console.warn("Handled unhandledRejection:", reason);
+  });
+
+  process.on("uncaughtException", (error) => {
+    console.warn("Handled uncaughtException:", error);
+  });
+
   httpServer
     .once("error", (err) => {
       console.error(err);

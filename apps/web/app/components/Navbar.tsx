@@ -38,14 +38,14 @@ export default function Navbar() {
             >
               Interactive Demo
             </Link>
-            <Link
-              href="/menu/abc-cafe/12"
+            <a
+              href="/#demo-sandbox"
               className="text-sm font-medium text-slate-300 transition-colors hover:text-emerald-400"
             >
-              Sample Menu
-            </Link>
+              Live Bay Sandbox
+            </a>
             <Link
-              href="#pricing"
+              href="/#pricing"
               className="text-sm font-medium text-slate-300 transition-colors hover:text-emerald-400"
             >
               Pricing
@@ -55,7 +55,7 @@ export default function Navbar() {
               href="/login"
               className="text-sm font-medium text-slate-300 transition-colors hover:text-white"
             >
-              Log in
+              Studio Login
             </Link>
             <Link
               href="/register"
@@ -122,24 +122,24 @@ export default function Navbar() {
               className="flex items-center justify-between rounded-2xl border border-emerald-900/30 bg-[#0C1613] p-4 text-base font-semibold text-white transition hover:border-emerald-500/40 hover:bg-emerald-950/40"
             >
               <span className="flex items-center gap-3">
-                <Sparkles className="h-5 w-5 text-emerald-400" /> Interactive Customer Demo
+                <Sparkles className="h-5 w-5 text-emerald-400" /> Live Interactive Demo
               </span>
               <ArrowRight className="h-4 w-4 text-slate-500" />
             </Link>
 
-            <Link
-              href="/menu/abc-cafe/12"
+            <a
+              href="/#demo-sandbox"
               onClick={() => setIsOpen(false)}
               className="flex items-center justify-between rounded-2xl border border-emerald-900/30 bg-[#0C1613] p-4 text-base font-semibold text-white transition hover:border-emerald-500/40 hover:bg-emerald-950/40"
             >
               <span className="flex items-center gap-3">
-                <QrCode className="h-5 w-5 text-emerald-400" /> Sample QR Menu
+                <QrCode className="h-5 w-5 text-emerald-400" /> Live Bay Sandbox
               </span>
               <ArrowRight className="h-4 w-4 text-slate-500" />
-            </Link>
+            </a>
 
             <Link
-              href="#pricing"
+              href="/#pricing"
               onClick={() => setIsOpen(false)}
               className="flex items-center justify-between rounded-2xl border border-emerald-900/30 bg-[#0C1613] p-4 text-base font-semibold text-white transition hover:border-emerald-500/40 hover:bg-emerald-950/40"
             >
@@ -157,7 +157,7 @@ export default function Navbar() {
               className="flex items-center justify-between rounded-2xl border border-emerald-900/30 bg-[#0C1613] p-4 text-base font-semibold text-white transition hover:border-emerald-500/40 hover:bg-emerald-950/40"
             >
               <span className="flex items-center gap-3">
-                <LogIn className="h-5 w-5 text-emerald-400" /> Restaurant Login
+                <LogIn className="h-5 w-5 text-emerald-400" /> Studio Login
               </span>
               <ArrowRight className="h-4 w-4 text-slate-500" />
             </Link>

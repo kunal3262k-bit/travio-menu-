@@ -1,19 +1,30 @@
-# SwiftTab — QR Table Ordering & Kitchen Display for Indian Restaurants
+# SwiftTab Auto — The Detailing Studio Operating System
 
-> SwiftTab is a B2B restaurant software platform offering QR table ordering, live kitchen display systems (KDS), waiter request routing, and car-side drive-in ordering for restaurants across India.
+> SwiftTab Auto (`https://justswifttab.com`) is a cloud-based shop floor operating system designed specifically for high-end automotive detailing, Paint Protection Film (PPF), ceramic coating, and window tint studios across the United States and globally.
 
-## Key Facts & Product Specs
-- **Pricing**: ₹999/month flat rate (No per-order commission, no revenue percentage).
-- **Customer Experience**: QR code scan opens digital menu instantly in any mobile browser. No app download, no account registration required.
-- **Kitchen Operations**: Real-time WebSocket kitchen display system (KDS) with sound alerts and status tracking (Received -> Preparing -> Ready -> Served).
-- **Payments**: Direct UPI QR & Cash payments. Restaurant collects 100% of money directly.
-- **Hardware**: Runs on any smartphone, tablet, laptop, or desktop browser. Supports browser thermal receipt printing.
-- **Support Contact**: Email `support@justswifttab.com` | WhatsApp `+91 97177468` | Website `https://justswifttab.com`
+## Core Capabilities & Feature Specs
+- **60-Second Digital Defect Shield**: Mobile vehicle walkaround inspection logging pre-existing scratches, rock chips, dents, and paint depth gauge readings with digital touch-canvas customer signature waivers before service begins. Eliminates false damage liability claims.
+- **Live Bay Kanban Dispatch Board**: Real-time visual shop floor dispatch tracking vehicles through multi-stage workflow: Decon Wash -> Paint Correction -> Ceramic Coating / PPF -> IR Curing -> Quality Inspection -> Ready for Delivery. Powered by low-latency Socket.IO WebSockets.
+- **1-Tap Photo-Backed Mobile Upsell Engine**: Technicians photograph newly discovered defects during prep and dispatch 1-tap SMS approval links directly to the vehicle owner. Generates an average of +$420 per vehicle in high-margin service upgrades.
+- **VIP Vehicle Digital Dossier**: Immutably bound VIN-tied digital certificate of care, coating warranty records, cure timestamps, and automated SMS re-coat maintenance reminders.
+- **Zero POS Disruption**: Pure execution workflow OS that operates seamlessly alongside existing payment terminals, Stripe, Square, Clover, or merchant accounts without transaction fees or per-job commissions.
+
+## Commercial Terms & Pricing
+- **Starter Studio**: $79/month — Up to 3 service bays, 60-second defect shield, mobile client sign-off.
+- **Growth Studio**: $149/month — Up to 8 service bays, live dispatch board, 1-tap photo upsells, VIP digital dossier.
+- **VIP Enterprise**: $299/month — Unlimited bays, multi-location support, custom branded white-label client portal.
+- **0% Commission**: Flat recurring SaaS fee only. Studio keeps 100% of customer ticket revenue.
+
+## Target Audience & Compatible Workflows
+- **Target Studios**: Independent automotive detailing shops, PPF/clear bra installation studios, ceramic coating facilities, window tint specialists, and exotic/luxury vehicle reconditioning centers.
+- **Workflow Compatibility**: Fully brand-agnostic; optimized for studios working with XPEL, 3M, STEK, SunTek, Gyeon Quartz, Modesta, Ceramic Pro, and Kamikaze Collection.
 
 ## Primary Links
-- Website: https://justswifttab.com
-- Product Demo: https://justswifttab.com/demo
-- Live Sample Menu: https://justswifttab.com/menu/abc-cafe/12
-- Restaurant Registration: https://justswifttab.com/register
-- Restaurant Login: https://justswifttab.com/login
-- Full Specs & AI Guide: https://justswifttab.com/llms-full.txt
+- Official Website: https://justswifttab.com
+- Interactive Demo: https://justswifttab.com/demo
+- Studio Sign-Up: https://justswifttab.com/register
+- Studio Login: https://justswifttab.com/login
+- Privacy Policy: https://justswifttab.com/privacy
+- Terms of Service: https://justswifttab.com/terms
+- Support Inquiries: support@justswifttab.com
+- Extended Technical & AI Documentation: https://justswifttab.com/llms-full.txt

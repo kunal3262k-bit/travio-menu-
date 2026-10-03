@@ -1,15 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { rateLimit } from "@/lib/rate-limit";
+import { requireStaff } from "@/lib/staffAuth";
 import { emitPaymentConfirmed } from "@/lib/socket";
 
 /**
- * Car-side "done / close session" checkout. Called by the customer's own
- * browser after they claim/confirm payment. Only ever called with an orderId.
+ * Staff-facing close-session checkout. Requires authenticated staff.
  * Settles the whole session (all unpaid rounds) with one atomic invoice number
  * and pushes payment_confirmed server-side.
  */
 export async function POST(request: NextRequest) {
+  let staff;
+  try {
+    staff = await requireStaff(["WAITER", "KITCHEN"]);
+  } catch (error) {
+    return error instanceof Response ? error : NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const ip = request.headers.get("x-forwarded-for") ?? "local";
   if (!rateLimit(`close_session:${ip}`).allowed) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
@@ -33,7 +40,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    if (!order) {
+    if (!order || order.restaurantId !== staff.restaurantId) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 

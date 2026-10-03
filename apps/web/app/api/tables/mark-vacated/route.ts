@@ -21,10 +21,10 @@ export async function POST(request: NextRequest) {
   const processedByStaffName = body.processedByStaffName || auth.staffName;
 
   await prisma.$transaction(async (tx) => {
-    // If a physical table ID is present, unbind current session
+    // If a physical table ID is present, unbind current session (strictly scoped to auth.restaurantId)
     if (tableId) {
-      await tx.table.update({
-        where: { id: tableId },
+      await tx.table.updateMany({
+        where: { id: tableId, restaurantId: auth.restaurantId },
         data: { currentSessionId: null },
       });
     }

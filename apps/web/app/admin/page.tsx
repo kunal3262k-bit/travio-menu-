@@ -125,38 +125,46 @@ export default async function AdminDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-100 to-slate-50">
+    <div className="min-h-screen bg-[#06080D] text-slate-100 font-sans">
       {/* ── PREMIUM HEADER BAR ── */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
+      <header className="sticky top-0 z-40 bg-[#070D0B]/90 backdrop-blur-xl border-b border-emerald-950/70 shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
           <div className="flex items-center gap-3">
-            <img src="/logo-full.png" alt="SwiftTab" className="h-8 object-contain" />
-            <div className="h-5 w-px bg-slate-200"></div>
-            <div>
-              <p className="text-sm font-black text-slate-900 leading-none">{restaurant?.name || "Dashboard"}</p>
-              <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Admin Console</p>
+            <div className="flex items-center gap-2">
+              <span className="text-base font-black tracking-tight text-white">{restaurant?.name || "Apex Auto Spa"}</span>
+              <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60 font-bold">Studio OS</span>
             </div>
+            <div className="h-4 w-px bg-zinc-800 hidden sm:block"></div>
+            <p className="text-xs text-zinc-400 hidden sm:block">Shop Floor Dispatch & Defect Vault</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
+            <a
+              href="/demo"
+              target="_blank"
+              className="bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-700 font-semibold px-3.5 py-1.5 rounded-xl text-xs flex items-center gap-1.5 transition-colors"
+            >
+              <span>📱</span>
+              <span className="hidden sm:inline">Live Client Tracker</span>
+            </a>
             <a
               href="/admin/orders"
-              className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-sm flex items-center gap-1.5 transition-colors"
+              className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold px-3.5 py-1.5 rounded-xl text-xs shadow-md shadow-emerald-950/50 flex items-center gap-1.5 transition-all"
             >
-              <span>📦</span>
-              <span className="hidden sm:inline">Order History</span>
+              <span>📋</span>
+              <span className="hidden sm:inline">Active Work Orders</span>
             </a>
           </div>
         </div>
       </header>
 
       {/* ── DASHBOARD BODY ── */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <DashboardClient initialMetrics={metrics} initialStatus={restaurant?.status || "LIVE"} restaurant={restaurant} />
       </main>
 
       {/* ── FOOTER ── */}
-      <footer className="text-center py-4 text-[11px] text-slate-400 font-semibold">
-        Powered by SwiftTab
+      <footer className="text-center py-6 text-xs font-mono text-zinc-600 border-t border-zinc-900">
+        SwiftTab Auto OS • Secure Studio Dispatch Engine
       </footer>
     </div>
   );

@@ -1,14 +1,15 @@
 {
   "id": "/",
-  "name": "SwiftTab",
-  "short_name": "SwiftTab",
-  "description": "Real-time QR ordering, drive-in dining, and thermal bill POS platform",
+  "name": "SwiftTab Auto",
+  "short_name": "SwiftTab Auto",
+  "description": "The Detailing Studio Operating System — Shop Floor Bay Dispatch, Defect Intake Shield & Upsell Engine",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#F8F9FA",
-  "theme_color": "#00B87C",
+  "background_color": "#05070B",
+  "theme_color": "#05070B",
+  "categories": ["business", "productivity", "utilities"],
   "icons": [
     {
       "src": "/icons/icon-192x192.png",

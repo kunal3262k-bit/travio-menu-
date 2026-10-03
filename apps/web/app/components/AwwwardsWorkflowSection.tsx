@@ -3,112 +3,125 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import {
-  ScanLine,
-  QrCode,
+  Camera,
+  Layers,
   Smartphone,
-  Utensils,
-  CreditCard,
-  MessageSquare,
+  Zap,
+  Flame,
+  Star,
   ArrowRight,
-  Check
+  CheckCircle2,
 } from "lucide-react";
 import SpotlightCard from "./SpotlightCard";
 
-const workflowSteps = [
+const studioWorkflowSteps = [
   {
     step: "01",
-    icon: ScanLine,
-    title: "60-Second Menu Digitization",
-    description: "Upload a photo of your current paper menu. Our intelligence engine extracts items, categories, photography, and macro profiles instantly."
+    icon: Camera,
+    title: "60-Sec Intake & Defect Mapping",
+    description:
+      "Technician walks around the vehicle, snaps 4-angle photos of existing rock chips and curb rash. Client signs off digitally via SMS—shielding your studio from false damage claims.",
   },
   {
     step: "02",
-    icon: QrCode,
-    title: "Deploy QR Stands on Tables",
-    description: "Place high-resolution acrylic QR stands across dine-in tables and car-side spots. Guests scan with any camera—zero app download required."
+    icon: Layers,
+    title: "Live Bay Stage Assignment",
+    description:
+      "Assign vehicle to Bay 1 (Decon) or Bay 2 (Paint Correction) on the shop floor display. Elapsed timers track vehicle turnaround times automatically.",
   },
   {
     step: "03",
     icon: Smartphone,
-    title: "Visual Menu Ordering",
-    description: "Guests browse high-resolution studio photos of dishes, filter by dietary preferences, and customize preparation notes in real time."
+    title: "Client Live Vehicle Tracker",
+    description:
+      "Car owners watch their vehicle advance through decontamination, compounding, and ceramic application with real-time photo milestones—killing 90% of phone call interruptions.",
   },
   {
     step: "04",
-    icon: Utensils,
-    title: "Instant Kitchen KDS Dispatch",
-    description: "Orders flash immediately to kitchen display screens with clear preparation chimes, table numbers, and item modifiers—eliminating delay."
+    icon: Zap,
+    title: "1-Tap Add-On Service Upsell",
+    description:
+      "Spot water spots or dry leather during compounding? Trigger a photo-backed recommendation to the client's tracker. Clients approve with one tap, adding \$200–\$500 in pure margin.",
   },
   {
     step: "05",
-    icon: CreditCard,
-    title: "Direct UPI Settlement & Split",
-    description: "Guests split bills equally or pay instantly via direct UPI QR code. 100% of revenue settles into your bank with 0% commission."
+    icon: Flame,
+    title: "Infrared Curing & Quality Control",
+    description:
+      "Automated timers notify technicians when ceramic coating has reached peak curing. Multi-point final inspection ensures flawless optical clarity before handover.",
   },
   {
     step: "06",
-    icon: MessageSquare,
-    title: "WhatsApp Receipts & Reviews",
-    description: "Customers receive digital itemized receipts on WhatsApp while satisfied diners are seamlessly routed to elevate your Google Maps rating."
-  }
+    icon: Star,
+    title: "Digital Handover & 5-Star Review",
+    description:
+      "Settle invoices via Stripe / Apple Pay with zero transaction delays. Delighted owners are routed directly to Google Maps to elevate your local studio ranking.",
+  },
 ];
 
 export function AwwwardsWorkflowSection() {
   const [activeStep, setActiveStep] = useState<number | null>(null);
 
   return (
-    <section className="py-20 lg:py-32 border-b border-emerald-950/40 bg-[#060A09] relative overflow-hidden">
-      {/* Background Decorative Gradient */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(0,184,124,0.08),transparent_70%)] pointer-events-none" />
+    <section className="py-20 lg:py-32 border-b border-emerald-950/40 bg-[#060A09] relative overflow-hidden font-sans">
+      {/* Background Ambience */}
+      <div className="absolute top-1/2 left-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="relative mx-auto max-w-7xl px-6">
-        <div className="text-center max-w-2xl mx-auto mb-16">
+      <div className="mx-auto max-w-7xl px-6 relative z-10">
+        <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-bold uppercase tracking-widest mb-3">
-            Frictionless Flow
+            <CheckCircle2 className="w-3.5 h-3.5" /> Zero Friction Workflow
           </div>
           <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
-            From Scan to Kitchen in 6 Seconds.
+            From Drop-Off to Delivery in 6 Flawless Steps.
           </h2>
-          <p className="text-slate-400 text-sm sm:text-base mt-3">
-            Zero hardware complexity. Set up in minutes on any tablet, phone, or laptop browser.
+          <p className="text-slate-400 text-base sm:text-lg mt-3">
+            Built specifically for the high-pressure reality of busy detailing bays. Fast, tactile, and requires zero complex training for technicians.
           </p>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {workflowSteps.map((step, idx) => {
-            const Icon = step.icon;
+        {/* 6-Step Workflow Grid */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {studioWorkflowSteps.map((item, idx) => {
+            const Icon = item.icon;
             const isHovered = activeStep === idx;
 
             return (
-              <motion.div
+              <div
                 key={idx}
                 onMouseEnter={() => setActiveStep(idx)}
                 onMouseLeave={() => setActiveStep(null)}
-                whileHover={{ y: -6, scale: 1.02 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
-                className="relative rounded-2xl bg-[#0B1512] border border-emerald-500/15 p-7 hover:border-emerald-500/50 hover:shadow-[0_12px_30px_rgba(0,184,124,0.12)] transition-all duration-300 group overflow-hidden"
+                className="transition-transform duration-300 hover:-translate-y-1"
               >
-                {/* Glow Accent Beam */}
-                <div className="pointer-events-none absolute -inset-px rounded-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100 bg-gradient-to-b from-emerald-500/10 to-transparent" />
+                <SpotlightCard className="h-full flex flex-col justify-between p-6">
+                  <div>
+                    {/* Header Row: Step Number & Icon */}
+                    <div className="flex items-center justify-between mb-6">
+                      <span className="font-mono text-2xl font-black text-emerald-400/80">
+                        {item.step}
+                      </span>
+                      <div
+                        className={`p-3 rounded-2xl transition-all duration-300 ${
+                          isHovered
+                            ? "bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/20"
+                            : "bg-emerald-500/10 border border-emerald-500/20 text-emerald-400"
+                        }`}
+                      >
+                        <Icon className="w-6 h-6" />
+                      </div>
+                    </div>
 
-                <div className="relative z-10 flex items-center justify-between mb-4">
-                  <span className="font-mono text-3xl font-black text-emerald-500/30 group-hover:text-emerald-400 transition-colors">
-                    {step.step}
-                  </span>
-                  <div className="p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/20 text-emerald-400 group-hover:scale-110 group-hover:bg-emerald-500 group-hover:text-slate-950 transition-all">
-                    <Icon className="w-4 h-4" />
+                    <h3 className="text-xl font-bold text-white mb-2 leading-snug">{item.title}</h3>
+                    <p className="text-slate-400 text-sm leading-relaxed">{item.description}</p>
                   </div>
-                </div>
 
-                <div className="relative z-10">
-                  <h3 className="text-lg font-bold text-white mb-2 group-hover:text-emerald-200 transition-colors">
-                    {step.title}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-slate-400 leading-relaxed group-hover:text-slate-300 transition-colors">
-                    {step.description}
-                  </p>
-                </div>
-              </motion.div>
+                  <div className="pt-6 mt-6 border-t border-emerald-950/60 flex items-center justify-between text-xs font-semibold text-emerald-400/70">
+                    <span>Stage {item.step} Protocol</span>
+                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                  </div>
+                </SpotlightCard>
+              </div>
             );
           })}
         </div>
@@ -116,5 +129,3 @@ export function AwwwardsWorkflowSection() {
     </section>
   );
 }
-
-export default AwwwardsWorkflowSection;

@@ -251,9 +251,16 @@ model Order {
   printCount       Int           @default(0)
   lastPrintedAt    DateTime?
   carBrand         String?
+  carModel         String?
+  carYear          Int?
   carColor         String?
   carLicensePlate  String?
+  carVin           String?
   carOrderType     String?       @default("EAT_IN_CAR")
+  stage            String?       @default("INTAKE_INSPECTION")
+  intakePhotos     Json?         @default("[]")
+  milestones       Json?         @default("[]")
+  defectsSummary   String?
   customerName     String?
   customerPhone    String?
   status           OrderStatus   @default(RECEIVED)

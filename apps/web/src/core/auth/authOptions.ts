@@ -1,7 +1,8 @@
 import { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma"; // wait, the alias is @/lib/* -> src/shared/utils/*
+import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -16,9 +17,14 @@ export const authOptions: AuthOptions = {
           throw new Error("Invalid credentials");
         }
         
-        // NextAuth is configured, but we need to resolve Prisma first
+        const email = credentials.email.trim().toLowerCase();
+        const limit = rateLimit(`admin_auth:${email}`, { max: 5, windowMs: 120_000 });
+        if (!limit.allowed) {
+          throw new Error("Too many login attempts. Please wait 2 minutes.");
+        }
+
         const user = await prisma.user.findFirst({
-          where: { email: credentials.email }
+          where: { email }
         });
         
         if (!user || !user.passwordHash) {

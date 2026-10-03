@@ -156,3 +156,114 @@ export const demoOrders = [
     ]
   }
 ];
+
+export const demoStudio = {
+  name: "Apex Luxury Auto Spa",
+  slug: "apex-auto-spa",
+  currency: "USD",
+  baysCount: 4,
+  activeWorkOrders: [
+    {
+      id: "wo-101",
+      orderNumber: 101,
+      carYear: 2024,
+      carBrand: "Porsche",
+      carModel: "911 GT3 RS",
+      carColor: "Black Metallic",
+      carLicensePlate: "GT3-APEX",
+      customerName: "Julian Vance",
+      customerPhone: "+1 (305) 555-0192",
+      stage: "DECON_WASH",
+      stageLabel: "Intake & Decon Wash",
+      elapsedMin: 45,
+      estimatedReadyAt: "Tomorrow, 4:00 PM",
+      totalUsd: 2450,
+      imageUrl: "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=1000&q=85",
+      defectPhotos: [
+        "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=800&q=80"
+      ],
+      services: [
+        { name: "Full Vehicle Decon & Clay Bar", price: 250 },
+        { name: "2-Stage Paint Correction (90%+ defect removal)", price: 1200 },
+        { name: "9H Graphene Ceramic Coating (5-Year)", price: 1000 }
+      ],
+      upsellRecommendations: [
+        {
+          id: "up-1",
+          name: "Ceramic Wheel & Caliper Protection",
+          description: "High-heat 1,200°F ceramic armor resisting brake dust and iron fallout.",
+          priceUsd: 199,
+          imageUrl: "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=800&q=80"
+        },
+        {
+          id: "up-2",
+          name: "Hydrophobic Glass & Windshield Coating",
+          description: "Repels rain at 40+ mph with zero wiper chatter; ultra-slick optical clarity.",
+          priceUsd: 149,
+          imageUrl: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80"
+        }
+      ]
+    },
+    {
+      id: "wo-102",
+      orderNumber: 102,
+      carYear: 2024,
+      carBrand: "BMW",
+      carModel: "M4 Competition",
+      carColor: "Isle of Man Green",
+      carLicensePlate: "M4-COMP",
+      customerName: "Marcus Sterling",
+      customerPhone: "+1 (305) 555-0144",
+      stage: "PAINT_CORRECTION",
+      stageLabel: "2-Stage Paint Correction",
+      elapsedMin: 180,
+      totalUsd: 1850,
+      progressPercent: 85,
+      imageUrl: "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1000&q=85",
+      services: [
+        { name: "2-Stage Paint Correction", price: 1200 },
+        { name: "Full Front PPF Clip", price: 650 }
+      ]
+    },
+    {
+      id: "wo-103",
+      orderNumber: 103,
+      carYear: 2023,
+      carBrand: "Audi",
+      carModel: "RS6 Avant",
+      carColor: "Nardo Gray",
+      carLicensePlate: "RS6-WGN",
+      customerName: "Elena Rostova",
+      customerPhone: "+1 (305) 555-0188",
+      stage: "CERAMIC_PPF",
+      stageLabel: "Ceramic & PPF Cleanroom",
+      elapsedMin: 320,
+      totalUsd: 3800,
+      imageUrl: "https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?auto=format&fit=crop&w=1000&q=85",
+      services: [
+        { name: "Full Body Satin PPF Wrap", price: 3800 }
+      ]
+    },
+    {
+      id: "wo-104",
+      orderNumber: 104,
+      carYear: 2024,
+      carBrand: "Mercedes-AMG",
+      carModel: "GT Coupe",
+      carColor: "Obsidian Black",
+      carLicensePlate: "AMG-GT8",
+      customerName: "David Chen",
+      customerPhone: "+1 (305) 555-0167",
+      stage: "IR_CURING",
+      stageLabel: "IR Curing & Ready for Pickup",
+      elapsedMin: 540,
+      totalUsd: 2200,
+      imageUrl: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=1000&q=85",
+      services: [
+        { name: "5-Year Ceramic Matrix Coat", price: 1800 },
+        { name: "Interior Leather Ceramic Guard", price: 400 }
+      ]
+    }
+  ]
+};
+

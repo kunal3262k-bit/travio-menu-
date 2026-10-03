@@ -5,7 +5,6 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Sparkles, X, Utensils } from "lucide-react";
 import { formatMoney } from "@/lib/utils";
-import type { Dish3DModalItem } from "./Dish3DModal";
 
 interface SmartUpsellModalProps {
   isOpen: boolean;

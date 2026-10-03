@@ -8,8 +8,8 @@ import bcrypt from "bcryptjs";
 export async function POST(request: NextRequest) {
   try {
     const ip = request.headers.get("x-forwarded-for") ?? "local";
-    if (!rateLimit(`staff_login:${ip}`).allowed) {
-      return NextResponse.json({ error: "Too many login attempts. Please wait 1 minute." }, { status: 429 });
+    if (!rateLimit(`staff_login_ip:${ip}`, { max: 5, windowMs: 120_000 }).allowed) {
+      return NextResponse.json({ error: "Too many login attempts from this IP. Please wait 2 minutes." }, { status: 429 });
     }
 
     const forwardedProto = request.headers.get("x-forwarded-proto");
@@ -20,6 +20,10 @@ export async function POST(request: NextRequest) {
 
     if (!restaurantSlug || !staffId || !pin) {
       return NextResponse.json({ error: "Missing required login fields" }, { status: 400 });
+    }
+
+    if (!rateLimit(`staff_login_target:${restaurantSlug}:${staffId}`, { max: 5, windowMs: 120_000 }).allowed) {
+      return NextResponse.json({ error: "Too many attempts for this staff account. Please wait 2 minutes." }, { status: 429 });
     }
 
     if (!/^\d{4}$/.test(pin.toString())) {

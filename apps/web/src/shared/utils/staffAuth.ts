@@ -1,6 +1,7 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { prisma } from "./prisma";
 import { requireSession } from "./auth";
 import { resolveStaffCookieSecure, resolveStaffJwtSecret } from "./staffAuthConfig";
 
@@ -42,14 +43,27 @@ export async function verifyStaffSessionToken(token?: string | null): Promise<St
   }
 }
 
-/** Reads + verifies the staff session JWT from the httpOnly cookie. */
-export async function getStaffSession(): Promise<StaffSession | null> {
+/** Reads + verifies the staff session JWT from the httpOnly cookie and validates active status in DB. */
+export async function getStaffSession(options?: { verifyActive?: boolean }): Promise<StaffSession | null> {
   const store = await cookies();
   const token = store.get(STAFF_COOKIE_NAME)?.value;
-  return verifyStaffSessionToken(token);
+  const session = await verifyStaffSessionToken(token);
+  if (!session) return null;
+
+  if (options?.verifyActive !== false) {
+    const staff = await prisma.staff.findUnique({
+      where: { id: session.staffId },
+      select: { active: true, restaurantId: true, role: true }
+    });
+    if (!staff || !staff.active || staff.restaurantId !== session.restaurantId) {
+      return null;
+    }
+  }
+
+  return session;
 }
 
-/** Throws a 401 Response for route handlers when the staff session is missing/invalid. */
+/** Throws a 401 Response for route handlers when the staff session is missing/invalid or deactivated. */
 export async function requireStaff(roles?: StaffSession["role"][]): Promise<StaffSession> {
   const session = await getStaffSession();
   if (!session) {
@@ -104,3 +118,16 @@ export function setStaffSessionCookie(response: NextResponse, token: string, opt
     maxAge: 7200,
   });
 }
+
+/** Explicitly clears the staff session cookie on logout. */
+export function clearStaffSessionCookie(response: NextResponse, options?: { requestSecure?: boolean }) {
+  response.cookies.set(STAFF_COOKIE_NAME, "", {
+    httpOnly: true,
+    secure: resolveStaffCookieSecure(process.env, options?.requestSecure ?? false),
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+    expires: new Date(0),
+  });
+}
+

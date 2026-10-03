@@ -182,16 +182,11 @@ export default function CarOrderingClient({ restaurant }: { restaurant: any }) {
     }
   };
 
-  const handleCloseSession = async () => {
-    for (const order of sessionOrders) {
-      await fetch("/api/orders/close-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: order.id })
-      }).catch(() => {});
-    }
+  const handleCloseSession = () => {
     localStorage.removeItem(`car_session_${restaurant.slug}`);
     localStorage.removeItem(`car_orders_${restaurant.slug}`);
+    localStorage.removeItem(`car_session_id_${restaurant.slug}`);
+    localStorage.removeItem(`car_session_info_${restaurant.slug}`);
     setSessionClosed(true);
   };
 
